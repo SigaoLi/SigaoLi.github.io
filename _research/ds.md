@@ -1,5 +1,5 @@
 ---
-title: "Crime and Safety"
+title: "Data Science"
 layout: single-portfolio
 excerpt: "<img src='/images/research/ga.png' alt=''>"
 collection: research
@@ -22,3 +22,21 @@ Leveraging AI in environmental monitoring, I have developed projects such as a d
 [Read More](/files/pdf/research/ga.pdf){: .btn--research}[Github Link](https://github.com/SigaoLi/UT_AI_Portfolio_Strategy_Optimization){: .btn--research} 
 
 
+## Real-Time Credit Card Fraud Detection
+
+![](/images/research/fire.png)
+
+> This custom project involved the implementation of a real-time framework for credit card fraud predictions. Our specific objectives were as follows: Conduct standard ML pipeline development activities, including exploratory data analysis, feature engineering, and model design and evaluation as taught in the program. Explore the techniques for streamed transaction processing and ML predictions using Spark Streaming and Kafka.
+
+
+[Read More](/files/pdf/research/credit.pdf){: .btn--research}[Github Link](https://github.com/SigaoLi/UW_BD_Credit_Card_Fraud_Detection){: .btn--research} 
+
+
+## Demand Forecasting for Commercial Truck Assembly
+
+![](/images/research/fire.png)
+
+> This project was designed to create a demand forecasting model for a top-tier global commercial truck and bus manufacturer that employs flexible manufacturing systems (FMS). FMS inherently blends Job-Shop and Mass Production methodologies, often leading to inventory inconsistencies and efficiency concerns. By analyzing historical data and tapping into previously overlooked variables, our chief aim was to anticipate future demand for crucial parts requirements for the truck & bus assembly process. Ultimately, we sought to offer data-driven recommendations for forward-thinking inventory management, streamlining costs and boosting operational efficiency.
+
+
+[Read More](/files/pdf/research/truck.pdf){: .btn--research}[Github Link](https://github.com/SigaoLi/UT_ML_Demand_Forecasting_for_Truck_Assembly){: .btn--research} 

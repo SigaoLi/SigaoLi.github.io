@@ -1,5 +1,5 @@
 ---
-title: "Environment Monitoring"
+title: "Remote Sensing"
 layout: single-portfolio
 excerpt: "<img src='/images/research/fire.png' alt=''>"
 collection: research
