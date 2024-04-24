@@ -9,7 +9,7 @@ redirect_from:
 ---
 
 
-Welcome! I am a Business Analyst and Data Scientist dedicated to transforming complex spatial and statistical data into actionable insights. I am currently engaged as a Research Volunteer at the [Cognitive Aging Lab](https://psychlabs.torontomu.ca/cal/), where I develop Python automation tools to optimize research workflows in active aging studies.
+Welcome! I am a Spatial Data Science Enthusiast dedicated to transforming complex spatial and statistical data into actionable insights. I am currently engaged as a Research Volunteer at the [Cognitive Aging Lab](https://psychlabs.torontomu.ca/cal/), where I develop Python automation tools to optimize research workflows in active aging studies.
 
 I hold a Master's degree in Spatial Analysis and Bachelor's degree in Geographic Analysis from [Toronto Metropolitan University](https://www.torontomu.ca/spatial-analysis/about/), and have completed specialized certificates in Artificial Intelligence and Data Science from the [University of Toronto](https://learn.utoronto.ca/programs-courses/certificates/artificial-intelligence) and the [University of Waterloo](https://watspeed.uwaterloo.ca/programs-and-courses/program-data-science.html#brochure). My research interests include: 1. Business/Retail Geography, 2. Geospatial data modeling, 3. Health and Crime Analysis.
 
