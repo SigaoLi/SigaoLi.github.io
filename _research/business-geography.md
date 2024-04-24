@@ -1,5 +1,5 @@
 ---
-title: "Business/Retail Geography"
+title: "Business Geography"
 layout: single-portfolio
 excerpt: "<img src='/images/research/bachelor_paper.png' alt=''>"
 collection: research

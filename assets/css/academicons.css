@@ -325,12 +325,3 @@
 .fa.fa-pull-right {
   margin-left: .3em;
 }
-.full-width-item {
-  width: 100% !important; /* Ensures full width */
-  margin-bottom: 20px !important; /* Ensures space between items */
-}
-.grid-item {
-  width: 100% !important; /* Fill the full width of the container */
-  padding: 20px !important; /* Adds padding */
-  box-sizing: border-box !important; /* Includes padding and border in the width */
-}
