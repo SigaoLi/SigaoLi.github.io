@@ -16,7 +16,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/china' %}
-    ![China]({{ image.path }})
+    ![]({{ image.path }})
   {% endif %}
 {% endfor %}
 
@@ -24,7 +24,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/japan' %}
-    ![Japan]({{ image.path }})
+    ![]({{ image.path }})
   {% endif %}
 {% endfor %}
 
@@ -32,7 +32,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/united_kingdom' %}
-    ![United Kingdom]({{ image.path }})
+    ![]({{ image.path }})
   {% endif %}
 {% endfor %}
 
@@ -40,7 +40,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/canada' %}
-    ![Canada]({{ image.path }})
+    ![]({{ image.path }})
   {% endif %}
 {% endfor %}
 
@@ -48,6 +48,6 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/united_states' %}
-    ![United States]({{ image.path }})
+    ![]({{ image.path }})
   {% endif %}
 {% endfor %}
