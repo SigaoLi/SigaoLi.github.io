@@ -12,9 +12,9 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 
 
-# Asia
+## Asia
 
-## China
+### China
 
 <div class="gallery">
 {% for image in site.static_files %}
@@ -24,7 +24,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% endfor %}
 </div>
 
-## Japan
+### Japan
 
 <div class="gallery">
 {% for image in site.static_files %}
@@ -35,9 +35,9 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 </div>
 
 
-# North America
+## North America
 
-## Canada
+### Canada
 
 <div class="gallery">
 {% for image in site.static_files %}
@@ -47,7 +47,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% endfor %}
 </div>
 
-## United States
+### United States
 
 <div class="gallery">
 {% for image in site.static_files %}
@@ -58,9 +58,9 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 </div>
 
 
-# Europe
+## Europe
 
-## United Kingdom
+### United Kingdom
 
 <div class="gallery">
 {% for image in site.static_files %}
