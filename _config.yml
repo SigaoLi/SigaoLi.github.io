@@ -7,7 +7,7 @@
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Sigao Li"
+title                    : "Home"
 title_separator          : "-"
 name                     : &name "Sigao Li"
 description              : &description "Spatial Data Science Enthusiast"
