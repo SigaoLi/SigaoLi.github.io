@@ -14,7 +14,7 @@ Leveraging AI in environmental monitoring, I have developed projects such as a d
 
 ## Genetic Algorithms for Portfolio Strategy Optimization
 
-![](/images/research/fire.png)
+![](/images/research/a.png)
 
 > This study successfully demonstrates the potential of combining Transformer models with genetic algorithms. By utilizing the advantages of the Transformer model to analyze time series data and the search efficiency of the genetic algorithm, the computational overhead is significantly reduced while improving prediction accuracy.
 
@@ -24,7 +24,7 @@ Leveraging AI in environmental monitoring, I have developed projects such as a d
 
 ## Real-Time Credit Card Fraud Detection
 
-![](/images/research/fire.png)
+![](/images/research/credit.png)
 
 > This custom project involved the implementation of a real-time framework for credit card fraud predictions. Our specific objectives were as follows: Conduct standard ML pipeline development activities, including exploratory data analysis, feature engineering, and model design and evaluation as taught in the program. Explore the techniques for streamed transaction processing and ML predictions using Spark Streaming and Kafka.
 
@@ -34,7 +34,7 @@ Leveraging AI in environmental monitoring, I have developed projects such as a d
 
 ## Demand Forecasting for Commercial Truck Assembly
 
-![](/images/research/fire.png)
+![](/images/research/truck.png)
 
 > This project was designed to create a demand forecasting model for a top-tier global commercial truck and bus manufacturer that employs flexible manufacturing systems (FMS). FMS inherently blends Job-Shop and Mass Production methodologies, often leading to inventory inconsistencies and efficiency concerns. By analyzing historical data and tapping into previously overlooked variables, our chief aim was to anticipate future demand for crucial parts requirements for the truck & bus assembly process. Ultimately, we sought to offer data-driven recommendations for forward-thinking inventory management, streamlining costs and boosting operational efficiency.
 
