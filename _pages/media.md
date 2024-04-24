@@ -12,15 +12,20 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 
 
-<nbsp>
+## China
 
-{% include base_path %}
+{% for image in site.static_files %}
+  {% if image.path contains 'images/media/china' %}
+    ![China]({{ image.path }})
+  {% endif %}
+{% endfor %}
 
-{% assign ordered_pages = site.media | sort:"order_number" %}
 
-{% for post in ordered_pages %}
-  <div class="grid-item">
-    {% include archive-single.html type="grid" %}
-  </div>
+## Japan
+
+{% for image in site.static_files %}
+  {% if image.path contains 'images/media/japan' %}
+    ![Japan]({{ image.path }})
+  {% endif %}
 {% endfor %}
 
