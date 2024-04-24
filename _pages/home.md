@@ -1,7 +1,7 @@
 ---
-layout: page
-title: About
-permalink: /about/
+layout: home
+title: Home
+permalink: /
 ---
 
-Content of your about page goes here.
+{% include_relative about.md %}
