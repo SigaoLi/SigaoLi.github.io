@@ -10,7 +10,6 @@ header:
 
 My research in business geography began with my undergraduate thesis, "The Impact of Population Distribution in the Toronto Census Metropolitan Area on Ethnic Retail Location," which analyzed how demographic factors influence retail strategies. This continued with my Master's thesis on "Analyzing Lowe’s Failure in Canada from a Geographical Perspective," where I assessed how geographical insights could predict and explain business outcomes in retail.
 
-# Projects
 
 ## Analyzing Lowe's Failure in Canada from A Geographical Perspective
 
