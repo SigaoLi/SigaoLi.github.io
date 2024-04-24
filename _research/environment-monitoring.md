@@ -18,4 +18,4 @@ Forest fire monitoring using Deep Neural Network
 
 > This project develops a convolutional neural network model capable of detecting forest fires from satellite imagery. The model demonstrates robustness, showing high accuracy and low loss on validation and test data. This work contributes to the field of environmental monitoring and demonstrates the potential of artificial intelligence in aiding disaster management and response initiatives.
 
-[Article](https://doi.org/10.1017/S0003055423000904){: .btn--research} [Preprint](/files/pdf/research/They're Still Here.pdf){: .btn--research} [Supplemental Information](/files/pdf/research/They're Still Here SI.pdf){: .btn--research} [Replication Archive](https://doi.org/10.7910/DVN/4GLPII){: .btn--research}
+[Read More](/files/pdf/research/fire.pptx){: .btn--research}[Github Link](https://github.com/SigaoLi/UT_DL_Forest_Fire_Monitoring){: .btn--research} 
