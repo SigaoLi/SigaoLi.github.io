@@ -326,11 +326,11 @@
   margin-left: .3em;
 }
 .full-width-item {
-  width: 100%;  /* Makes the container span the full width */
-  margin-bottom: 20px; /* Adds space between rows */
+  width: 100% !important; /* Ensures full width */
+  margin-bottom: 20px !important; /* Ensures space between items */
 }
 .grid-item {
-  width: 100%; /* Optionally, make each grid item fill the container */
-  padding: 20px; /* Adds padding around the content inside the grid item */
-  box-sizing: border-box; /* Includes padding in the width calculation */
+  width: 100% !important; /* Fill the full width of the container */
+  padding: 20px !important; /* Adds padding */
+  box-sizing: border-box !important; /* Includes padding and border in the width */
 }
