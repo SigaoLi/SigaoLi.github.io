@@ -1,7 +1,7 @@
 ---
 layout: archive
 title: "Media"
-permalink: /Media/
+permalink: /media/
 author_profile: true
 header:
   og_image: "research/ecdf.png"
@@ -9,8 +9,6 @@ header:
 
 
 I enjoy travelling immensely and am delighted to share these wonderful experiences with you!
-
-
 
 
 
