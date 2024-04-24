@@ -1,5 +1,5 @@
 ---
-title: "Health Geography"
+title: "Public Health"
 layout: single-portfolio
 excerpt: "<img src='/images/research/maup.jpg' alt=''>"
 collection: research

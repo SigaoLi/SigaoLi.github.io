@@ -15,7 +15,7 @@ My academic and professional research focuses on the application of geospatial a
 
 {% include base_path %}
 
-{% assign ordered_pages = site.research | sort:"order_number" %}
+{% assign ordered_pages = site.research | sort:"title" %}
 
 {% for post in ordered_pages %}
   {% include archive-single.html type="grid" %}

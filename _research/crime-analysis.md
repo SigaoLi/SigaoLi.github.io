@@ -1,5 +1,5 @@
 ---
-title: "Crime Geography"
+title: "Crime Analysis"
 layout: single-portfolio
 excerpt: "<img src='/images/research/homicide.png' alt=''>"
 collection: research
@@ -8,7 +8,7 @@ header:
   og_image: "research/homicide.png"
 ---
 
-My interest in crime mapping led to the development of a project titled "Hotspot Policing for the City of Toronto," which won the President’s Prize at the Canadian Cartographic Association Mapping Competition. This work aimed to designate priority areas for police resource allocation. Additionally, I analyzed homicide types in Toronto to provide actionable insights for crime prevention and resource management.
+My interest in crime mapping led to the development of a project titled "Hotspot Policing for the City of Toronto," which won the President’s Prize at the Canadian Cartographic Association Mapping Competition. Additionally, I analyzed homicide types in Toronto to provide actionable insights for crime prevention and resource management.
 
 
 
