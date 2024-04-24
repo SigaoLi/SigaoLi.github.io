@@ -16,7 +16,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 {% include base_path %}
 
-{% assign ordered_pages = site.media | sort:"title" %}
+{% assign ordered_pages = site.media | sort:"order_number" %}
 
 {% for post in ordered_pages %}
   <div class="grid-item">
