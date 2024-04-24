@@ -7,27 +7,20 @@ header:
   og_image: "research/ecdf.png"
 ---
 
-My academic research falls into two main areas: understanding the influence of
-geography on actor behavior before, during, and after civil conflict, and
-developing new tools to improve the study of institutions (both formal and
-informal) in peace and conflict. One strand of research in this first area
-explores how the territories that ethnic groups inhabit shape rebel group
-formation and condition their relationship with the state. My interest in
-geography also informs projects on active conflicts including the targeting of
-UN peacekeepers by insurgent groups, civilian victimization after rebel
-territorial conquest, and communal violence in fragile settings.
+My academic and professional research focuses on the application of geospatial and data analysis techniques to address complex real-world problems, ranging from urban planning to environmental monitoring. With a robust background in Geographic Analysis and Spatial Analysis, I have pursued projects that integrate advanced analytical tools to enhance data accuracy and utility.
 
-My other main research agenda uses advanced methods to develop new measures of
-institutions. One project uses Bayesian item response theory to measure the
-strength of peace agreements as a latent variable and free researchers from
-post-treatment bias caused by using the duration of agreements as a proxy for
-their strength. In others, I apply unsupervised learning techniques to over a
-billion observations of product-level international trade data to measure
-economic interdependence and illicit economic exchange.
+## Business and Economic Geography
+My research in business geography began with my undergraduate thesis, "The Impact of Population Distribution in the Toronto Census Metropolitan Area on Ethnic Retail Location," which analyzed how demographic factors influence retail strategies. This continued with my Master's thesis on "Analyzing Lowe’s Failure in Canada from a Geographical Perspective," where I assessed how geographical insights could predict and explain business outcomes in retail.
 
-In a new avenue of research, I leverage social media data to explore
-participation in extremist movements across multiple contexts, gaining insight
-into the early stages of radicalization.
+## Health Geography
+In health geography, I have applied spatial data analysis to understand the relationships between consumer behavior, health outcomes, and urban environment accessibility. Notably, I contributed to a research project examining the presence and magnitude of the Modifiable Areal Unit Problem at various levels of geographic data aggregation in Ontario Health Central, aiming to optimize data utility for health services planning.
+
+## Crime and Safety
+My interest in crime mapping led to the development of a project titled "Hotspot Policing for the City of Toronto," which won the President’s Prize at the Canadian Cartographic Association Mapping Competition. This work aimed to designate priority areas for police resource allocation. Additionally, I analyzed homicide types in Toronto to provide actionable insights for crime prevention and resource management.
+
+## Natural Environment Monitoring
+Leveraging AI in environmental monitoring, I have developed projects such as a deep learning model for forest fire detection using satellite imagery, achieving over 97% accuracy. This project showcased the potential of integrating AI with natural science to predict and respond to environmental disasters effectively.
+
 
 <nbsp>
 
