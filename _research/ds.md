@@ -14,7 +14,7 @@ Leveraging AI in environmental monitoring, I have developed projects such as a d
 
 ## Genetic Algorithms for Portfolio Strategy Optimization
 
-![](/images/research/a.png)
+![](/images/research/ga.png)
 
 > This study successfully demonstrates the potential of combining Transformer models with genetic algorithms. By utilizing the advantages of the Transformer model to analyze time series data and the search efficiency of the genetic algorithm, the computational overhead is significantly reduced while improving prediction accuracy.
 
