@@ -14,7 +14,7 @@ Leveraging AI in environmental monitoring, I have developed projects such as a d
 
 Forest fire monitoring using Deep Neural Network
 
-![](/images/research/CCA.png)
+![](/images/research/fire.png)
 
 > This project develops a convolutional neural network model capable of detecting forest fires from satellite imagery. The model demonstrates robustness, showing high accuracy and low loss on validation and test data. This work contributes to the field of environmental monitoring and demonstrates the potential of artificial intelligence in aiding disaster management and response initiatives.
 
