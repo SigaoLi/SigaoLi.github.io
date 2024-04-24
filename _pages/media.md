@@ -1,6 +1,8 @@
 ---
-permalink: /Media/
+layout: archive
 title: "Media"
+permalink: /Media/
+author_profile: true
 ---
 
 
@@ -8,7 +10,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 
 
-# China
+## China
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/china' %}
@@ -16,7 +18,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
   {% endif %}
 {% endfor %}
 
-# Canada
+## Canada
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/canada' %}
@@ -25,7 +27,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% endfor %}
 
 
-# United Kingdom
+## United Kingdom
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/united_kingdom' %}
@@ -34,7 +36,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% endfor %}
 
 
-# United States
+## United States
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/united_states' %}
@@ -43,7 +45,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% endfor %}
 
 
-# Japan
+## Japan
 
 {% for image in site.static_files %}
   {% if image.path contains 'images/media/japan' %}
