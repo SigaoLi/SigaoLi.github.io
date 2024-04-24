@@ -325,6 +325,12 @@
 .fa.fa-pull-right {
   margin-left: .3em;
 }
+.full-width-item {
+  width: 100%;  /* Makes the container span the full width */
+  margin-bottom: 20px; /* Adds space between rows */
+}
 .grid-item {
-  margin: 2px;  /* Adjust the value to increase or decrease the space */
+  width: 100%; /* Optionally, make each grid item fill the container */
+  padding: 20px; /* Adds padding around the content inside the grid item */
+  box-sizing: border-box; /* Includes padding in the width calculation */
 }
