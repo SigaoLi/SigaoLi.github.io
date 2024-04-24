@@ -14,40 +14,50 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 ## China
 
+<div class="gallery">
 {% for image in site.static_files %}
   {% if image.path contains 'china' %}
-    ![China]({{ image.path | prepend: site.baseurl }})
+    <img src="{{ image.path | prepend: site.baseurl }}" alt="China">
   {% endif %}
 {% endfor %}
+</div>
 
 ## Japan
 
+<div class="gallery">
 {% for image in site.static_files %}
   {% if image.path contains 'japan' %}
-    ![Japan]({{ image.path | prepend: site.baseurl }})
+    <img src="{{ image.path | prepend: site.baseurl }}" alt="Japan">
   {% endif %}
 {% endfor %}
+</div>
 
 ## United Kingdom
 
+<div class="gallery">
 {% for image in site.static_files %}
   {% if image.path contains 'united_kingdom' %}
-    ![United Kingdom]({{ image.path | prepend: site.baseurl }})
+    <img src="{{ image.path | prepend: site.baseurl }}" alt="United Kingdom">
   {% endif %}
 {% endfor %}
+</div>
 
 ## Canada
 
+<div class="gallery">
 {% for image in site.static_files %}
   {% if image.path contains 'canada' %}
-    ![Canada]({{ image.path | prepend: site.baseurl }})
+    <img src="{{ image.path | prepend: site.baseurl }}" alt="Canada">
   {% endif %}
 {% endfor %}
+</div>
 
 ## United States
 
+<div class="gallery">
 {% for image in site.static_files %}
   {% if image.path contains 'united_states' %}
-    ![United States]({{ image.path | prepend: site.baseurl }})
+    <img src="{{ image.path | prepend: site.baseurl }}" alt="United States">
   {% endif %}
 {% endfor %}
+</div>
