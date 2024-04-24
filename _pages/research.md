@@ -9,6 +9,7 @@ header:
 
 My academic and professional research focuses on the application of geospatial and data analysis techniques to address complex real-world problems, ranging from urban planning to environmental monitoring. With a robust background in Geographic Analysis and Spatial Analysis, I have pursued projects that integrate advanced analytical tools to enhance data accuracy and utility.
 
+
 ## Business and Economic Geography
 My research in business geography began with my undergraduate thesis, "The Impact of Population Distribution in the Toronto Census Metropolitan Area on Ethnic Retail Location," which analyzed how demographic factors influence retail strategies. This continued with my Master's thesis on "Analyzing Lowe’s Failure in Canada from a Geographical Perspective," where I assessed how geographical insights could predict and explain business outcomes in retail.
 
