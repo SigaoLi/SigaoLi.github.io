@@ -325,3 +325,6 @@
 .fa.fa-pull-right {
   margin-left: .3em;
 }
+.grid-item {
+  margin: 10px;  /* Adjust the value to increase or decrease the space */
+}
