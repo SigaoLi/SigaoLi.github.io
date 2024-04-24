@@ -3,6 +3,8 @@ layout: archive
 title: "Media"
 permalink: /Media/
 author_profile: true
+header:
+  og_image: "research/ecdf.png"
 ---
 
 
@@ -10,45 +12,17 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 
 
-## China
 
-{% for image in site.static_files %}
-  {% if image.path contains 'images/media/china' %}
-    ![China]({{ image.path }})
-  {% endif %}
+
+<nbsp>
+
+{% include base_path %}
+
+{% assign ordered_pages = site.media | sort:"title" %}
+
+{% for post in ordered_pages %}
+  <div class="grid-item">
+    {% include archive-single.html type="grid" %}
+  </div>
 {% endfor %}
 
-## Canada
-
-{% for image in site.static_files %}
-  {% if image.path contains 'images/media/canada' %}
-    ![Canada]({{ image.path }})
-  {% endif %}
-{% endfor %}
-
-
-## United Kingdom
-
-{% for image in site.static_files %}
-  {% if image.path contains 'images/media/united_kingdom' %}
-    ![Canada]({{ image.path }})
-  {% endif %}
-{% endfor %}
-
-
-## United States
-
-{% for image in site.static_files %}
-  {% if image.path contains 'images/media/united_states' %}
-    ![Canada]({{ image.path }})
-  {% endif %}
-{% endfor %}
-
-
-## Japan
-
-{% for image in site.static_files %}
-  {% if image.path contains 'images/media/japan' %}
-    ![Japan]({{ image.path }})
-  {% endif %}
-{% endfor %}
