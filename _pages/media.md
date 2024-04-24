@@ -12,6 +12,8 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 
 
+# Asia
+
 ## China
 
 <div class="gallery">
@@ -32,15 +34,8 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% endfor %}
 </div>
 
-## United Kingdom
 
-<div class="gallery">
-{% for image in site.static_files %}
-  {% if image.path contains 'united_kingdom' %}
-    <img src="{{ image.path | prepend: site.baseurl }}" alt="United Kingdom">
-  {% endif %}
-{% endfor %}
-</div>
+# North America
 
 ## Canada
 
@@ -58,6 +53,19 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 {% for image in site.static_files %}
   {% if image.path contains 'united_states' %}
     <img src="{{ image.path | prepend: site.baseurl }}" alt="United States">
+  {% endif %}
+{% endfor %}
+</div>
+
+
+# Europe
+
+## United Kingdom
+
+<div class="gallery">
+{% for image in site.static_files %}
+  {% if image.path contains 'united_kingdom' %}
+    <img src="{{ image.path | prepend: site.baseurl }}" alt="United Kingdom">
   {% endif %}
 {% endfor %}
 </div>
