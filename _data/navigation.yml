@@ -6,14 +6,17 @@ main:
   - title: "Publications"
     url: /publications/
 
-  - title: "Teaching"
-    url: /teaching/
+  # - title: "Teaching"
+  #   url: /teaching/
 
-  - title: "Software"
-    url: /software/
+  # - title: "Software"
+  #   url: /software/
 
   - title: "Posts"
     url: /posts/
     
+  - title: "Media"
+    url: /media/
+
   - title: "CV"
     url: /cv/
