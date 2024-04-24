@@ -1,7 +1,7 @@
 ---
-layout: home  # specify the layout you want for your homepage
-title: Home
-permalink: /
+layout: page
+title: About
+permalink: /about/
 ---
 
-{% include_relative about.md %}
+Content of your about page goes here.
