@@ -9,7 +9,7 @@ header:
 ---
 
 
-Leveraging AI in environmental monitoring, I have developed projects such as a deep learning model for forest fire detection using satellite imagery, achieving over 97% accuracy. This project showcased the potential of integrating AI with natural science to predict and respond to environmental disasters effectively.
+Leveraging AI in environmental monitoring, I have developed projects such as a deep learning model for forest fire detection using satellite imagery. This project showcased the potential of integrating AI with natural science to predict and respond to environmental disasters effectively.
 
 
 
