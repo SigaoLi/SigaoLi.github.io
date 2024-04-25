@@ -10,7 +10,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 
 
 
-## Asia
+# Asia
 
 > ## China
 
@@ -33,7 +33,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 </div>
 
 
-## North America
+# North America
 
 > ## Canada
 
@@ -56,7 +56,7 @@ I enjoy travelling immensely and am delighted to share these wonderful experienc
 </div>
 
 
-## Europe
+# Europe
 
 > ## United Kingdom
 
