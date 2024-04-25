@@ -3,8 +3,6 @@ layout: archive
 title: "Media"
 permalink: /media/
 author_profile: true
-header:
-  og_image: "research/ecdf.png"
 ---
 
 
