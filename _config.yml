@@ -7,9 +7,9 @@
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Sigao Li"
+title                    : "Sigao(Peter) Li"
 title_separator          : "-"
-name                     : &name "Sigao Li"
+name                     : &name "Sigao(Peter) Li"
 description              : &description "Spatial Data Science Enthusiast"
 url                      : https://SigaoLi.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
