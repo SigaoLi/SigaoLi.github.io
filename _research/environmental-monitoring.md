@@ -1,5 +1,5 @@
 ---
-title: "Disaster Monitoring"
+title: "Environmental Monitoring"
 layout: single-portfolio
 excerpt: "<img src='/images/research/fire.png' alt=''>"
 collection: research

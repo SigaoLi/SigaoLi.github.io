@@ -15,8 +15,8 @@ main:
   # - title: "Software"
   #   url: /software/
 
-  - title: "Posts"
-    url: /posts/
+  # - title: "Posts"
+  #   url: /posts/
     
   - title: "Media"
     url: /media/
