@@ -12,7 +12,7 @@ header:
 I am leveraging machine learning and deep learning models for applications in quantitative finance. My projects involve integrating Transformer models with genetic algorithms to revolutionize financial time series analysis. Additionally, I am utilizing advanced machine learning techniques combined with cloud-based data processing platforms to facilitate real-time data processing. This approach enhances the dynamic accuracy of credit card fraud detection systems.
 
 
-## Mixture of Experts Model for Stock Price Prediction
+## Mixture of Experts for Stock Price Prediction
 
 ![](/images/research/spp.png)
 
