@@ -12,6 +12,15 @@ header:
 I am leveraging machine learning and deep learning models for applications in quantitative finance. My projects involve integrating Transformer models with genetic algorithms to revolutionize financial time series analysis. Additionally, I am utilizing advanced machine learning techniques combined with cloud-based data processing platforms to facilitate real-time data processing. This approach enhances the dynamic accuracy of credit card fraud detection systems.
 
 
+## Genetic Algorithms for Portfolio Strategy Optimization
+
+![](/images/research/spp.png)
+
+> This report predicts Apple Inc.'s stock price using three ARIMA, LSTM, MoE models and evaluates their performance based on accuracy and financial return. The MoE model, combining ARIMA and LSTM, delivers the best returns and stability, making it ideal for active investors. Tailored investment recommendations are provided for different investor types based on each model’s strengths and market adaptability.
+
+
+[Read More](/files/pdf/research/spp.pdf){: .btn--research}[Github Link](https://github.com/SigaoLi/UB_DA_Stock_Price_Prediction){: .btn--research} 
+
 
 ## Genetic Algorithms for Portfolio Strategy Optimization
 
