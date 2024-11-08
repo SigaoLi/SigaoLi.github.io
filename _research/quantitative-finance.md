@@ -16,7 +16,7 @@ I am leveraging machine learning and deep learning models for applications in qu
 
 ![](/images/research/spp.png)
 
-> This report predicts Apple Inc.'s stock price using three ARIMA, LSTM, MoE models and evaluates their performance based on accuracy and financial return. The MoE model, combining ARIMA and LSTM, delivers the best returns and stability, making it ideal for active investors. Tailored investment recommendations are provided for different investor types based on each model’s strengths and market adaptability.
+> This report predicts Apple Inc.'s stock price using ARIMA, LSTM, MoE models and evaluates their performance based on accuracy and financial return. The MoE model, combining ARIMA and LSTM, delivers the best returns and stability, making it ideal for active investors. Tailored investment recommendations are provided for different investor types based on each model’s strengths and market adaptability.
 
 
 [Read More](/files/pdf/research/spp.pdf){: .btn--research}[Github Link](https://github.com/SigaoLi/UB_DA_Stock_Price_Prediction){: .btn--research} 
