@@ -21,7 +21,7 @@ My interest in crime mapping led to the development of a project titled "Hotspot
 [Read More](https://cca-acc.org/2023-cca-presidents-prize-winner-hotspot-policing-for-the-city-of-toronto.html){: .btn--research} 
 
 
-## RAnalysis of Homicides by Type in the City of Toronto
+## Analysis of Homicides by Type in the City of Toronto
 
 ![](/images/research/homicide.png)
 
