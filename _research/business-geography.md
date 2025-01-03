@@ -19,7 +19,7 @@ My research in business geography began with my undergraduate thesis, "The Impac
 
 > This study addresses the modelling challenges of EV charging station site selection by combining multi-criteria decision analysis, mixed integer programming, and multi-objective optimization. Using Bristol as a case study, the effectiveness of the proposed framework in selecting sites that meet different user needs and planning objectives is demonstrated. Sensitivity analysis further demonstrates the adaptability of the model under different assumptions (e.g., user behaviour and traffic patterns), highlighting the importance of adopting optimization modelling methods in infrastructure planning. Resulting a replicable framework to support the development of sustainable, user-focused EV charging network systems.
 
-[Read More](/files/pdf/research/ev.pdf){: .btn--research}
+[Read More](/files/pdf/research/ev.pdf){: .btn--research}[Github Link](https://github.com/SigaoLi/UB_MA_Public_Facility_Site_Selection){: .btn--research} 
 
 
 ## Analyzing Lowe's Failure in Canada from A Geographical Perspective
