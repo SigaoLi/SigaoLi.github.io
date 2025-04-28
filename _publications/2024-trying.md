@@ -1,5 +1,5 @@
 ---
-title: "I haven't published any articles yet, but I'm working on it~"
+title: "I haven't published any articles yet, but I'm working on it~~"
 collection: publications
 permalink: /publication/2024-trying
 date: 2024-04-24
