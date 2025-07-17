@@ -38,3 +38,12 @@ My research in business geography began with my undergraduate thesis, "The Impac
 > Due to the importance of consumption in the urban economy, increasing consumer demand, and rising ethnic business activities, ethnic retail has become a topic of growing interest in the academic community. The article uses census and supermarket location data to examine the distribution of ethnic Chinese supermarkets in the Toronto CMA area. Utilize consumption data to estimate the sales potential. The Chinese ethnic supermarket's trade area was determined using the buffer zone and Thiessen Polygon. Additionally, this research analyzed the population characteristic within its trade area for specific cases. The study's findings indicate that (1) the Toronto CMA does have a geographical pattern of Chinese supermarkets moving to the suburbs; (2) Chinese communities continue to be the primary location consideration for some Chinese supermarket operators; and (3) a sizable proportion of companies has begun to shift to a new business model services South Asian population.
 
 [Read More](/files/pdf/research/IRP.pdf){: .btn--research}
+
+
+## Feasibility Analysis of Enrollment Expansion in Primary and Secondary Schools
+
+![](/images/research/School.png)
+
+> This project evaluated the feasibility of expanding French Immersion (FI) programs within the Bruce-Grey Catholic District School Board. Using datasets from Statistics Canada and Ontario’s Open Data Portal, the study analyzed school capacity, demographic trends, and spatial distribution of students. A series of geospatial modeling techniques—including network analysis, Huff gravity modeling, multi-criteria evaluation, and location-allocation models—were employed to assess existing school boundaries and identify optimal locations for program expansion. The final deliverable included a tiered strategic plan featuring boundary adjustments, targeted facility upgrades, and potential new school sites to support long-term accommodation planning and equitable access to FI education.
+
+[Read More](/files/pdf/research/School.pptx){: .btn--research}[Video](https://drive.google.com/file/d/1jothxTuDP7fI0mLpi9c7-QbhFclc6x6d/view?usp=drive_link){: .btn--research}
