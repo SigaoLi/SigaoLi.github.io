@@ -13,7 +13,7 @@ In health geography, I have applied spatial data analysis to understand the rela
 
 
 
-## The impact of changes in party political control in england on care home quaility
+## The Impact of Changes in Party Political Control in England on Care Home Quaility
 
 ![](/images/research/ma.png)
  
