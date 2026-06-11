@@ -1,0 +1,38 @@
+---
+import { Image } from 'astro:assets';
+import SectionHeading from './SectionHeading.astro';
+import profile from '../assets/profile.jpg';
+import { localizePath, t, type Lang } from '../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).about;
+const L = (p: string) => localizePath(lang, p);
+---
+
+<section class="mx-auto max-w-6xl px-6 py-24">
+  <div class="grid gap-12 md:grid-cols-[1fr_280px] items-start">
+    <div>
+      <SectionHeading coords={d.coords} title={d.title} />
+      <div class="mt-6 max-w-2xl space-y-4 text-ink-muted reveal">
+        <p>
+          {d.p1} <a class="link-underline" href="https://gisphere.info/" rel="noopener noreferrer" target="_blank">GISphere</a>{d.p1b}
+        </p>
+        <p>
+          {d.p2a} <a class="link-underline" href={L('/photography')}>{d.lensName}</a>{d.p2b}
+        </p>
+      </div>
+      <a href={L('/cv')} class="link-underline mt-6 inline-block text-sm reveal">{d.fullCv}</a>
+    </div>
+    <div class="reveal">
+      <Image
+        src={profile}
+        alt={d.portraitAlt}
+        width={560}
+        widths={[280, 560]}
+        sizes="280px"
+        class="rounded-xl border"
+        style="border-color: var(--line);"
+      />
+    </div>
+  </div>
+</section>

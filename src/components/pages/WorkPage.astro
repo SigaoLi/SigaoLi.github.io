@@ -1,0 +1,130 @@
+---
+// Shared Work index page, rendered by /work and /zh/work.
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import SectionHeading from '../SectionHeading.astro';
+import DotTag from '../DotTag.astro';
+import { projects } from '../../data/projects';
+import type { Tag } from '../../data/projects';
+import { localizePath, t, type Lang } from '../../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).work;
+const L = (p: string) => localizePath(lang, p);
+
+const cases = (await getCollection(lang === 'zh' ? 'casesZh' : 'cases')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const research = (await getCollection(lang === 'zh' ? 'researchZh' : 'research')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const researchImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/research/*.{png,jpg,jpeg}'
+);
+const imageFor = (file?: string) => {
+  if (!file) return null;
+  const key = `../../assets/research/${file}`;
+  return key in researchImages ? researchImages[key]() : null;
+};
+const firstImages = await Promise.all(
+  research.map((r) => imageFor(r.data.projects.find((p) => p.image)?.image))
+);
+---
+
+<Base title={d.title} description={d.desc}>
+  <main class="mx-auto max-w-6xl px-6 pt-16 pb-8">
+    <SectionHeading coords={d.coords} title={d.h1} />
+    <p class="mt-4 max-w-2xl text-ink-muted reveal">{d.intro}</p>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-2">
+      {cases.map((c) => (
+        <a
+          href={L(`/work/${c.id}`)}
+          class="reveal card-lift group rounded-xl border p-7 flex flex-col"
+          style="border-color: var(--line); background: var(--bg-elevated);"
+        >
+          <div class="flex items-center justify-between">
+            <DotTag tags={c.data.tags as Tag[]} />
+            <span class="font-mono text-xs text-ink-muted">{c.data.year}</span>
+          </div>
+          <h3 class="mt-5 font-display text-2xl group-hover:text-accent transition-colors">{c.data.title}</h3>
+          {c.data.org && <p class="mt-1 font-mono text-xs text-ink-muted">{c.data.org}</p>}
+          <p class="mt-3 text-sm text-ink-muted flex-1">{c.data.tagline}</p>
+          <div class="mt-6 flex gap-8 border-t pt-4" style="border-color: var(--line);">
+            {c.data.metrics.slice(0, 3).map((m) => (
+              <div>
+                <div class="metric-value font-display text-2xl" style="color: var(--accent);" data-value={m.value}>{m.value}</div>
+                <div class="mt-0.5 text-[11px] leading-tight text-ink-muted max-w-[10rem]">{m.label}</div>
+              </div>
+            ))}
+          </div>
+        </a>
+      ))}
+    </div>
+  </main>
+
+  <section class="mx-auto max-w-6xl px-6 py-16" id="research">
+    <SectionHeading coords={d.researchCoords} title={d.researchTitle} />
+    <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {research.map((r, i) => (
+        <div class="reveal rounded-xl border p-6 flex flex-col" style="border-color: var(--line); background: var(--bg-elevated);">
+          {firstImages[i] && (
+            <Image
+              src={firstImages[i]!.default}
+              alt={r.data.title}
+              width={640}
+              widths={[400, 640]}
+              sizes="(min-width: 1024px) 360px, 90vw"
+              class="mb-5 aspect-[16/9] w-full rounded-lg border object-cover"
+              style="border-color: var(--line);"
+            />
+          )}
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-lg">{r.data.title}</h3>
+            <DotTag tags={r.data.tags as Tag[]} />
+          </div>
+          <p class="mt-2 text-sm text-ink-muted flex-1">{r.data.summary}</p>
+          <ul class="mt-4 space-y-2 border-t pt-4" style="border-color: var(--line);">
+            {r.data.projects.map((p) => (
+              <li class="text-sm leading-snug">
+                {p.pdf ? (
+                  <a class="link-underline" href={`/files/pdf/research/${p.pdf}`} target="_blank" rel="noopener noreferrer">{p.title}</a>
+                ) : p.link ? (
+                  <a class="link-underline" href={p.link} target="_blank" rel="noopener noreferrer">{p.title}</a>
+                ) : (
+                  p.title
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-6 py-16">
+    <SectionHeading coords={d.indexCoords} title={d.indexTitle} />
+    <ul class="mt-8 divide-y rounded-xl border" style="border-color: var(--line); --tw-divide-opacity: 1;">
+      {projects.map((p) => (
+        <li>
+          <a
+            href={p.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="reveal group flex flex-col gap-1 px-6 py-4 transition-colors hover:bg-bg-elevated sm:flex-row sm:items-center sm:gap-6"
+            style="border-color: var(--line);"
+          >
+            <span class="font-medium min-w-56 group-hover:text-accent transition-colors">{lang === 'zh' ? p.nameZh : p.name}</span>
+            <span class="flex-1 text-sm text-ink-muted">{lang === 'zh' ? p.descZh : p.desc}</span>
+            <DotTag tags={p.tags} />
+            <svg class="hidden sm:block text-ink-muted group-hover:text-accent transition-colors" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M7 17 17 7M9 7h8v8"/>
+            </svg>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

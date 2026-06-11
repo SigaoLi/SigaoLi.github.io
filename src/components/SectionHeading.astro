@@ -1,0 +1,13 @@
+---
+interface Props {
+  coords: string;
+  title: string;
+  id?: string;
+}
+const { coords, title, id } = Astro.props;
+---
+
+<div class="reveal" id={id}>
+  <p class="font-mono text-xs tracking-[0.2em] text-ink-muted uppercase">{coords}</p>
+  <h2 class="mt-3 font-display text-3xl sm:text-4xl">{title}</h2>
+</div>

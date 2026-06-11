@@ -1,0 +1,225 @@
+{
+  "_note": "Extracted from CV__Sigao_Li.pdf (2025 edition) + current role confirmed by Sigao 2026-06-11. PDF refresh post-launch is a data-only change.",
+  "current": {
+    "title": "AI Product Manager",
+    "org": "Ebest Mobile (上海意鹰信息技术有限公司)",
+    "location": "Shanghai, China",
+    "coords": "31.2304° N, 121.4737° E",
+    "start": "2026-04",
+    "end": "present",
+    "bullets": []
+  },
+  "education": [
+    {
+      "title": "MSc in Business Analytics",
+      "org": "University of Bristol",
+      "location": "Bristol, UK",
+      "coords": "51.4545° N, 2.5879° W",
+      "start": "2024-09",
+      "end": "2025-08",
+      "bullets": [
+        "Research paper: Understanding and Predicting Regularity, Diversity, and Adaptability in Human Mobility"
+      ]
+    },
+    {
+      "title": "MSA in Spatial Analysis",
+      "org": "Toronto Metropolitan University",
+      "location": "Toronto, Canada",
+      "coords": "43.6577° N, 79.3788° W",
+      "start": "2022-09",
+      "end": "2023-10",
+      "bullets": [
+        "Research paper: Analyzing Lowe's Failure in Canada from a Geographical Perspective"
+      ]
+    },
+    {
+      "title": "BA (Hons) in Geographic Analysis, Minor in Economics",
+      "org": "Ryerson University (now Toronto Metropolitan University)",
+      "location": "Toronto, Canada",
+      "coords": "43.6577° N, 79.3788° W",
+      "start": "2018-09",
+      "end": "2022-06",
+      "bullets": [
+        "Research paper: The Impact of Population Distribution in the Toronto CMA on Ethnic Retail Location"
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "title": "Business Analytics Consultant",
+      "org": "IBM & University of Bristol",
+      "location": "Bristol, UK",
+      "start": "2025-01",
+      "end": "2025-04",
+      "bullets": [
+        "Designed a web-based portal using NLP for sentiment analysis on annual reports, tweets and responses",
+        "Performed MOST, SWOT and PESTLE analysis with visualised results"
+      ]
+    },
+    {
+      "title": "Geospatial Data Analyst",
+      "org": "PiinPoint",
+      "location": "Kitchener, Canada",
+      "start": "2023-01",
+      "end": "2023-04",
+      "bullets": [
+        "Implemented k-NN customer segmentation and an urbanization index for market screening, optimizing the retail network by 15%",
+        "Integrated ML into GIS workflows and revamped enterprise database schema, enhancing operational efficiency by 30%"
+      ]
+    },
+    {
+      "title": "Business Analyst",
+      "org": "iQIYI, Inc.",
+      "location": "Shanghai, China",
+      "start": "2021-06",
+      "end": "2021-08",
+      "bullets": [
+        "Market research on transforming film & TV IP into offline ventures and trends in large brick-and-mortar complexes",
+        "Devised data-driven site selection strategies presented to company executives"
+      ]
+    },
+    {
+      "title": "Data Analyst",
+      "org": "MioTech",
+      "location": "Shanghai, China",
+      "start": "2021-04",
+      "end": "2021-06",
+      "bullets": [
+        "ESG research via web scraping of economic data from government and revenue agencies, reducing data collection time by 50%"
+      ]
+    },
+    {
+      "title": "Product Analyst",
+      "org": "Sohu.com Limited",
+      "location": "Beijing, China",
+      "start": "2021-02",
+      "end": "2021-04",
+      "bullets": [
+        "Competitive research and diagnostic analysis of user behaviour, boosting user engagement and retention by 20%"
+      ]
+    }
+  ],
+  "research": [
+    {
+      "title": "Research Assistant — Sustainable Development Research",
+      "org": "University of Bristol",
+      "start": "2025-06",
+      "end": "present",
+      "bullets": [
+        "Built an LLM-based system to identify webpage structures, scrape CSR/ESG reports and extract metadata into a sustainability dataset"
+      ]
+    },
+    {
+      "title": "Research Assistant — AI & Operations Research",
+      "org": "University of Bristol",
+      "start": "2025-05",
+      "end": "present",
+      "bullets": [
+        "Used Vision Language Models to extract environmental cues and build a dataset for fine-tuning LLMs on accident trajectory simulation"
+      ]
+    },
+    {
+      "title": "Research Assistant — Transportation Big Data",
+      "org": "University of Bristol",
+      "start": "2024-12",
+      "end": "present",
+      "bullets": [
+        "Demand forecasting with Graph Transformer + Bayesian optimization (PyEPO) for trip dispatching decision support"
+      ]
+    },
+    {
+      "title": "Research Assistant — Natural Language Processing",
+      "org": "University of Bristol",
+      "start": "2024-07",
+      "end": "2025-04",
+      "bullets": [
+        "Evaluated the impact of party control changes in England on care home quality using ratings, reviews and expenditure data"
+      ]
+    },
+    {
+      "title": "Research Assistant",
+      "org": "Cognitive Aging Lab, Toronto Metropolitan University",
+      "start": "2024-03",
+      "end": "2024-09",
+      "bullets": [
+        "Questionnaire preprocessing, translation and symposium coordination for aging research projects"
+      ]
+    },
+    {
+      "title": "Research Assistant — Health Geography",
+      "org": "Ryerson University",
+      "start": "2022-09",
+      "end": "2022-12",
+      "bullets": [
+        "Regression analysis of store accessibility vs. consumer health; consumer trajectory modelling with network analysis and geocoding"
+      ]
+    },
+    {
+      "title": "Research Assistant — GIS",
+      "org": "Ryerson University",
+      "start": "2022-07",
+      "end": "2022-08",
+      "bullets": [
+        "Python ETL pipeline aggregating Toronto GTA election results to examine electoral diversity and inclusion"
+      ]
+    }
+  ],
+  "volunteering": [
+    {
+      "title": "Director, GISource",
+      "org": "GISphere",
+      "start": "2024-04",
+      "end": "present",
+      "bullets": [
+        "Cross-functional development of a custom LLM chatbot for information collection and technical support",
+        "Led a team of 4 designing an Azure-based ETL pipeline (Google Sheets → MySQL), reducing task time by 80%",
+        "Published 50+ blogs on GIS program applications with 50k+ reads"
+      ]
+    },
+    {
+      "title": "Campus Partner",
+      "org": "GISphere",
+      "start": "2022-05",
+      "end": "2024-03",
+      "bullets": [
+        "Partnered with Esri China; organized 'GIS Open Course Week' (10k+ views); co-produced the GISphere Study Abroad Big Data White Paper (2023)"
+      ]
+    },
+    {
+      "title": "Academic Assistant",
+      "org": "Chinese Students and Scholars Association Bristol",
+      "start": "2024-07",
+      "end": "present",
+      "bullets": [
+        "Academic resource curation and WeChat articles on admission timelines"
+      ]
+    },
+    {
+      "title": "Campus Ambassador",
+      "org": "GeoScene Information Technology",
+      "start": "2021-08",
+      "end": "2022-08",
+      "bullets": [
+        "International campaigns reaching 300+ universities and 10k+ students; +15% material downloads"
+      ]
+    }
+  ],
+  "awards": [
+    { "year": "2024", "title": "Think Big Postgraduate Scholarship (£6,500)" },
+    { "year": "2023", "title": "President's Prize, Canadian Cartographic Association Mapping Competition" },
+    { "year": "2023", "title": "Graduate Development Award (C$700)" },
+    { "year": "2022", "title": "Arts Grad Funding Spatial (C$5,000)" },
+    { "year": "2021", "title": "Global University Python Quantitative Simulation Investment Competition — Individual Final 6th" },
+    { "year": "2020", "title": "GLO-BUS Business Strategy Simulation — Global Top 50" },
+    { "year": "2018", "title": "Guaranteed and Renewable Scholarship (C$500)" }
+  ],
+  "skills": {
+    "data": ["Python", "R", "SQL", "NoSQL", "JavaScript", "Databricks", "Hadoop", "AWS", "Git", "Linux"],
+    "frameworks": ["PyTorch", "TensorFlow", "Keras", "scikit-learn", "NLTK", "NetworkX", "PuLP", "PySpark", "GeoPandas", "ArcPy"],
+    "tools": ["Tableau", "Power BI", "Google Analytics", "Esri Suite", "QGIS", "AutoCAD"]
+  },
+  "certifications": [
+    { "title": "Artificial Intelligence", "org": "University of Toronto" },
+    { "title": "Data Science", "org": "University of Waterloo" }
+  ]
+}

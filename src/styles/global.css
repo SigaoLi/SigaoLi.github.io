@@ -1,0 +1,180 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens — PRD §6, finalized P1-A (Fraunces + Inter × Ink Blue)
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Paper (light) */
+  --bg: #faf8f3;
+  --bg-elevated: #ffffff;
+  --ink: #1c1b18;
+  --ink-muted: #6b6962;
+  --line: #e5e2da;
+
+  /* Accent A — Ink Blue */
+  --accent: #1b4965;
+
+  /* Identity dots: geo / business / AI */
+  --dot-geo: #0e7490;
+  --dot-biz: #b45309;
+  --dot-ai: #6d28d9;
+
+  /* Motion */
+  --dur-micro: 0.18s;
+  --dur-enter: 0.7s;
+
+  --font-display: 'Fraunces Variable', Georgia, 'Noto Serif SC', serif;
+  --font-body: 'Inter Variable', system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+.dark {
+  /* Contrast tuned per Sigao's review: brighter ink/muted, clearer lines & cards */
+  --bg: #131411;
+  --bg-elevated: #1e1f1b;
+  --ink: #efede7;
+  --ink-muted: #b0aea4;
+  --line: #34352f;
+  --accent: #6fb4dc;
+  --dot-geo: #34d8f0;
+  --dot-biz: #f7a82b;
+  --dot-ai: #b39afc;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-dot-geo: var(--dot-geo);
+  --color-dot-biz: var(--dot-biz);
+  --color-dot-ai: var(--dot-ai);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  font-weight: 560;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Animated underline (A8) — collapses to static underline when motion is reduced */
+.link-underline {
+  position: relative;
+  text-decoration: none;
+  color: var(--accent);
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-micro) ease-out;
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Card hover lift (A7) */
+.card-lift {
+  transition: transform var(--dur-micro) ease-out, box-shadow var(--dur-micro) ease-out;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -16px rgb(28 27 24 / 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .link-underline::after { transform: scaleX(1); }
+  .card-lift:hover { transform: none; }
+}
+
+/* Long-form article typography (case studies) */
+.prose {
+  max-width: 42rem;
+  color: var(--ink);
+}
+.prose h2 {
+  font-size: 1.6rem;
+  margin: 2.5rem 0 0.75rem;
+}
+.prose h2::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--accent);
+  margin-right: 0.75rem;
+  vertical-align: 0.18em;
+}
+.prose p {
+  margin: 1rem 0;
+  color: var(--ink-muted);
+}
+.prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose ul {
+  margin: 1rem 0;
+  padding-left: 1.25rem;
+  color: var(--ink-muted);
+}
+.prose li {
+  margin: 0.4rem 0;
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}

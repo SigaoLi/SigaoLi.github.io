@@ -1,0 +1,165 @@
+---
+// ⌘K command palette — vanilla TS, local fuzzy matching, no dependencies.
+import { getCollection } from 'astro:content';
+import { site } from '../lib/site';
+import { localizePath, t, type Lang } from '../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang);
+const L = (p: string) => localizePath(lang, p);
+
+const cases = (await getCollection(lang === 'zh' ? 'casesZh' : 'cases')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const items = [
+  { type: 'Page', label: d.nav.home, hint: lang === 'zh' ? 'Home 首页' : '首页 Home', href: L('/') },
+  { type: 'Page', label: d.nav.work, hint: lang === 'zh' ? 'Work 案例与研究' : '作品与研究 Work', href: L('/work') },
+  { type: 'Page', label: d.nav.cv, hint: lang === 'zh' ? 'CV 简历' : '简历 CV', href: L('/cv') },
+  { type: 'Page', label: d.nav.lens, hint: lang === 'zh' ? 'Photography 摄影' : '摄影 Photography', href: L('/photography') },
+  ...cases.map((c) => ({ type: 'Case', label: c.data.title, hint: c.data.tagline, href: L(`/work/${c.id}`) })),
+  { type: 'Link', label: 'GitHub', hint: 'github.com/SigaoLi', href: site.socials.github },
+  { type: 'Link', label: 'LinkedIn', hint: 'linkedin.com/in/sigao-li', href: site.socials.linkedin },
+  { type: 'Link', label: 'GISphere', hint: 'gisphere.info', href: site.socials.gisphere },
+  { type: 'Link', label: 'Email', hint: site.email, href: `mailto:${site.email}` },
+  { type: 'Action', label: d.cmdk.toggleTheme, hint: d.cmdk.themeHint, href: '#theme' },
+];
+---
+
+<div id="cmdk" class="fixed inset-0 z-[70] hidden items-start justify-center pt-[18vh] px-4"
+  style="background: rgb(10 10 9 / 0.55); backdrop-filter: blur(4px);"
+  role="dialog" aria-modal="true" aria-label="Command palette">
+  <div class="w-full max-w-lg overflow-hidden rounded-xl border shadow-2xl"
+    style="border-color: var(--line); background: var(--bg-elevated);">
+    <div class="flex items-center gap-3 border-b px-4" style="border-color: var(--line);">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-ink-muted shrink-0" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+      </svg>
+      <input id="cmdk-input" type="text" placeholder={d.cmdk.placeholder}
+        class="w-full bg-transparent py-3.5 text-sm outline-none text-ink placeholder:text-ink-muted"
+        role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-autocomplete="list" autocomplete="off" />
+      <kbd class="font-mono text-[10px] text-ink-muted border rounded px-1.5 py-0.5 shrink-0" style="border-color: var(--line);">ESC</kbd>
+    </div>
+    <ul id="cmdk-list" role="listbox" class="max-h-[46vh] overflow-y-auto py-2">
+      {items.map((it, i) => (
+        <li
+          id={`cmdk-item-${i}`}
+          role="option"
+          aria-selected="false"
+          data-href={it.href}
+          data-text={`${it.label} ${it.hint}`.toLowerCase()}
+          class="cmdk-item mx-2 flex cursor-pointer items-baseline gap-3 rounded-md px-3 py-2.5"
+        >
+          <span class="font-mono text-[10px] uppercase tracking-wider text-ink-muted w-10 shrink-0">{it.type}</span>
+          <span class="text-sm text-ink">{it.label}</span>
+          <span class="truncate text-xs text-ink-muted">{it.hint}</span>
+        </li>
+      ))}
+      <li id="cmdk-empty" class="hidden px-5 py-6 text-center text-sm text-ink-muted">{d.cmdk.empty}</li>
+    </ul>
+  </div>
+</div>
+
+<style>
+  .cmdk-item[aria-selected='true'] {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+</style>
+
+<script>
+  import { pageScript } from '../lib/motion';
+
+  pageScript(() => {
+    const root = document.getElementById('cmdk');
+    const input = document.getElementById('cmdk-input') as HTMLInputElement | null;
+    if (!root || !input) return;
+
+    const allItems = [...root.querySelectorAll<HTMLElement>('.cmdk-item')];
+    const empty = document.getElementById('cmdk-empty')!;
+    let visible: HTMLElement[] = allItems;
+    let sel = 0;
+    let lastFocus: HTMLElement | null = null;
+
+    const select = (i: number) => {
+      visible.forEach((el) => el.setAttribute('aria-selected', 'false'));
+      if (!visible.length) return;
+      sel = ((i % visible.length) + visible.length) % visible.length;
+      visible[sel].setAttribute('aria-selected', 'true');
+      visible[sel].scrollIntoView({ block: 'nearest' });
+      input.setAttribute('aria-activedescendant', visible[sel].id);
+    };
+
+    const filter = () => {
+      const q = input.value.trim().toLowerCase();
+      visible = allItems.filter((el) => {
+        const hit = !q || q.split(/\s+/).every((w) => el.dataset.text!.includes(w));
+        el.classList.toggle('hidden', !hit);
+        return hit;
+      });
+      empty.classList.toggle('hidden', visible.length > 0);
+      select(0);
+    };
+
+    const open = () => {
+      lastFocus = document.activeElement as HTMLElement;
+      root.classList.remove('hidden');
+      root.classList.add('flex');
+      input.value = '';
+      filter();
+      input.focus();
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      root.classList.add('hidden');
+      root.classList.remove('flex');
+      document.body.style.overflow = '';
+      lastFocus?.focus();
+    };
+    const run = (el: HTMLElement) => {
+      const href = el.dataset.href!;
+      close();
+      if (href === '#theme') {
+        const dark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', dark ? 'dark' : 'light');
+      } else if (href.startsWith('http') || href.startsWith('mailto')) {
+        window.open(href, '_blank', 'noopener');
+      } else {
+        window.location.href = href;
+      }
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        root.classList.contains('hidden') ? open() : close();
+        return;
+      }
+      if (root.classList.contains('hidden')) return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowDown') { e.preventDefault(); select(sel + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); select(sel - 1); }
+      else if (e.key === 'Enter' && visible[sel]) run(visible[sel]);
+    };
+
+    const onBackdrop = (e: Event) => { if (e.target === root) close(); };
+    const onItemClick = (e: Event) => {
+      const el = (e.target as HTMLElement).closest<HTMLElement>('.cmdk-item');
+      if (el) run(el);
+    };
+    const onTriggerClick = (e: Event) => {
+      if ((e.target as HTMLElement).closest('[data-cmdk-trigger]')) open();
+    };
+
+    document.addEventListener('keydown', onKey);
+    root.addEventListener('click', onBackdrop);
+    root.addEventListener('click', onItemClick);
+    document.addEventListener('click', onTriggerClick);
+    input.addEventListener('input', filter);
+
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('click', onTriggerClick);
+      document.body.style.overflow = '';
+    };
+  });
+</script>

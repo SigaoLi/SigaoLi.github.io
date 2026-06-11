@@ -1,0 +1,50 @@
+{
+  "src\\content\\cases-zh\\csr-scraper.md": {
+    "srcHash": "884c8a62f5614cdc",
+    "outHash": "25bd0025d416418c"
+  },
+  "src\\content\\cases-zh\\email-agent.md": {
+    "srcHash": "e0977c68234756a6",
+    "outHash": "a625e6d2f426048a"
+  },
+  "src\\content\\cases-zh\\gisphere-llm.md": {
+    "srcHash": "09c6f92711d06026",
+    "outHash": "84ab5d792f956959"
+  },
+  "src\\content\\cases-zh\\gisphere-platform.md": {
+    "srcHash": "3ca1a87cf5128544",
+    "outHash": "482294e63056611e"
+  },
+  "src\\content\\cases-zh\\ibm-finance.md": {
+    "srcHash": "a6ff9a4f0d5b269b",
+    "outHash": "220f0e3bc173abc8"
+  },
+  "src\\content\\research-zh\\business-geography.md": {
+    "srcHash": "e07a6d6fe955ca32",
+    "outHash": "3f474a2012a0be38"
+  },
+  "src\\content\\research-zh\\crime-analysis.md": {
+    "srcHash": "2baeb53fd993d89c",
+    "outHash": "210420bd7e83b077"
+  },
+  "src\\content\\research-zh\\environmental-monitoring.md": {
+    "srcHash": "327411bad6a92e3e",
+    "outHash": "2c34c54603b32c1f"
+  },
+  "src\\content\\research-zh\\public-health.md": {
+    "srcHash": "62b5946f6dcca477",
+    "outHash": "3f852208017a27de"
+  },
+  "src\\content\\research-zh\\quantitative-finance.md": {
+    "srcHash": "8f9c1c20f113b399",
+    "outHash": "e7d927c87e06c69a"
+  },
+  "src\\content\\research-zh\\web-analytics.md": {
+    "srcHash": "81bf5384b6ebe0f2",
+    "outHash": "c5762e4617c0a62a"
+  },
+  "src/data/cv.zh.json": {
+    "srcHash": "6127066f3aebdca8",
+    "outHash": "74174cb371c87f59"
+  }
+}

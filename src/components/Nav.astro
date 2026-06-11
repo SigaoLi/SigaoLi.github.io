@@ -1,0 +1,146 @@
+---
+import { altPath, localizePath, t, type Lang } from '../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang);
+const L = (p: string) => localizePath(lang, p);
+
+const links = [
+  { href: L('/'), label: d.nav.home, base: '/' },
+  { href: L('/work'), label: d.nav.work, base: '/work' },
+  { href: L('/cv'), label: d.nav.cv, base: '/cv' },
+  { href: L('/photography'), label: d.nav.lens, base: '/photography' },
+];
+const rawPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const enPath = rawPath.startsWith('/zh') ? rawPath.slice(3) || '/' : rawPath;
+const isActive = (base: string) => (base === '/' ? enPath === '/' : enPath.startsWith(base));
+// On the (single, bilingual) 404 page the mirror route doesn't exist — send home instead
+const langHref = rawPath.includes('404')
+  ? (lang === 'zh' ? '/' : '/zh/')
+  : altPath(Astro.url.pathname);
+---
+
+<header
+  id="site-nav"
+  class="fixed inset-x-0 top-0 z-50 transition-transform duration-300 backdrop-blur-md"
+  style="background: color-mix(in srgb, var(--bg) 85%, transparent); border-bottom: 1px solid var(--line);"
+>
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5" aria-label="Main">
+    <a href={L('/')} class="font-display text-lg tracking-tight flex items-center gap-2.5">
+      <svg width="18" height="18" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="26" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="6 8" stroke-linecap="round" />
+        <circle cx="32" cy="32" r="11" fill="var(--accent)" />
+      </svg>
+      Sigao Li
+    </a>
+
+    <div class="hidden md:flex items-center gap-7">
+      {links.map((l) => (
+        <a
+          href={l.href}
+          class:list={['text-sm link-underline', isActive(l.base) ? 'text-accent' : 'text-ink']}
+          aria-current={isActive(l.base) ? 'page' : undefined}
+        >
+          {l.label}
+        </a>
+      ))}
+      <a id="lang-toggle" href={langHref} class="font-mono text-xs text-ink-muted hover:text-accent transition-colors" aria-label="Switch language">
+        {d.nav.lang}
+      </a>
+      <button type="button" data-cmdk-trigger aria-label="Open command palette"
+        class="hidden lg:flex items-center gap-1 rounded border px-2 py-1 font-mono text-[10px] text-ink-muted hover:text-accent transition-colors cursor-pointer"
+        style="border-color: var(--line);">
+        ⌘K
+      </button>
+      <button id="theme-toggle" type="button" aria-label={d.nav.toggleTheme}
+        class="text-ink-muted hover:text-accent transition-colors cursor-pointer p-1">
+        <svg class="hidden dark:block" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M19.4 4.6l-1.8 1.8M6.4 17.6l-1.8 1.8"/>
+        </svg>
+        <svg class="dark:hidden" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>
+        </svg>
+      </button>
+    </div>
+
+    <button id="menu-toggle" type="button" class="md:hidden p-1 text-ink" aria-label={d.nav.menu} aria-expanded="false" aria-controls="mobile-menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+    </button>
+  </nav>
+
+  <div id="mobile-menu" class="hidden md:hidden border-t px-6 py-5" style="border-color: var(--line); background: var(--bg);">
+    <div class="flex flex-col gap-4">
+      {links.map((l) => (
+        <a href={l.href} class:list={['mobile-link text-base', isActive(l.base) ? 'text-accent' : 'text-ink']}>{l.label}</a>
+      ))}
+      <a href={langHref} class="mobile-link lang-link font-mono text-sm text-ink-muted">{d.nav.lang}</a>
+      <button id="theme-toggle-mobile" type="button" class="mobile-link text-left text-base text-ink-muted">{d.nav.toggleTheme}</button>
+    </div>
+  </div>
+</header>
+<!-- Spacer for fixed nav -->
+<div class="h-[57px]" aria-hidden="true"></div>
+
+<script>
+  import { gsap } from 'gsap';
+  import { pageScript, prefersReducedMotion } from '../lib/motion';
+
+  pageScript(() => {
+    const nav = document.getElementById('site-nav');
+    const menuBtn = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    if (!nav) return;
+
+    // Theme toggle
+    const toggleTheme = () => {
+      const dark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    };
+    document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+    document.getElementById('theme-toggle-mobile')?.addEventListener('click', toggleTheme);
+
+    // Language toggle: store explicit preference so auto-detection stops
+    const setLangPref = () => {
+      const goingZh = !(location.pathname === '/zh' || location.pathname.startsWith('/zh/'));
+      localStorage.setItem('lang', goingZh ? 'zh' : 'en');
+    };
+    document.getElementById('lang-toggle')?.addEventListener('click', setLangPref);
+    document.querySelector('.lang-link')?.addEventListener('click', setLangPref);
+
+    // Hide on scroll down, reveal on scroll up
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      nav.style.transform = y > lastY && y > 120 ? 'translateY(-100%)' : 'translateY(0)';
+      lastY = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Mobile menu (A12)
+    const closeMenu = () => {
+      menu?.classList.add('hidden');
+      menuBtn?.setAttribute('aria-expanded', 'false');
+    };
+    const onMenuClick = () => {
+      if (!menu) return;
+      const opening = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden');
+      menuBtn?.setAttribute('aria-expanded', String(opening));
+      if (opening && !prefersReducedMotion()) {
+        gsap.from(menu.querySelectorAll('.mobile-link'), {
+          y: 12, opacity: 0, stagger: 0.05, duration: 0.3, ease: 'power2.out', clearProps: 'all',
+        });
+      }
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMenu(); };
+    menuBtn?.addEventListener('click', onMenuClick);
+    document.addEventListener('keydown', onKey);
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('keydown', onKey);
+    };
+  });
+</script>

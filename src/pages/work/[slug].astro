@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import CasePage from '../../components/pages/CasePage.astro';
+
+export async function getStaticPaths() {
+  const cases = (await getCollection('cases')).sort((a, b) => a.data.order - b.data.order);
+  return cases.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: i > 0 ? cases[i - 1] : null,
+      next: i < cases.length - 1 ? cases[i + 1] : null,
+    },
+  }));
+}
+
+const { entry, prev, next } = Astro.props;
+---
+
+<CasePage entry={entry} prev={prev} next={next} />

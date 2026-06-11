@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="404 — Off the map">
+  <main class="mx-auto flex max-w-3xl flex-col items-center justify-center px-6 py-40 text-center">
+    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" class="animate-pulse">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="5 7"/>
+      <circle cx="48" cy="14" r="7" fill="var(--accent)"/>
+    </svg>
+    <h1 class="mt-8 font-display text-6xl">404</h1>
+    <p class="mt-3 font-mono text-sm text-ink-muted tracking-wider">OFF THE MAP — NO COORDINATES FOUND</p>
+    <p class="mt-1 font-mono text-xs text-ink-muted">已离开地图 — 未找到坐标</p>
+    <div class="mt-8 flex gap-6">
+      <a href="/" class="link-underline text-sm">← Back to known territory</a>
+      <a href="/zh/" class="link-underline text-sm">← 返回已知疆域</a>
+    </div>
+  </main>
+</Base>

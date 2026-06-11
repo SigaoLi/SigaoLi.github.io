@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Dot motif: a point with an orbit — map marker, data point, network node -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#1b4965" stroke-width="3" stroke-dasharray="6 8" stroke-linecap="round"/>
+  <circle cx="32" cy="32" r="10" fill="#1b4965"/>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      circle { stroke: #5fa8d3; }
+      circle:last-of-type { fill: #5fa8d3; }
+    }
+  </style>
+</svg>

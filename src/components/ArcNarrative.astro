@@ -1,0 +1,182 @@
+---
+// A4 — signature scroll narrative: one career, three acts, one visual language (dots).
+// Desktop: pinned + scrubbed. Mobile & reduced-motion: stacked static acts.
+import { t, type Lang } from '../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const ids = ['geo', 'biz', 'ai'] as const;
+const colors = ['var(--dot-geo)', 'var(--dot-biz)', 'var(--dot-ai)'];
+const acts = t(lang).arc.map((a, i) => ({ ...a, id: ids[i], color: colors[i] }));
+
+const svgs: Record<string, string> = {
+  geo: `<svg class="act-svg" viewBox="0 0 480 400" fill="none" aria-hidden="true" style="color: var(--dot-geo)">
+    <!-- graticule -->
+    <g opacity="0.18" stroke="currentColor" stroke-width="0.7">
+      <path class="draw" d="M40 100 Q 240 80, 440 100 M40 180 Q 240 165, 440 180 M40 260 Q 240 250, 440 260 M40 340 Q 240 335, 440 340"/>
+      <path class="draw" d="M110 60 Q 100 200, 110 360 M210 55 Q 205 200, 210 365 M310 55 Q 315 200, 310 365 M410 60 Q 420 200, 410 360"/>
+    </g>
+    <!-- contour rings -->
+    <path class="draw" d="M240 198 C 296 144, 392 160, 402 226 S 330 338, 242 322 S 96 282, 104 208 S 184 252, 240 198 Z" stroke="currentColor" stroke-width="1.5"/>
+    <path class="draw" d="M240 202 C 282 162, 352 174, 360 224 S 304 300, 240 288 S 140 262, 146 214 S 206 238, 240 202 Z" stroke="currentColor" stroke-width="1.2" opacity="0.75"/>
+    <path class="draw" d="M241 208 C 268 184, 316 192, 322 224 S 286 268, 242 260 S 178 246, 184 218 S 220 228, 241 208 Z" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+    <path class="draw" d="M242 216 C 258 202, 288 208, 291 226 S 268 250, 242 245 S 204 236, 208 220 S 230 228, 242 216 Z" stroke="currentColor" stroke-width="0.9" opacity="0.4"/>
+    <!-- survey route -->
+    <path class="draw route" d="M64 352 C 110 330, 132 296, 170 284 S 222 256, 246 230" stroke="currentColor" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+    <circle class="node" cx="64" cy="352" r="4" fill="currentColor"/>
+    <circle class="node" cx="170" cy="284" r="3" fill="currentColor" opacity="0.7"/>
+    <circle class="node" cx="246" cy="230" r="6" fill="currentColor"/>
+    <path class="draw" d="M246 230 m-11 0 a11 11 0 1 0 22 0 a11 11 0 1 0 -22 0" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+    <!-- spot heights -->
+    <circle class="node" cx="356" cy="150" r="2.5" fill="currentColor" opacity="0.6"/>
+    <circle class="node" cx="140" cy="320" r="2.5" fill="currentColor" opacity="0.6"/>
+    <circle class="node" cx="390" cy="300" r="2.5" fill="currentColor" opacity="0.6"/>
+  </svg>`,
+  biz: `<svg class="act-svg" viewBox="0 0 480 400" fill="none" aria-hidden="true" style="color: var(--dot-biz)">
+    <!-- grid -->
+    <g opacity="0.18" stroke="currentColor" stroke-width="0.7">
+      <path class="draw" d="M70 96 H 430 M70 154 H 430 M70 212 H 430 M70 270 H 430"/>
+    </g>
+    <!-- axes & ticks -->
+    <path class="draw" d="M70 60 V 328 H 430" stroke="currentColor" stroke-width="1.3" opacity="0.55"/>
+    <g opacity="0.55" stroke="currentColor" stroke-width="1">
+      <path class="draw" d="M66 96 H 70 M66 154 H 70 M66 212 H 70 M66 270 H 70 M130 328 V 332 M190 328 V 332 M250 328 V 332 M310 328 V 332 M370 328 V 332"/>
+    </g>
+    <!-- volume bars -->
+    <g class="draw" opacity="0.28" stroke="currentColor" stroke-width="7">
+      <path d="M110 328 V 306 M160 328 V 296 M210 328 V 310 M260 328 V 286 M310 328 V 274 M360 328 V 290 M404 328 V 262"/>
+    </g>
+    <!-- secondary series -->
+    <path class="draw" d="M70 300 L 130 282 L 190 296 L 250 252 L 310 262 L 370 222 L 414 232" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 5" opacity="0.5"/>
+    <!-- primary series -->
+    <path class="draw" d="M70 292 L 116 258 L 158 270 L 204 236 L 246 244 L 292 186 L 338 162 L 376 134 L 414 92" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+    <circle class="node" cx="116" cy="258" r="4" fill="currentColor"/>
+    <circle class="node" cx="158" cy="270" r="4" fill="currentColor"/>
+    <circle class="node" cx="204" cy="236" r="4" fill="currentColor"/>
+    <circle class="node" cx="246" cy="244" r="4" fill="currentColor"/>
+    <circle class="node" cx="292" cy="186" r="4" fill="currentColor"/>
+    <circle class="node" cx="338" cy="162" r="4" fill="currentColor"/>
+    <circle class="node" cx="376" cy="134" r="4" fill="currentColor"/>
+    <circle class="node" cx="414" cy="92" r="6" fill="currentColor"/>
+    <path class="draw" d="M414 92 m-11 0 a11 11 0 1 0 22 0 a11 11 0 1 0 -22 0" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+  </svg>`,
+  ai: `<svg class="act-svg" viewBox="0 0 480 400" fill="none" aria-hidden="true" style="color: var(--dot-ai)">
+    <!-- far edges -->
+    <g class="draw" opacity="0.22" stroke="currentColor" stroke-width="0.9">
+      <path d="M96 96 L 196 64 M196 64 L 330 78 M330 78 L 420 140 M96 96 L 70 210 M70 210 L 120 312 M120 312 L 252 348 M252 348 L 388 302 M388 302 L 420 140 M196 64 L 240 200 M70 210 L 156 178"/>
+    </g>
+    <!-- near edges -->
+    <g class="draw" opacity="0.5" stroke="currentColor" stroke-width="1.2">
+      <path d="M240 200 L 96 96 M240 200 L 330 78 M240 200 L 420 140 M240 200 L 70 210 M240 200 L 120 312 M240 200 L 252 348 M240 200 L 388 302 M240 200 L 156 178 M240 200 L 332 248 M332 248 L 388 302 M156 178 L 96 96 M332 248 L 420 140"/>
+    </g>
+    <!-- nodes -->
+    <circle class="node" cx="96" cy="96" r="5" fill="currentColor" opacity="0.85"/>
+    <circle class="node" cx="196" cy="64" r="3.5" fill="currentColor" opacity="0.7"/>
+    <circle class="node" cx="330" cy="78" r="5.5" fill="currentColor" opacity="0.85"/>
+    <circle class="node" cx="420" cy="140" r="4.5" fill="currentColor" opacity="0.8"/>
+    <circle class="node" cx="70" cy="210" r="4.5" fill="currentColor" opacity="0.8"/>
+    <circle class="node" cx="156" cy="178" r="3.5" fill="currentColor" opacity="0.7"/>
+    <circle class="node" cx="120" cy="312" r="5" fill="currentColor" opacity="0.85"/>
+    <circle class="node" cx="252" cy="348" r="4" fill="currentColor" opacity="0.75"/>
+    <circle class="node" cx="388" cy="302" r="5.5" fill="currentColor" opacity="0.85"/>
+    <circle class="node" cx="332" cy="248" r="3.5" fill="currentColor" opacity="0.7"/>
+    <circle class="node center" cx="240" cy="200" r="9" fill="currentColor"/>
+    <path class="draw" d="M240 200 m-15 0 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0" stroke="currentColor" stroke-width="1.1" opacity="0.55"/>
+  </svg>`,
+};
+---
+
+<!-- Desktop: pinned narrative -->
+<section id="arc-desktop" class="hidden lg:block relative" aria-label="Career narrative">
+  <div class="arc-pin mx-auto flex h-screen max-w-6xl items-center px-6">
+    <div class="grid w-full grid-cols-2 gap-16 items-center">
+      <div class="relative h-72">
+        {acts.map((a) => (
+          <div class="arc-text absolute inset-0 flex flex-col justify-center" data-act={a.id}>
+            <p class="font-mono text-xs tracking-[0.2em]" style={`color:${a.color}`}>{a.label}</p>
+            <p class="mt-2 font-mono text-xs text-ink-muted">{a.coords} · {a.place}</p>
+            <h3 class="mt-4 font-display text-4xl">{a.title}</h3>
+            <p class="mt-4 max-w-md text-ink-muted">{a.body}</p>
+          </div>
+        ))}
+      </div>
+      <div class="relative aspect-[480/400]">
+        {acts.map((a) => (
+          <div class="arc-visual absolute inset-0" data-act={a.id} set:html={svgs[a.id]} />
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile & no-JS & reduced-motion: stacked acts -->
+<section id="arc-mobile" class="lg:hidden mx-auto max-w-3xl px-6 py-20 flex flex-col gap-20" aria-label="Career narrative">
+  {acts.map((a) => (
+    <div>
+      <p class="font-mono text-xs tracking-[0.2em]" style={`color:${a.color}`}>{a.label}</p>
+      <p class="mt-2 font-mono text-xs text-ink-muted">{a.coords} · {a.place}</p>
+      <h3 class="mt-3 font-display text-3xl">{a.title}</h3>
+      <p class="mt-3 text-ink-muted">{a.body}</p>
+      <div class="mt-6 max-w-sm" set:html={svgs[a.id]} />
+    </div>
+  ))}
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { pageScript, prefersReducedMotion } from '../lib/motion';
+
+  gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
+
+  pageScript(() => {
+    const root = document.getElementById('arc-desktop');
+    if (!root || prefersReducedMotion()) return;
+    if (!window.matchMedia('(min-width: 1024px)').matches) return;
+
+    const ctx = gsap.context(() => {
+      const acts = ['geo', 'biz', 'ai'];
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: root,
+          start: 'top top',
+          end: '+=2600',
+          pin: '.arc-pin',
+          scrub: 1,
+        },
+      });
+
+      acts.forEach((id, i) => {
+        const text = root.querySelector(`.arc-text[data-act="${id}"]`);
+        const visual = root.querySelector(`.arc-visual[data-act="${id}"]`);
+        const pos = i * 3;
+
+        // enter
+        tl.fromTo(text, { autoAlpha: 0, y: 36 }, { autoAlpha: 1, y: 0, duration: 0.7 }, pos);
+        tl.fromTo(visual, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5 }, pos);
+        tl.fromTo(visual!.querySelectorAll('.draw'), { drawSVG: '0%' }, { drawSVG: '100%', duration: 1.6, stagger: 0.12, ease: 'none' }, pos + 0.2);
+        tl.fromTo(visual!.querySelectorAll('.node'), { scale: 0, transformOrigin: 'center' }, { scale: 1, duration: 0.4, stagger: 0.08 }, pos + 0.9);
+
+        // exit (all but last)
+        if (i < acts.length - 1) {
+          tl.to(text, { autoAlpha: 0, y: -36, duration: 0.6 }, pos + 2.4);
+          tl.to(visual, { autoAlpha: 0, duration: 0.6 }, pos + 2.4);
+        }
+      });
+    }, root);
+
+    return () => ctx.revert();
+  });
+</script>
+
+<style>
+  /* Pre-JS state on desktop: hide all but let JS reveal; if JS fails, show last act */
+  #arc-desktop .arc-text,
+  #arc-desktop .arc-visual {
+    visibility: hidden;
+  }
+  #arc-desktop .arc-text:last-of-type,
+  #arc-desktop .arc-visual:last-of-type {
+    visibility: visible;
+  }
+</style>
