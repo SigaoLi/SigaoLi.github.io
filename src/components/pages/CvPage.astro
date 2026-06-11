@@ -1,0 +1,165 @@
+---
+// Shared CV page, rendered by /cv and /zh/cv.
+import Base from '../../layouts/Base.astro';
+import SectionHeading from '../SectionHeading.astro';
+import cvEn from '../../data/cv.json';
+import cvZh from '../../data/cv.zh.json';
+import { t, type Lang } from '../../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).cv;
+const cv = lang === 'zh' ? cvZh : cvEn;
+
+const fmt = (s: string) => {
+  if (s === 'present') return d.present;
+  const [y, m] = s.split('-');
+  return lang === 'zh'
+    ? `${y} 年 ${parseInt(m)} 月`
+    : new Date(`${s}-01`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+};
+
+type Entry = {
+  title: string;
+  org: string;
+  location?: string;
+  start: string;
+  end: string;
+  bullets: string[];
+};
+
+const sections: { id: string; coords: string; title: string; entries: Entry[] }[] = [
+  { id: 'experience', coords: d.sections.experience[0], title: d.sections.experience[1], entries: [cv.current as Entry, ...(cv.experience as Entry[])] },
+  { id: 'research', coords: d.sections.research[0], title: d.sections.research[1], entries: cv.research as Entry[] },
+  { id: 'education', coords: d.sections.education[0], title: d.sections.education[1], entries: cv.education as Entry[] },
+  { id: 'volunteering', coords: d.sections.volunteering[0], title: d.sections.volunteering[1], entries: cv.volunteering as Entry[] },
+];
+
+const skillGroups: [string, string[]][] = [
+  [d.skillGroups.data, cv.skills.data],
+  [d.skillGroups.frameworks, cv.skills.frameworks],
+  [d.skillGroups.tools, cv.skills.tools],
+];
+---
+
+<Base title={d.title} description={d.desc}>
+  <main class="mx-auto max-w-3xl px-6 pt-16 pb-8">
+    <header>
+      <p class="font-mono text-xs tracking-[0.2em] text-ink-muted uppercase reveal">{d.kicker}</p>
+      <h1 class="mt-3 font-display text-4xl sm:text-5xl reveal">{lang === 'zh' ? '李思高 Sigao Li' : 'Sigao Li'}</h1>
+      <p class="mt-4 text-ink-muted reveal">{d.intro}</p>
+      <a
+        href="/files/pdf/CV__Sigao_Li.pdf"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="reveal mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+        style="background: var(--accent); color: var(--bg);"
+      >
+        {d.download}
+      </a>
+    </header>
+
+    {sections.map((s) => (
+      <section class="mt-20" id={s.id}>
+        <SectionHeading coords={s.coords} title={s.title} />
+        <div class="timeline relative mt-10 pl-10">
+          <div class="absolute left-[5px] top-1 bottom-1 w-px" style="background: var(--line);" aria-hidden="true"></div>
+          <div class="tl-progress absolute left-[4.5px] top-1 bottom-1 w-[2px] origin-top" style="background: var(--accent);" aria-hidden="true"></div>
+
+          <ol class="space-y-12">
+            {s.entries.map((e) => (
+              <li class="tl-entry relative">
+                <span class="tl-dot absolute -left-10 top-1.5 block h-[11px] w-[11px] rounded-full border-2"
+                  style="border-color: var(--accent); background: var(--bg);" aria-hidden="true"></span>
+                <p class="font-mono text-xs text-ink-muted">
+                  {fmt(e.start)} — {fmt(e.end)}{e.location && ` · ${e.location}`}
+                </p>
+                <h3 class="mt-1.5 font-display text-xl">{e.title}</h3>
+                <p class="mt-0.5 text-sm" style="color: var(--accent);">{e.org}</p>
+                {e.bullets.length > 0 && (
+                  <ul class="mt-3 space-y-1.5 text-sm text-ink-muted">
+                    {e.bullets.map((b) => <li class="pl-4 relative before:content-['·'] before:absolute before:left-0">{b}</li>)}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    ))}
+
+    <section class="mt-20">
+      <SectionHeading coords={d.sections.awards[0]} title={d.sections.awards[1]} />
+      <ul class="mt-8 space-y-3">
+        {cv.awards.map((a) => (
+          <li class="reveal flex gap-5 text-sm">
+            <span class="font-mono text-ink-muted shrink-0">{a.year}</span>
+            <span>{a.title}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="mt-20">
+      <SectionHeading coords={d.sections.skills[0]} title={d.sections.skills[1]} />
+      <div class="mt-8 space-y-5 reveal">
+        {skillGroups.map(([group, items]) => (
+          <div>
+            <p class="font-mono text-xs text-ink-muted uppercase tracking-wider">{group}</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {items.map((tag) => (
+                <span class="rounded-full border px-3 py-1 text-xs" style="border-color: var(--line); background: var(--bg-elevated);">{tag}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div>
+          <p class="font-mono text-xs text-ink-muted uppercase tracking-wider">{d.skillGroups.certifications}</p>
+          <ul class="mt-2 space-y-1 text-sm text-ink-muted">
+            {cv.certifications.map((c) => <li>{c.title} — {c.org}</li>)}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { pageScript, prefersReducedMotion } from '../../lib/motion';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  pageScript(() => {
+    const timelines = document.querySelectorAll<HTMLElement>('.timeline');
+    if (!timelines.length || prefersReducedMotion()) return;
+
+    const ctx = gsap.context(() => {
+      timelines.forEach((tl) => {
+        const progress = tl.querySelector('.tl-progress');
+        if (progress) {
+          gsap.fromTo(progress, { scaleY: 0 }, {
+            scaleY: 1,
+            ease: 'none',
+            scrollTrigger: { trigger: tl, start: 'top 72%', end: 'bottom 55%', scrub: 0.6 },
+          });
+        }
+        tl.querySelectorAll<HTMLElement>('.tl-entry').forEach((entry) => {
+          gsap.from(entry, {
+            x: -18, opacity: 0, duration: 0.55, ease: 'power2.out',
+            scrollTrigger: { trigger: entry, start: 'top 82%', once: true },
+          });
+          const dot = entry.querySelector('.tl-dot');
+          if (dot) {
+            gsap.to(dot, {
+              backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+              duration: 0.3,
+              scrollTrigger: { trigger: entry, start: 'top 75%', once: true },
+            });
+          }
+        });
+      });
+    });
+    return () => ctx.revert();
+  });
+</script>

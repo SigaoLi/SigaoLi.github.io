@@ -1,0 +1,88 @@
+---
+import ParticleField from './ParticleField.astro';
+import { localizePath, t, type Lang } from '../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).hero;
+const L = (p: string) => localizePath(lang, p);
+---
+
+<section class="relative overflow-hidden" style="min-height: calc(100svh - 57px);">
+  <ParticleField />
+
+  <!-- Contour texture (A2) -->
+  <svg
+    id="hero-contours"
+    class="pointer-events-none absolute -right-24 top-12 w-[640px] max-w-[80vw] opacity-[0.07]"
+    viewBox="0 0 600 480" fill="none" aria-hidden="true"
+  >
+    <path class="contour" d="M300 240 C 360 180, 470 200, 480 270 S 400 400, 300 380 S 130 330, 140 250 S 240 300, 300 240 Z" stroke="currentColor" stroke-width="1.5"/>
+    <path class="contour" d="M300 240 C 340 200, 420 215, 430 265 S 370 360, 300 345 S 180 310, 190 255 S 260 280, 300 240 Z" stroke="currentColor" stroke-width="1.2"/>
+    <path class="contour" d="M300 245 C 325 220, 375 230, 380 262 S 340 320, 298 310 S 225 290, 232 258 S 275 265, 300 245 Z" stroke="currentColor" stroke-width="1"/>
+    <circle cx="300" cy="262" r="4" fill="currentColor"/>
+  </svg>
+
+  <div class="relative mx-auto flex max-w-6xl flex-col justify-center px-6" style="min-height: calc(100svh - 57px);">
+    <p class="font-mono text-xs sm:text-sm text-ink-muted tracking-wider">
+      {d.coords}
+    </p>
+
+    <h1 id="hero-name" class="mt-5 font-display text-[clamp(3rem,9vw,6.5rem)] leading-[1.02] tracking-tight">
+      Sigao Li
+    </h1>
+
+    <p id="hero-tagline" class="mt-5 text-base sm:text-lg text-ink-muted">
+      {d.tagline}
+    </p>
+
+    <p id="hero-narrative" class="mt-3 max-w-xl font-display text-xl sm:text-2xl" style="color: var(--accent);">
+      {d.narrative}
+    </p>
+
+    <div id="hero-cta" class="mt-10 flex items-center gap-6">
+      <a href={L('/work')}
+        class="inline-block rounded-full px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+        style="background: var(--accent); color: var(--bg);">
+        {d.viewWork}
+      </a>
+      <a href={L('/photography')} class="link-underline text-sm">{d.lensLink}</a>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="hero-scroll-hint" class="absolute bottom-8 left-6 flex items-center gap-2 text-ink-muted">
+      <span class="font-mono text-[11px] tracking-widest">{d.scroll}</span>
+      <svg width="12" height="16" viewBox="0 0 12 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 1v12M2 9.5 6 14l4-4.5"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { SplitText } from 'gsap/SplitText';
+  import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
+  import { pageScript, prefersReducedMotion } from '../lib/motion';
+
+  gsap.registerPlugin(SplitText, DrawSVGPlugin);
+
+  pageScript(() => {
+    const name = document.getElementById('hero-name');
+    if (!name || prefersReducedMotion()) return;
+
+    const split = SplitText.create(name, { type: 'chars' });
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+
+    tl.from(split.chars, { y: 90, opacity: 0, duration: 1.1, stagger: 0.04 }, 0.15)
+      .from('#hero-tagline', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.65')
+      .from('#hero-narrative', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.5')
+      .from('#hero-cta', { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.45')
+      .from('#hero-contours .contour', { drawSVG: '0%', duration: 1.4, stagger: 0.15, ease: 'power2.inOut' }, 0.4)
+      .from('#hero-scroll-hint', { opacity: 0, duration: 0.5 }, '-=0.3');
+
+    return () => {
+      tl.kill();
+      split.revert();
+    };
+  });
+</script>

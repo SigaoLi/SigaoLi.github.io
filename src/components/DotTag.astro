@@ -1,0 +1,16 @@
+---
+import { tagMeta, type Tag } from '../data/projects';
+
+interface Props {
+  tags: Tag[];
+}
+const { tags } = Astro.props;
+---
+
+<span class="flex gap-3">
+  {tags.map((t) => (
+    <span class="flex items-center gap-1.5 font-mono text-[11px] tracking-wide text-ink-muted">
+      <i class="inline-block h-2 w-2 rounded-full" style={`background:${tagMeta[t].color}`}></i>{tagMeta[t].name}
+    </span>
+  ))}
+</span>

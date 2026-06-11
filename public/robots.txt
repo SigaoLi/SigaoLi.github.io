@@ -1,0 +1,35 @@
+# sigaoli.com — humans and machines both welcome.
+# AI crawlers are explicitly permitted: this site is designed to be read
+# by recruiting software, LLMs and agents. Start with /llms.txt.
+
+User-agent: *
+Allow: /
+
+# Major AI crawlers, explicitly welcomed
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://sigaoli.com/sitemap-index.xml
+
+# Machine-readable entry points:
+#   /llms.txt        — site overview for LLMs (llmstxt.org)
+#   /llms-full.txt   — full content in one markdown file
+#   /resume.json     — JSON Resume (jsonresume.org)

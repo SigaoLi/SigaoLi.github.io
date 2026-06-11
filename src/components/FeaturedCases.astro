@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import SectionHeading from './SectionHeading.astro';
+import DotTag from './DotTag.astro';
+import type { Tag } from '../data/projects';
+import { localizePath, t, type Lang } from '../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).featured;
+const L = (p: string) => localizePath(lang, p);
+
+const featured = (await getCollection(lang === 'zh' ? 'casesZh' : 'cases', (c) => c.data.featured))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+---
+
+<section class="mx-auto max-w-6xl px-6 py-24">
+  <SectionHeading coords={d.coords} title={d.title} />
+  <div class="mt-10 grid gap-6 md:grid-cols-3">
+    {featured.map((c) => (
+      <a href={L(`/work/${c.id}`)} class="reveal card-lift group rounded-xl border p-6 flex flex-col"
+        style="border-color: var(--line); background: var(--bg-elevated);">
+        <DotTag tags={c.data.tags as Tag[]} />
+        <h3 class="mt-4 font-display text-xl group-hover:text-accent transition-colors">{c.data.title}</h3>
+        <p class="mt-2 text-sm text-ink-muted flex-1">{c.data.tagline}</p>
+        <p class="mt-5 font-mono text-xs" style="color: var(--accent);">
+          {c.data.metrics[0].value} {c.data.metrics[0].label}
+        </p>
+      </a>
+    ))}
+  </div>
+  <a href={L('/work')} class="link-underline mt-8 inline-block text-sm reveal">{d.all}</a>
+</section>

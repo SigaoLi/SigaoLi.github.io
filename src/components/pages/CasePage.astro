@@ -1,0 +1,66 @@
+---
+// Shared case-study detail page, rendered by /work/[slug] and /zh/work/[slug].
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import DotTag from '../DotTag.astro';
+import type { Tag } from '../../data/projects';
+import { localizePath, t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  entry: CollectionEntry<'cases'> | CollectionEntry<'casesZh'>;
+  prev: Props['entry'] | null;
+  next: Props['entry'] | null;
+}
+const { entry, prev, next } = Astro.props;
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).work;
+const L = (p: string) => localizePath(lang, p);
+const { Content } = await render(entry);
+const roleLabel = d.roles[entry.data.role];
+---
+
+<Base title={`${entry.data.title} — Sigao Li`} description={entry.data.tagline}>
+  <main class="mx-auto max-w-3xl px-6 pt-16 pb-24">
+    <a href={L('/work')} class="link-underline font-mono text-xs tracking-wide">{d.allWork}</a>
+
+    <header class="mt-8">
+      <div class="flex items-center gap-5 reveal">
+        <DotTag tags={entry.data.tags as Tag[]} />
+        <span class="font-mono text-xs text-ink-muted">{entry.data.year}</span>
+      </div>
+      <h1 class="mt-4 font-display text-4xl sm:text-5xl reveal">{entry.data.title}</h1>
+      <p class="mt-4 text-lg text-ink-muted reveal">{entry.data.tagline}</p>
+      <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs text-ink-muted reveal">
+        <span>{roleLabel}</span>
+        {entry.data.org && <span>{entry.data.org}</span>}
+        <a class="link-underline" href={entry.data.repoUrl} target="_blank" rel="noopener noreferrer">
+          {d.viewSource}
+        </a>
+      </div>
+    </header>
+
+    <div class="mt-10 grid grid-cols-3 gap-6 rounded-xl border p-6 reveal"
+      style="border-color: var(--line); background: var(--bg-elevated);">
+      {entry.data.metrics.map((m) => (
+        <div>
+          <div class="metric-value font-display text-3xl" style="color: var(--accent);" data-value={m.value}>{m.value}</div>
+          <div class="mt-1 text-xs leading-tight text-ink-muted">{m.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <article class="prose mt-12">
+      <Content />
+    </article>
+
+    <nav class="mt-16 flex justify-between border-t pt-8 text-sm" style="border-color: var(--line);">
+      {prev ? (
+        <a href={L(`/work/${prev.id}`)} class="link-underline">← {prev.data.title}</a>
+      ) : <span />}
+      {next ? (
+        <a href={L(`/work/${next.id}`)} class="link-underline text-right">{next.data.title} →</a>
+      ) : <span />}
+    </nav>
+  </main>
+</Base>

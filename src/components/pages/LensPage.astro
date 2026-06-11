@@ -1,0 +1,103 @@
+---
+// Shared photography page, rendered by /photography and /zh/photography.
+import { Image, getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import WorldMap from '../WorldMap.astro';
+import Lightbox from '../Lightbox.astro';
+import photosData from '../../data/photos.json';
+import { t, type Lang } from '../../lib/i18n';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).lens;
+const dFooter = t(lang).footer;
+
+const imageModules = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/photos/**/*.jpg',
+  { eager: true }
+);
+
+const countries = await Promise.all(
+  photosData.map(async (c) => {
+    const items = await Promise.all(
+      c.items.map(async (item: any, i: number) => {
+        const meta = imageModules[`../../assets/photos/${c.id}/${item.src}`]?.default;
+        if (!meta) throw new Error(`Missing photo asset: ${c.id}/${item.src}`);
+        const full = await getImage({ src: meta, width: 2048, format: 'webp', quality: 80 });
+        const alt = (lang === 'zh' ? item.altZh : item.alt) || `${c.name} — travel photograph ${i + 1}`;
+        return { meta, fullUrl: full.src, alt, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
+      })
+    );
+    return { ...c, displayName: lang === 'zh' ? c.nameZh : c.name, photos: items };
+  })
+);
+
+const total = countries.reduce((n, c) => n + c.photos.length, 0);
+const mapCountries = countries.map((c) => {
+  const dots = c.photos
+    .filter((i) => typeof i.lat === 'number')
+    .map((i) => [i.lat!, i.lng!] as [number, number]);
+  const anchorLat = dots.length ? dots.reduce((s, dd) => s + dd[0], 0) / dots.length : c.lat;
+  const anchorLng = dots.length ? dots.reduce((s, dd) => s + dd[1], 0) / dots.length : c.lng;
+  return { id: c.id, name: c.displayName, lat: anchorLat, lng: anchorLng, count: c.photos.length, dots };
+});
+
+const headline = lang === 'zh'
+  ? `${countries.length} ${d.countries} · ${total} ${d.photographs}`
+  : `${countries.length} ${d.countries} · ${total} ${d.photographs}`;
+---
+
+<Base
+  title={d.title}
+  description={lang === 'zh' ? `跨越 ${countries.length} 个国家的 ${total} 张旅行摄影，标注在它们被拍下的地方。` : `${total} travel photographs across ${countries.length} countries, mapped where they were taken.`}
+  darkDefault
+  footerExtra={dFooter.photoRights}
+>
+  <main class="mx-auto max-w-6xl px-6 pt-16 pb-8">
+    <header class="max-w-2xl">
+      <p class="font-mono text-xs tracking-[0.2em] text-ink-muted uppercase reveal">{headline}</p>
+      <h1 class="mt-3 font-display text-4xl sm:text-5xl reveal">{d.h1}</h1>
+      <p class="mt-4 text-ink-muted reveal">{d.intro}</p>
+    </header>
+
+    <div class="mt-12 reveal">
+      <WorldMap countries={mapCountries} />
+    </div>
+
+    {countries.map((c) => (
+      <section id={`gallery-${c.id}`} class="mt-20 scroll-mt-24">
+        <div class="flex items-baseline gap-4 reveal">
+          <h2 class="font-display text-2xl sm:text-3xl">{c.displayName}</h2>
+          <span class="font-mono text-xs text-ink-muted">
+            {c.lat.toFixed(1)}° {c.lat >= 0 ? 'N' : 'S'}, {Math.abs(c.lng).toFixed(1)}° {c.lng >= 0 ? 'E' : 'W'} · {c.photos.length} {d.photos}
+          </span>
+        </div>
+        <div class="mt-6 columns-2 gap-4 md:columns-3 [&>figure]:mb-4 [&>figure]:break-inside-avoid">
+          {c.photos.map((p) => (
+            <figure
+              class="group cursor-zoom-in overflow-hidden rounded-lg border"
+              style="border-color: var(--line);"
+              data-lightbox
+              data-full={p.fullUrl}
+              data-alt={p.alt}
+              data-label={c.displayName}
+              tabindex="0"
+              role="button"
+              aria-label={`${d.viewLarger}: ${p.alt}`}
+            >
+              <Image
+                src={p.meta}
+                alt={p.alt}
+                width={1080}
+                widths={[480, 768, 1080]}
+                sizes="(min-width: 768px) 31vw, 46vw"
+                class="w-full transition-transform duration-300 group-hover:scale-[1.03]"
+                loading="lazy"
+              />
+            </figure>
+          ))}
+        </div>
+      </section>
+    ))}
+  </main>
+  <Lightbox />
+</Base>

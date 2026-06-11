@@ -1,0 +1,56 @@
+# Build & deploy to GitHub Pages (PRD §13).
+# - push to v2     → build only (verification, no deploy)
+# - push to master → build + deploy to Pages
+name: Deploy
+
+on:
+  push:
+    branches: [master, v2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: npm audit (fail on high+)
+        run: npm audit --audit-level=high
+
+  build:
+    needs: audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Astro image pipeline
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.astro
+          key: astro-assets-${{ hashFiles('src/assets/**') }}
+          restore-keys: astro-assets-
+      - uses: withastro/action@v3
+        with:
+          node-version: 22
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

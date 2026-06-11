@@ -1,0 +1,158 @@
+---
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import CommandK from '../components/CommandK.astro';
+import { site } from '../lib/site';
+
+import { altPath } from '../lib/i18n';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Bare page without nav/footer (e.g. design-compare) */
+  bare?: boolean;
+  /** Page-level default theme when the visitor has no stored preference (photography → dark) */
+  darkDefault?: boolean;
+  /** Extra footer line (e.g. photography copyright) */
+  footerExtra?: string;
+}
+
+const {
+  title,
+  description = site.description,
+  bare = false,
+  darkDefault = false,
+  footerExtra,
+} = Astro.props;
+
+const locale = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const path = Astro.url.pathname;
+const alternate = altPath(path);
+const enHref = locale === 'en' ? path : alternate;
+const zhHref = locale === 'zh' ? path : alternate;
+---
+
+<!doctype html>
+<html lang={locale === 'zh' ? 'zh-CN' : 'en'} data-theme-default={darkDefault ? 'dark' : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://sigaoli.goatcounter.com; font-src 'self' data:; connect-src 'self' https://sigaoli.goatcounter.com; object-src 'none'; base-uri 'self'"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={new URL(path, Astro.site)} />
+    {!path.includes('404') && (
+      <>
+        <link rel="alternate" hreflang="en" href={new URL(enHref, Astro.site)} />
+        <link rel="alternate" hreflang="zh-CN" href={new URL(zhHref, Astro.site)} />
+        <link rel="alternate" hreflang="x-default" href={new URL(enHref, Astro.site)} />
+      </>
+    )}
+    <!-- Open Graph / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={new URL(path, Astro.site)} />
+    <meta property="og:image" content={new URL('/og.png', Astro.site)} />
+    <meta property="og:locale" content={locale === 'zh' ? 'zh_CN' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL('/og.png', Astro.site)} />
+    <!-- Structured data: Person (PRD §12.2) -->
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Sigao Li',
+        jobTitle: 'AI Product Manager',
+        worksFor: { '@type': 'Organization', name: 'Ebest Mobile' },
+        email: `mailto:${site.email}`,
+        url: site.url,
+        sameAs: [site.socials.github, site.socials.linkedin, site.socials.gisphere],
+        alumniOf: [
+          { '@type': 'CollegeOrUniversity', name: 'University of Bristol' },
+          { '@type': 'CollegeOrUniversity', name: 'Toronto Metropolitan University' },
+        ],
+      })}
+    />
+    <title>{title}</title>
+    <ClientRouter />
+    <script is:inline>
+      // First-visit language detection (PRD §10.1): zh-preferring browsers are
+      // redirected to /zh/* once; a manual toggle stores an explicit preference
+      // and disables auto-redirects from then on.
+      (function () {
+        try {
+          var pref = localStorage.getItem('lang');
+          var onZh = location.pathname === '/zh' || location.pathname.startsWith('/zh/');
+          if (!pref && !onZh && (navigator.language || '').toLowerCase().startsWith('zh')) {
+            location.replace('/zh' + (location.pathname === '/' ? '/' : location.pathname));
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script is:inline>
+      // Theme: follow system unless user chose; pre-paint to avoid flash.
+      // Re-applied after View Transitions swaps.
+      (function () {
+        const apply = () => {
+          const stored = localStorage.getItem('theme');
+          const pageDefault = document.documentElement.dataset.themeDefault === 'dark';
+          const dark = stored
+            ? stored === 'dark'
+            : pageDefault || matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', dark);
+        };
+        apply();
+        document.addEventListener('astro:after-swap', apply);
+      })();
+    </script>
+    {site.goatcounter && (
+      <script
+        is:inline
+        async
+        data-goatcounter={`https://${site.goatcounter}.goatcounter.com/count`}
+        src="https://gc.zgo.at/count.js"></script>
+    )}
+  </head>
+  <body class="bg-bg text-ink font-body min-h-screen flex flex-col">
+    {!bare && <Nav />}
+    <div class="flex-1">
+      <slot />
+    </div>
+    {!bare && <Footer extra={footerExtra} />}
+    {!bare && <CommandK />}
+    <script>
+      // Global A5 reveals + A6 count-ups — registered ONCE here for all pages.
+      // Per-page scripts must not duplicate these (they'd double-tween .reveal
+      // elements across View Transitions and freeze them at opacity 0).
+      import { gsap } from 'gsap';
+      import { ScrollTrigger } from 'gsap/ScrollTrigger';
+      import { pageScript, prefersReducedMotion } from '../lib/motion';
+      import { setupCountUps, setupReveals } from '../lib/effects';
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      pageScript(() => {
+        if (prefersReducedMotion()) return;
+        const ctx = gsap.context(() => {
+          setupReveals();
+          setupCountUps();
+        });
+        return () => ctx.revert();
+      });
+    </script>
+  </body>
+</html>

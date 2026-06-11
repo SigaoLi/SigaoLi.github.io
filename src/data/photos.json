@@ -1,0 +1,572 @@
+[
+  {
+    "id": "china",
+    "name": "China",
+    "nameZh": "中国",
+    "lat": 35,
+    "lng": 104,
+    "items": [
+      {
+        "src": "IMG_20170731_154353.jpg",
+        "alt": "Thatched pavilions over a quiet pond at Du Fu's Thatched Cottage, Chengdu",
+        "altZh": "成都杜甫草堂，竹影环抱的池畔草亭"
+      },
+      {
+        "src": "IMG_20170801_185249.jpg",
+        "alt": "Temple rooftops above a sea of clouds on Mount Emei",
+        "altZh": "峨眉山，云海之上的寺庙屋脊",
+        "lat": 29.5,
+        "lng": 103.3
+      },
+      {
+        "src": "IMG_20170803_174706.jpg",
+        "alt": "Evening light in a historic temple courtyard, Chengdu",
+        "altZh": "成都，古祠庭院的黄昏光线",
+        "lat": 30.6,
+        "lng": 104
+      },
+      {
+        "src": "IMG_20170805_132048.jpg",
+        "alt": "A giant panda settled into its bamboo lunch, Chengdu Panda Base",
+        "altZh": "成都大熊猫基地，抱着竹子大快朵颐的大熊猫",
+        "lat": 30.7,
+        "lng": 104.1
+      },
+      {
+        "src": "IMG_20180109_151113.jpg",
+        "alt": "Red-sailed wooden boats on a karst-ringed lake, Guilin",
+        "altZh": "桂林，喀斯特山影环绕的湖面与红帆木船",
+        "lat": 25.3,
+        "lng": 110.3
+      },
+      {
+        "src": "IMG_20181224_161823.jpg",
+        "alt": "Sunset behind Xinghai Bay Bridge, Dalian",
+        "altZh": "大连星海湾大桥的日落",
+        "lat": 38.9,
+        "lng": 121.6
+      },
+      {
+        "src": "IMG_20190104_102049.jpg",
+        "alt": "Painted gallery leading into Usnisa Palace, Niushou Mountain, Nanjing",
+        "altZh": "南京牛首山佛顶宫的彩绘长廊",
+        "lat": 32,
+        "lng": 118.8
+      },
+      {
+        "src": "IMG_20190104_110439.jpg",
+        "alt": "A gilded Buddha beyond a wall of engraved sutras, Usnisa Palace, Nanjing",
+        "altZh": "南京牛首山佛顶宫，经文墙尽头的鎏金佛像",
+        "lat": 32,
+        "lng": 118.8
+      },
+      {
+        "src": "IMG_20190818_112502.jpg",
+        "alt": "Crescent Lake oasis amid the Mingsha dunes, Dunhuang",
+        "altZh": "敦煌鸣沙山月牙泉，沙丘环抱的绿洲",
+        "lat": 40.1,
+        "lng": 94.7
+      },
+      {
+        "src": "IMG_20190818_151424.jpg",
+        "alt": "The nine-storey pavilion of the Mogao Caves, Dunhuang",
+        "altZh": "敦煌莫高窟九层楼",
+        "lat": 40,
+        "lng": 94.8
+      },
+      {
+        "src": "IMG_20190821_193909.jpg",
+        "alt": "Dusk over the salt flats of Chaka Salt Lake, Qinghai",
+        "altZh": "青海茶卡盐湖的暮色",
+        "lat": 36.8,
+        "lng": 99.1
+      },
+      {
+        "src": "IMG_20190825_123934.jpg",
+        "alt": "Colonial-era architecture from Qinhuangdao’s port-opening days",
+        "altZh": "秦皇岛开埠时期的欧式老建筑",
+        "lat": 40,
+        "lng": 119.7
+      },
+      {
+        "src": "IMG_20190825_164123.jpg",
+        "alt": "The 1899 heritage railway stop at Qinhuangdao",
+        "altZh": "秦皇岛 1899 年开埠地老站台",
+        "lat": 39.9,
+        "lng": 119.6
+      },
+      {
+        "src": "IMG_20190827_054513.jpg",
+        "alt": "Hazy sunrise over the Bohai Sea at Beidaihe",
+        "altZh": "北戴河，渤海上的朦胧日出",
+        "lat": 39.8,
+        "lng": 119.5
+      },
+      {
+        "src": "IMG_20190828_102631.jpg",
+        "alt": "An arched bridge among willows at the Chengde Mountain Resort",
+        "altZh": "承德避暑山庄，柳岸拱桥",
+        "lat": 41,
+        "lng": 117.9
+      },
+      {
+        "src": "IMG_20190829_094500.jpg",
+        "alt": "Sledgehammer Rock standing over Chengde",
+        "altZh": "承德磬锤峰",
+        "lat": 41,
+        "lng": 117.8
+      }
+    ]
+  },
+  {
+    "id": "japan",
+    "name": "Japan",
+    "nameZh": "日本",
+    "lat": 36.2,
+    "lng": 138.25,
+    "items": [
+      {
+        "src": "IMG_20191225_072604.jpg",
+        "alt": "A tawny owl perched at a Tokyo owl café",
+        "altZh": "东京猫头鹰咖啡馆里栖息的灰林鸮",
+        "lat": 35.7,
+        "lng": 139.8
+      },
+      {
+        "src": "IMG_20191227_122409.jpg",
+        "alt": "The long wooden hall of Sanjūsangen-dō, Kyoto",
+        "altZh": "京都三十三间堂的悠长木构大殿",
+        "lat": 35,
+        "lng": 135.8
+      },
+      {
+        "src": "IMG_20191227_163013.jpg",
+        "alt": "The vermilion gate and pagoda of Kiyomizu-dera, Kyoto",
+        "altZh": "京都清水寺的朱红仁王门与三重塔",
+        "lat": 35,
+        "lng": 135.8
+      },
+      {
+        "src": "IMG_20191227_163225.jpg",
+        "alt": "Sun rays breaking over the Kyoto basin at dusk",
+        "altZh": "京都，黄昏时分穿透云层的霞光",
+        "lat": 35,
+        "lng": 135.8
+      },
+      {
+        "src": "IMG_20191228_112104.jpg",
+        "alt": "Looking up through the Arashiyama bamboo grove",
+        "altZh": "岚山竹林，仰望竹梢间的天光",
+        "lat": 35,
+        "lng": 135.7
+      },
+      {
+        "src": "IMG_20191228_151402.jpg",
+        "alt": "Kinkaku-ji, the Golden Pavilion, across its mirror pond",
+        "altZh": "金阁寺与镜湖池",
+        "lat": 35,
+        "lng": 135.7
+      },
+      {
+        "src": "IMG_20191231_151741.jpg",
+        "alt": "Mount Fuji over the reeds of Lake Kawaguchi",
+        "altZh": "河口湖芦苇丛外的富士山",
+        "lat": 35.5,
+        "lng": 138.7
+      }
+    ]
+  },
+  {
+    "id": "canada",
+    "name": "Canada",
+    "nameZh": "加拿大",
+    "lat": 56.1,
+    "lng": -106.3,
+    "items": [
+      {
+        "src": "IMG_20190111_163412.jpg",
+        "alt": "Winter sunset among ships at the Port of Toronto",
+        "altZh": "多伦多港，冬日落日下的货轮与吊臂",
+        "lat": 43.6,
+        "lng": -79.4
+      },
+      {
+        "src": "IMG_20190518_054554.jpg",
+        "alt": "Dawn breaking over the Toronto skyline",
+        "altZh": "黎明粉霞下的多伦多天际线"
+      },
+      {
+        "src": "IMG_20201013_103019.jpg",
+        "alt": "Autumn sun glitter on Lake Ontario",
+        "altZh": "安大略湖的秋日波光"
+      },
+      {
+        "src": "IMG_20210904_150759.jpg",
+        "alt": "Still water and driftwood, Algonquin Provincial Park",
+        "altZh": "阿冈昆省立公园，静水与浮木",
+        "lat": 45.5,
+        "lng": -78.6
+      },
+      {
+        "src": "IMG_20211217_110531.jpg",
+        "alt": "Winter Rockies panorama from Sulphur Mountain, Banff",
+        "altZh": "班夫硫磺山顶望落基山雪原"
+      },
+      {
+        "src": "IMG_20211217_122828.jpg",
+        "alt": "Banff townsite from above, wrapped in snow",
+        "altZh": "俯瞰雪中的班夫小镇"
+      },
+      {
+        "src": "IMG_20211219_130750.jpg",
+        "alt": "Skaters far out on frozen Lake Louise",
+        "altZh": "冰封路易斯湖上的滑冰人"
+      },
+      {
+        "src": "IMG_20211220_135153.jpg",
+        "alt": "A mountain creek threading through fresh snow, Banff",
+        "altZh": "班夫，新雪间蜿蜒的山涧"
+      },
+      {
+        "src": "IMG_20211221_130100.jpg",
+        "alt": "A frozen waterfall in the Canadian Rockies",
+        "altZh": "落基山间的冰瀑"
+      },
+      {
+        "src": "IMG_20220429_103038.jpg",
+        "alt": "Clear shallows at the Bruce Peninsula, Tobermory",
+        "altZh": "托伯莫里布鲁斯半岛的清澈浅滩",
+        "lat": 45.3,
+        "lng": -81.7
+      },
+      {
+        "src": "IMG_20220504_134454.jpg",
+        "alt": "Cherry blossoms against a May sky, Toronto",
+        "altZh": "多伦多，五月晴空下的樱花",
+        "lat": 43.6,
+        "lng": -79.5
+      },
+      {
+        "src": "IMG_20220507_145048.jpg",
+        "alt": "Horseshoe Falls and the mist boat, Niagara",
+        "altZh": "尼亚加拉马蹄瀑布与雾中游船",
+        "lat": 43.1,
+        "lng": -79.1
+      },
+      {
+        "src": "IMG_20220720_152416.jpg",
+        "alt": "Montmorency Falls under a suspension bridge, Québec",
+        "altZh": "魁北克蒙莫朗西瀑布与悬索桥",
+        "lat": 46.9,
+        "lng": -71.1
+      },
+      {
+        "src": "IMG_20220824_193935.jpg",
+        "alt": "Evening calm at Lake Louise",
+        "altZh": "路易斯湖的暮色",
+        "lat": 51.4,
+        "lng": -116.2
+      },
+      {
+        "src": "IMG_20220826_143527.jpg",
+        "alt": "Spirit Island on Maligne Lake, Jasper",
+        "altZh": "贾斯珀玛琳湖的精灵岛",
+        "lat": 52.6,
+        "lng": -117.5
+      },
+      {
+        "src": "IMG20251103170736.jpg",
+        "alt": "Crimson sunset over north Toronto",
+        "altZh": "多伦多北郊的绯红日落",
+        "lat": 43.9,
+        "lng": -79.3
+      }
+    ]
+  },
+  {
+    "id": "united_states",
+    "name": "United States",
+    "nameZh": "美国",
+    "lat": 39.8,
+    "lng": -98.6,
+    "items": [
+      {
+        "src": "IMG_20180812_191438.jpg",
+        "alt": "Times Square neon at dusk, New York",
+        "altZh": "纽约时代广场，黄昏时分的霓虹",
+        "lat": 40.8,
+        "lng": -74
+      },
+      {
+        "src": "IMG_20180814_125058.jpg",
+        "alt": "The Statue of Liberty from New York Harbor",
+        "altZh": "纽约港上的自由女神像",
+        "lat": 40.7,
+        "lng": -74
+      },
+      {
+        "src": "IMG_20180815_094639.jpg",
+        "alt": "The Washington Monument before the Philadelphia Museum of Art",
+        "altZh": "费城艺术博物馆前的华盛顿纪念雕像",
+        "lat": 40,
+        "lng": -75.2
+      },
+      {
+        "src": "IMG_20180815_183852.jpg",
+        "alt": "The Lincoln Memorial in late-day light",
+        "altZh": "夕照中的林肯纪念堂",
+        "lat": 38.9,
+        "lng": -77
+      },
+      {
+        "src": "IMG_20180815_201955.jpg",
+        "alt": "The World War II Memorial glowing at dusk",
+        "altZh": "暮色中亮起的二战纪念碑",
+        "lat": 38.9,
+        "lng": -77
+      },
+      {
+        "src": "IMG_20231008_095801.jpg",
+        "alt": "The Hudson River from Riverside Park, New York",
+        "altZh": "纽约河滨公园望哈德逊河",
+        "lat": 40.8,
+        "lng": -73.9
+      },
+      {
+        "src": "IMG_20231008_164552.jpg",
+        "alt": "On the Brooklyn Bridge promenade, Manhattan behind",
+        "altZh": "布鲁克林大桥步道与曼哈顿天际线",
+        "lat": 40.7,
+        "lng": -74
+      },
+      {
+        "src": "IMG_20231009_072332.jpg",
+        "alt": "A cruise ship slips up the Hudson at dawn",
+        "altZh": "清晨哈德逊河上驶过的邮轮",
+        "lat": 40.8,
+        "lng": -74
+      },
+      {
+        "src": "IMG_20240520_091222.jpg",
+        "alt": "Morning surf at Miami Beach",
+        "altZh": "迈阿密海滩的清晨浪线",
+        "lat": 25.8,
+        "lng": -80.1
+      },
+      {
+        "src": "IMG20251014105901.jpg",
+        "alt": "The Golden Gate Bridge from the Marin Headlands",
+        "altZh": "马林岬角望金门大桥与旧金山",
+        "lat": 37.8,
+        "lng": -122.5
+      },
+      {
+        "src": "IMG20251015113347.jpg",
+        "alt": "Pacific surf along the San Mateo coast",
+        "altZh": "加州一号公路旁的太平洋海岸",
+        "lat": 37.5,
+        "lng": -122.5
+      },
+      {
+        "src": "IMG20251016144835.jpg",
+        "alt": "The Lone Cypress on 17-Mile Drive, Monterey",
+        "altZh": "蒙特雷十七里湾的孤柏",
+        "lat": 36.6,
+        "lng": -122
+      },
+      {
+        "src": "IMG20251018152242.jpg",
+        "alt": "Red-tile rooftops of Santa Barbara from the courthouse tower",
+        "altZh": "圣巴巴拉法院钟楼俯瞰红瓦屋顶与海岸",
+        "lat": 34.4,
+        "lng": -119.7
+      },
+      {
+        "src": "IMG20251019154938.jpg",
+        "alt": "Angels Flight, the tiny funicular in downtown LA",
+        "altZh": "洛杉矶市中心的天使铁路缆车",
+        "lat": 34.1,
+        "lng": -118.2
+      },
+      {
+        "src": "IMG20251019164631.jpg",
+        "alt": "The Hollywood Sign from the Griffith Observatory trails",
+        "altZh": "格里菲斯天文台山道远望好莱坞标志",
+        "lat": 34.1,
+        "lng": -118.3
+      },
+      {
+        "src": "IMG20251020160928.jpg",
+        "alt": "Santa Monica beach from the pier",
+        "altZh": "圣莫尼卡码头边的海滩",
+        "lat": 34,
+        "lng": -118.5
+      }
+    ]
+  },
+  {
+    "id": "united_kingdom",
+    "name": "United Kingdom",
+    "nameZh": "英国",
+    "lat": 54,
+    "lng": -2,
+    "items": [
+      {
+        "src": "IMG_20220816_094128.jpg",
+        "alt": "Honey-stone quadrangle gardens at an Oxford college",
+        "altZh": "牛津，学院蜜色石墙下的庭院",
+        "lat": 51.8,
+        "lng": -1.2
+      },
+      {
+        "src": "IMG_20220817_134655.jpg",
+        "alt": "The Mathematical Bridge over the Cam, Cambridge",
+        "altZh": "剑桥康河上的数学桥",
+        "lat": 52.2,
+        "lng": 0.1
+      },
+      {
+        "src": "IMG_20220817_155957.jpg",
+        "alt": "King's College Chapel from the Backs, Cambridge",
+        "altZh": "剑桥国王学院礼拜堂",
+        "lat": 52.2,
+        "lng": 0.1
+      },
+      {
+        "src": "IMG_20220818_154917.jpg",
+        "alt": "The Albert Memorial, Kensington Gardens, London",
+        "altZh": "伦敦肯辛顿花园的阿尔伯特纪念亭",
+        "lat": 51.5,
+        "lng": -0.2
+      },
+      {
+        "src": "IMG_20220818_163936.jpg",
+        "alt": "Buckingham Palace under summer clouds",
+        "altZh": "夏日云影下的白金汉宫",
+        "lat": 51.5,
+        "lng": -0.1
+      },
+      {
+        "src": "IMG20250311132731.jpg",
+        "alt": "Clifton Suspension Bridge over the Avon Gorge, Bristol",
+        "altZh": "布里斯托，横跨埃文峡谷的克利夫顿悬索桥",
+        "lat": 51.5,
+        "lng": -2.6
+      },
+      {
+        "src": "IMG20250411095855.jpg",
+        "alt": "Loch Lomond, mirror-still under morning haze",
+        "altZh": "晨雾中如镜的罗蒙湖",
+        "lat": 56.1,
+        "lng": -4.6
+      },
+      {
+        "src": "IMG20250411191933.jpg",
+        "alt": "Church spires along the River Ness, Inverness",
+        "altZh": "因弗内斯，尼斯河畔的教堂尖顶",
+        "lat": 57.5,
+        "lng": -4.2
+      },
+      {
+        "src": "IMG20250413163435.jpg",
+        "alt": "A train crossing the Forth Bridge, South Queensferry",
+        "altZh": "南昆斯费里，列车驶过福斯铁路桥",
+        "lat": 56,
+        "lng": -3.4
+      },
+      {
+        "src": "IMG20250417124259.jpg",
+        "alt": "Spring blossoms below Arthur’s Seat, Edinburgh",
+        "altZh": "爱丁堡亚瑟王座山脚的春樱",
+        "lat": 55.9,
+        "lng": -3.2
+      },
+      {
+        "src": "IMG20250417153258.jpg",
+        "alt": "The Old College dome from South Bridge, Edinburgh",
+        "altZh": "爱丁堡老学院圆顶街景",
+        "lat": 55.9,
+        "lng": -3.2
+      },
+      {
+        "src": "IMG20250422112628.jpg",
+        "alt": "Tower Bridge and the Tower of London from the Thames",
+        "altZh": "泰晤士河上望伦敦塔桥与伦敦塔",
+        "lat": 51.5,
+        "lng": -0.1
+      },
+      {
+        "src": "IMG20250424132120.jpg",
+        "alt": "St George's Chapel inside Windsor Castle",
+        "altZh": "温莎城堡圣乔治礼拜堂",
+        "lat": 51.5,
+        "lng": -0.6
+      },
+      {
+        "src": "IMG20250901144148.jpg",
+        "alt": "A village church spire in the Cotswolds",
+        "altZh": "科茨沃尔德乡村教堂的尖顶",
+        "lat": 51.9,
+        "lng": -1.8
+      },
+      {
+        "src": "IMG20250901163831.jpg",
+        "alt": "Thatched cottages along a Cotswolds lane",
+        "altZh": "科茨沃尔德小路旁的茅草石屋",
+        "lat": 52,
+        "lng": -1.8
+      },
+      {
+        "src": "IMG20250904103825.jpg",
+        "alt": "Belfast City Hall and its copper domes",
+        "altZh": "贝尔法斯特市政厅与铜绿穹顶",
+        "lat": 54.6,
+        "lng": -5.9
+      },
+      {
+        "src": "IMG20250905150757.jpg",
+        "alt": "The Changing of the Guard at Windsor Castle",
+        "altZh": "温莎城堡的卫兵换岗",
+        "lat": 51.5,
+        "lng": -0.6
+      },
+      {
+        "src": "IMG20250906143131.jpg",
+        "alt": "Folded limestone at Stair Hole, Lulworth, Jurassic Coast",
+        "altZh": "侏罗纪海岸卢尔沃斯，斯泰尔洞的褶皱岩层",
+        "lat": 50.6,
+        "lng": -2.3
+      },
+      {
+        "src": "IMG20250906154133.jpg",
+        "alt": "Man O'War Bay's chalk cliffs, Dorset",
+        "altZh": "多塞特，Man O’War 湾的白垩悬崖",
+        "lat": 50.6,
+        "lng": -2.3
+      },
+      {
+        "src": "IMG20250909160437.jpg",
+        "alt": "Greenwich Park: the Old Royal Naval College against Canary Wharf",
+        "altZh": "格林尼治公园，旧皇家海军学院与金丝雀码头同框",
+        "lat": 51.5,
+        "lng": 0
+      }
+    ]
+  },
+  {
+    "id": "bahamas",
+    "name": "Bahamas",
+    "nameZh": "巴哈马",
+    "lat": 25,
+    "lng": -77.4,
+    "items": [
+      {
+        "src": "IMG_20240519_131921.jpg",
+        "alt": "Cruise ships lined up at Nassau's Prince George Wharf",
+        "altZh": "拿骚太子乔治码头一字排开的邮轮",
+        "lat": 25.1,
+        "lng": -77.3
+      }
+    ]
+  }
+]
