@@ -25,7 +25,7 @@ const { extra } = Astro.props;
       {extra && <p class="font-mono text-xs text-ink-muted mt-1">{extra}</p>}
       <p class="text-xs text-ink-muted mt-1 opacity-70">{d.built}</p>
     </div>
-    <div class="flex gap-6 text-sm">
+    <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
       <a class="link-underline" href={site.socials.github} rel="noopener noreferrer" target="_blank">GitHub</a>
       {site.socials.linkedin && (
         <a class="link-underline" href={site.socials.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
