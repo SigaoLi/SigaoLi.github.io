@@ -31,7 +31,7 @@ export const ui = {
       { label: 'ACT II — BUSINESS', coords: '51.4545° N, 2.5879° W', place: 'Bristol, 2024–2025', title: 'Points on a chart', body: 'An MSc in Business Analytics, consulting with IBM on AI-driven financial analysis, and a growing pull toward quantitative finance.' },
       { label: 'ACT III — AI', coords: '31.2304° N, 121.4737° E', place: 'Shanghai, 2026—', title: 'Points in a network', body: 'Building AI products at Ebest Mobile — agents, LLM pipelines, and the systems that ship them. Three disciplines, one through-line: points, and the patterns between them.' },
     ],
-    featured: { coords: 'Selected work', title: "Things I've built", all: 'All work →' },
+    featured: { coords: 'Selected work', title: 'The products in between', all: 'All work →' },
     about: {
       coords: 'About', title: 'A geographer who ships',
       p1: "I'm an AI product manager with geospatial roots. My path runs from six years of geographic analysis in Toronto, through business analytics in Bristol — including consulting with IBM on AI-driven financial analysis — to building AI products at Ebest Mobile in Shanghai today. I serve as Director of GISource at",
@@ -54,7 +54,7 @@ export const ui = {
       kicker: 'Curriculum vitae',
       intro: 'AI Product Manager at Ebest Mobile, Shanghai — built on six years of geographic analysis and an MSc in Business Analytics.',
       download: 'Download PDF', present: 'Present',
-      sections: { experience: ['Experience', 'Where I’ve worked'], research: ['Research', 'Research assistantships'], education: ['Education', 'Where I studied'], volunteering: ['Community', 'Volunteering & GISphere'], awards: ['Recognition', 'Honors & awards'], skills: ['Toolkit', 'Skills & certifications'] },
+      sections: { experience: ['Career', 'Professional experience'], research: ['Research', 'Research assistantships'], education: ['Education', 'Academic background'], volunteering: ['Community', 'Volunteering & GISphere'], awards: ['Recognition', 'Honors & awards'], skills: ['Toolkit', 'Skills & certifications'] },
       skillGroups: { data: 'Data & Engineering', frameworks: 'ML Frameworks', tools: 'Tools', certifications: 'Certifications' },
     },
     lens: {
@@ -84,7 +84,7 @@ export const ui = {
       { label: '第二幕 — 商业', coords: '51.4545° N, 2.5879° W', place: '布里斯托，2024–2025', title: '图表上的点', body: '布里斯托大学商业分析硕士，与 IBM 合作 AI 驱动的财务分析，并日益被量化金融吸引。' },
       { label: '第三幕 — AI', coords: '31.2304° N, 121.4737° E', place: '上海，2026—', title: '网络中的点', body: '在意鹰科技（Ebest Mobile）打造 AI 产品——智能体、LLM 管线，以及让它们落地的系统。三种学科，一条暗线：散落的点，和点与点之间的秩序。' },
     ],
-    featured: { coords: '精选作品', title: '我做过的东西', all: '全部作品 →' },
+    featured: { coords: '精选作品', title: '生于其间的产品', all: '全部作品 →' },
     about: {
       coords: '关于', title: '一个会交付的地理人',
       p1: '我是一名有地理空间背景的 AI 产品经理。我的路径从多伦多六年的地理分析出发，经过布里斯托的商业分析（包括与 IBM 合作的 AI 财务分析项目），走到今天在上海意鹰科技打造 AI 产品。我担任',
@@ -107,7 +107,7 @@ export const ui = {
       kicker: '个人简历',
       intro: '上海意鹰科技 AI 产品经理——以六年地理分析经验与商业分析硕士学位为基础。',
       download: '下载 PDF', present: '至今',
-      sections: { experience: ['工作经历', '我工作过的地方'], research: ['研究经历', '研究助理'], education: ['教育', '我求学的地方'], volunteering: ['社区', '志愿服务与 GISphere'], awards: ['荣誉', '获奖经历'], skills: ['工具箱', '技能与证书'] },
+      sections: { experience: ['履历', '工作经历'], research: ['研究经历', '研究助理'], education: ['教育', '教育背景'], volunteering: ['社区', '志愿服务与 GISphere'], awards: ['荣誉', '获奖经历'], skills: ['工具箱', '技能与证书'] },
       skillGroups: { data: '数据与工程', frameworks: '机器学习框架', tools: '工具', certifications: '证书' },
     },
     lens: {

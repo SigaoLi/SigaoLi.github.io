@@ -39,11 +39,22 @@
 
     let idx = -1;
     let lastFocus: HTMLElement | null = null;
+    let loadToken = 0;
 
     const show = (i: number) => {
       idx = (i + items.length) % items.length;
       const el = items[idx];
-      imgEl.src = el.dataset.full!;
+      const full = el.dataset.full!;
+      const token = ++loadToken;
+      // Show the already-cached thumbnail immediately, swap in the 2048px
+      // image once it has loaded (token guards against fast navigation).
+      const thumb = el.querySelector('img')?.currentSrc;
+      imgEl.src = thumb || full;
+      if (thumb && thumb !== full) {
+        const loader = new Image();
+        loader.onload = () => { if (token === loadToken) imgEl.src = full; };
+        loader.src = full;
+      }
       imgEl.alt = el.dataset.alt ?? '';
       caption.textContent = `${el.dataset.label} · ${idx + 1} / ${items.length}`;
       // Preload neighbours

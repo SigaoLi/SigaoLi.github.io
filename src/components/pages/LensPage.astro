@@ -1,6 +1,8 @@
 ---
 // Shared photography page, rendered by /photography and /zh/photography.
-import { Image, getImage } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
+import sharp from 'sharp';
+import path from 'node:path';
 import Base from '../../layouts/Base.astro';
 import WorldMap from '../WorldMap.astro';
 import Lightbox from '../Lightbox.astro';
@@ -16,6 +18,20 @@ const imageModules = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true }
 );
 
+// Build-time LQIP: ~20px blurred placeholder inlined as data URI (~250B each),
+// shown as figure background until the real thumbnail fades in. Sharp strips
+// EXIF by default, so no metadata leaks into the HTML.
+// Resolved from the project root (cwd), not import.meta.url — the prerender
+// bundle relocates this module into dist/.prerender at build time.
+const photosDir = path.join(process.cwd(), 'src/assets/photos');
+const lqipFor = async (countryId: string, file: string) => {
+  const buf = await sharp(path.join(photosDir, countryId, file))
+    .resize(20)
+    .webp({ quality: 30 })
+    .toBuffer();
+  return `data:image/webp;base64,${buf.toString('base64')}`;
+};
+
 const countries = await Promise.all(
   photosData.map(async (c) => {
     const items = await Promise.all(
@@ -23,8 +39,9 @@ const countries = await Promise.all(
         const meta = imageModules[`../../assets/photos/${c.id}/${item.src}`]?.default;
         if (!meta) throw new Error(`Missing photo asset: ${c.id}/${item.src}`);
         const full = await getImage({ src: meta, width: 2048, format: 'webp', quality: 80 });
+        const lqip = await lqipFor(c.id, item.src);
         const alt = (lang === 'zh' ? item.altZh : item.alt) || `${c.name} — travel photograph ${i + 1}`;
-        return { meta, fullUrl: full.src, alt, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
+        return { meta, fullUrl: full.src, lqip, alt, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
       })
     );
     return { ...c, displayName: lang === 'zh' ? c.nameZh : c.name, photos: items };
@@ -75,7 +92,7 @@ const headline = lang === 'zh'
           {c.photos.map((p) => (
             <figure
               class="group cursor-zoom-in overflow-hidden rounded-lg border"
-              style="border-color: var(--line);"
+              style={`border-color: var(--line); background-image: url('${p.lqip}'); background-size: cover;`}
               data-lightbox
               data-full={p.fullUrl}
               data-alt={p.alt}
@@ -84,8 +101,11 @@ const headline = lang === 'zh'
               role="button"
               aria-label={`${d.viewLarger}: ${p.alt}`}
             >
-              <Image
+              <Picture
                 src={p.meta}
+                formats={['avif']}
+                fallbackFormat="webp"
+                quality={72}
                 alt={p.alt}
                 width={1080}
                 widths={[480, 768, 1080]}
@@ -101,3 +121,18 @@ const headline = lang === 'zh'
   </main>
   <Lightbox />
 </Base>
+
+<script>
+  import { pageScript } from '../../lib/motion';
+
+  // Fade thumbnails in over their LQIP background. Opacity is only set from
+  // JS, so with scripts disabled images render normally.
+  pageScript(() => {
+    for (const img of document.querySelectorAll<HTMLImageElement>('[data-lightbox] img')) {
+      if (img.complete && img.naturalWidth > 0) continue;
+      img.style.opacity = '0';
+      img.style.transition = 'opacity 0.4s ease';
+      img.addEventListener('load', () => { img.style.opacity = '1'; }, { once: true });
+    }
+  });
+</script>
