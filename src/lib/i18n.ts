@@ -17,7 +17,7 @@ export const altPath = (path: string) =>
 export const ui = {
   en: {
     nav: { home: 'Home', work: 'Work', cv: 'CV', lens: 'Through My Lens', toggleTheme: 'Toggle theme', menu: 'Open menu', lang: '中文' },
-    footer: { built: 'Built with Astro + GSAP', photoRights: 'All photographs © Sigao Li, all rights reserved.' },
+    footer: { built: 'Designed to deployed — entirely vibe-coded.', photoRights: 'All photographs © Sigao Li, all rights reserved.' },
     hero: {
       coords: '31.2304° N, 121.4737° E — AND COUNTING',
       tagline: 'AI Product Manager · Spatial Data Scientist',
@@ -70,7 +70,7 @@ export const ui = {
   },
   zh: {
     nav: { home: '首页', work: '作品', cv: '简历', lens: '镜头之下', toggleTheme: '切换主题', menu: '打开菜单', lang: 'EN' },
-    footer: { built: '基于 Astro + GSAP 构建', photoRights: '所有摄影作品 © 李思高，保留所有权利。' },
+    footer: { built: '从设计到上线，全程 vibe coding。', photoRights: '所有摄影作品 © 李思高，保留所有权利。' },
     hero: {
       coords: '31.2304° N, 121.4737° E — 足迹仍在继续',
       tagline: 'AI 产品经理 · 空间数据科学家',

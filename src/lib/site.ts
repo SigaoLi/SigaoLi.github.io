@@ -12,6 +12,7 @@ export const site = {
     github: 'https://github.com/SigaoLi',
     gisphere: 'https://gisphere.info/',
     linkedin: 'https://www.linkedin.com/in/sigao-li',
+    researchgate: 'https://www.researchgate.net/profile/Sigao-Li',
   },
   // GoatCounter site code (e.g. 'sigaoli' → sigaoli.goatcounter.com). Empty = analytics off.
   goatcounter: 'sigaoli',

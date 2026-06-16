@@ -1,5 +1,4 @@
 ---
-import { site } from '../lib/site';
 import { t, type Lang } from '../lib/i18n';
 
 const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
@@ -19,19 +18,9 @@ const { extra } = Astro.props;
     <path d="M0 28 C 150 8, 280 36, 430 22 S 720 4, 900 24 S 1100 34, 1200 16" fill="none" stroke="currentColor" stroke-width="1.5"/>
     <path d="M0 36 C 180 20, 320 44, 480 32 S 760 16, 940 34 S 1120 42, 1200 28" fill="none" stroke="currentColor" stroke-width="1"/>
   </svg>
-  <div class="mx-auto max-w-6xl px-6 pb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-    <div>
-      <p class="font-mono text-xs text-ink-muted">© {year} {lang === 'zh' ? '李思高' : 'Sigao Li'}</p>
-      {extra && <p class="font-mono text-xs text-ink-muted mt-1">{extra}</p>}
-      <p class="text-xs text-ink-muted mt-1 opacity-70">{d.built}</p>
-    </div>
-    <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-      <a class="link-underline" href={site.socials.github} rel="noopener noreferrer" target="_blank">GitHub</a>
-      {site.socials.linkedin && (
-        <a class="link-underline" href={site.socials.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
-      )}
-      <a class="link-underline" href={site.socials.gisphere} rel="noopener noreferrer" target="_blank">GISphere</a>
-      <a class="link-underline" href={`mailto:${site.email}`}>{site.email}</a>
-    </div>
+  <div class="mx-auto max-w-6xl px-6 pb-10">
+    <p class="font-mono text-xs text-ink-muted">© {year} {lang === 'zh' ? '李思高' : 'Sigao Li'}</p>
+    {extra && <p class="font-mono text-xs text-ink-muted mt-1">{extra}</p>}
+    <p class="text-xs text-ink-muted mt-1 opacity-70">{d.built}</p>
   </div>
 </footer>
