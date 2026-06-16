@@ -21,7 +21,7 @@ const { extra } = Astro.props;
   </svg>
   <div class="mx-auto max-w-6xl px-6 pb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
     <div>
-      <p class="font-mono text-xs text-ink-muted">© {year} Sigao Li</p>
+      <p class="font-mono text-xs text-ink-muted">© {year} {lang === 'zh' ? '李思高' : 'Sigao Li'}</p>
       {extra && <p class="font-mono text-xs text-ink-muted mt-1">{extra}</p>}
       <p class="text-xs text-ink-muted mt-1 opacity-70">{d.built}</p>
     </div>

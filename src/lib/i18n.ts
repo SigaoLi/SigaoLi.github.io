@@ -107,7 +107,7 @@ export const ui = {
       kicker: '个人简历',
       intro: '上海意鹰科技 AI 产品经理——以六年地理分析经验与商业分析硕士学位为基础。',
       download: '下载 PDF', present: '至今',
-      sections: { experience: ['履历', '工作经历'], research: ['研究经历', '研究助理'], education: ['教育', '教育背景'], volunteering: ['社区', '志愿服务与 GISphere'], awards: ['荣誉', '获奖经历'], skills: ['工具箱', '技能与证书'] },
+      sections: { experience: ['履历', '专业经历'], research: ['研究经历', '研究经历'], education: ['教育', '教育背景'], volunteering: ['社区', '志愿服务'], awards: ['荣誉', '获奖经历'], skills: ['工具箱', '技能证书'] },
       skillGroups: { data: '数据与工程', frameworks: '机器学习框架', tools: '工具', certifications: '证书' },
     },
     lens: {

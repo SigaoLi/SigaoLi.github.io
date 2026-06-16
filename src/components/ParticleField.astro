@@ -1,4 +1,6 @@
-<!-- A3: sparse dot field — map points / data points / network nodes (PRD §8) -->
+<!-- A3: sparse dot field — map points / data points / network nodes (PRD §8).
+     Dots near the cursor brighten, grow and shift to the accent colour, so the
+     interaction reads clearly (inspired by antigravity.google, kept on-brand). -->
 <canvas id="particle-field" class="absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
 
 <script>
@@ -10,7 +12,20 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const accent = () => getComputedStyle(document.documentElement).getPropertyValue('--ink-muted').trim();
+    // Resolve a CSS var (hex or rgb) to an [r,g,b] triple via the canvas.
+    const toRgb = (cssVar: string): [number, number, number] => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+      ctx.fillStyle = raw;
+      const s = ctx.fillStyle;
+      if (s[0] === '#') {
+        const n = parseInt(s.length === 4
+          ? s.slice(1).split('').map((c) => c + c).join('')
+          : s.slice(1), 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      }
+      const m = s.match(/\d+(\.\d+)?/g) || ['120', '120', '120'];
+      return [+m[0], +m[1], +m[2]];
+    };
 
     let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
     const resize = () => {
@@ -23,16 +38,24 @@
 
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     const lowEnd = (navigator.hardwareConcurrency ?? 8) <= 4;
-    const N = isMobile || lowEnd ? 45 : 90;
+    const N = isMobile || lowEnd ? 55 : 110;
 
-    type P = { x: number; y: number; vx: number; vy: number; r: number };
-    const pts: P[] = Array.from({ length: N }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: (Math.random() - 0.5) * 0.15,
-      r: Math.random() * 1.4 + 0.8,
-    }));
+    // Each dot has a slowly drifting "home" anchor; the cursor displaces it from
+    // home, and a spring pulls the displacement back to 0 so it disperses again
+    // once the cursor leaves.
+    type P = { hx: number; hy: number; hvx: number; hvy: number; dx: number; dy: number; dvx: number; dvy: number; x: number; y: number; r: number; inf: number };
+    const pts: P[] = Array.from({ length: N }, () => {
+      const hx = Math.random() * w, hy = Math.random() * h;
+      return {
+        hx, hy,
+        hvx: (Math.random() - 0.5) * 0.16,
+        hvy: (Math.random() - 0.5) * 0.16,
+        dx: 0, dy: 0, dvx: 0, dvy: 0,
+        x: hx, y: hy,
+        r: Math.random() * 1.5 + 0.9,
+        inf: 0,
+      };
+    });
 
     const mouse = { x: -9999, y: -9999 };
     const onMove = (e: MouseEvent) => {
@@ -41,27 +64,36 @@
     };
     const onLeave = () => { mouse.x = -9999; mouse.y = -9999; };
 
-    const LINK = 90;
+    const RADIUS = 150;          // cursor influence radius
+    const RADIUS2 = RADIUS * RADIUS;
+    const LINK = 100;
+
     const draw = () => {
       ctx.clearRect(0, 0, w, h);
-      const c = accent();
+      const base = toRgb('--ink-muted');
+      const acc = toRgb('--accent');
+      const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+
       for (const p of pts) {
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = c;
+        const t = p.inf; // 0 (far) → 1 (at cursor)
+        ctx.globalAlpha = 0.42 + t * 0.58;
+        ctx.fillStyle = `rgb(${lerp(base[0], acc[0], t)},${lerp(base[1], acc[1], t)},${lerp(base[2], acc[2], t)})`;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.r * (1 + t * 2.2), 0, Math.PI * 2);
         ctx.fill();
       }
-      // Sparse connections — the "network" reading of the dots
-      ctx.globalAlpha = 1;
+
+      // Sparse connections — the "network" reading; brighten near the cursor.
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
           const d2 = dx * dx + dy * dy;
           if (d2 < LINK * LINK) {
-            ctx.globalAlpha = (1 - Math.sqrt(d2) / LINK) * 0.12;
-            ctx.strokeStyle = c;
-            ctx.lineWidth = 0.6;
+            const near = Math.max(pts[i].inf, pts[j].inf);
+            const fall = 1 - Math.sqrt(d2) / LINK;
+            ctx.globalAlpha = fall * (0.1 + near * 0.5);
+            ctx.strokeStyle = `rgb(${lerp(base[0], acc[0], near)},${lerp(base[1], acc[1], near)},${lerp(base[2], acc[2], near)})`;
+            ctx.lineWidth = 0.6 + near * 0.6;
             ctx.beginPath();
             ctx.moveTo(pts[i].x, pts[i].y);
             ctx.lineTo(pts[j].x, pts[j].y);
@@ -82,17 +114,34 @@
     let running = true;
     const tick = () => {
       for (const p of pts) {
-        // gentle drift + mild mouse attraction within 80px
-        const dx = mouse.x - p.x, dy = mouse.y - p.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < 6400 && d2 > 1) {
-          p.vx += (dx / Math.sqrt(d2)) * 0.012;
-          p.vy += (dy / Math.sqrt(d2)) * 0.012;
+        // organic ambient drift of the home anchor — keeps the field gently
+        // alive even when the cursor is still (wraps at the edges).
+        p.hvx = Math.max(-0.22, Math.min(0.22, p.hvx + (Math.random() - 0.5) * 0.01));
+        p.hvy = Math.max(-0.22, Math.min(0.22, p.hvy + (Math.random() - 0.5) * 0.01));
+        p.hx += p.hvx; p.hy += p.hvy;
+        if (p.hx < -10) p.hx = w + 10; if (p.hx > w + 10) p.hx = -10;
+        if (p.hy < -10) p.hy = h + 10; if (p.hy > h + 10) p.hy = -10;
+
+        // cursor gathers nearby dots; influence also drives colour/size
+        const mdx = mouse.x - p.x, mdy = mouse.y - p.y;
+        const d2 = mdx * mdx + mdy * mdy;
+        if (d2 < RADIUS2 && d2 > 1) {
+          const d = Math.sqrt(d2);
+          p.inf = 1 - d / RADIUS;
+          const pull = p.inf * 0.5;
+          p.dvx += (mdx / d) * pull;
+          p.dvy += (mdy / d) * pull;
+        } else {
+          p.inf += (0 - p.inf) * 0.08;   // ease influence back to 0
         }
-        p.vx *= 0.985; p.vy *= 0.985;
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10;
-        if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
+
+        // spring the displacement back to home → dots disperse once the cursor
+        // moves away
+        p.dvx = (p.dvx - p.dx * 0.022) * 0.85;
+        p.dvy = (p.dvy - p.dy * 0.022) * 0.85;
+        p.dx += p.dvx; p.dy += p.dvy;
+
+        p.x = p.hx + p.dx; p.y = p.hy + p.dy;
       }
       draw();
       if (running) raf = requestAnimationFrame(tick);

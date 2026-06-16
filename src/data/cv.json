@@ -2,7 +2,7 @@
   "_note": "Extracted from CV__Sigao_Li.pdf (2025 edition) + current role confirmed by Sigao 2026-06-11. PDF refresh post-launch is a data-only change.",
   "current": {
     "title": "AI Product Manager",
-    "org": "Ebest Mobile (上海意鹰信息技术有限公司)",
+    "org": "Ebest Mobile",
     "location": "Shanghai, China",
     "coords": "31.2304° N, 121.4737° E",
     "start": "2026-04",
@@ -16,7 +16,7 @@
       "location": "Bristol, UK",
       "coords": "51.4545° N, 2.5879° W",
       "start": "2024-09",
-      "end": "2025-08",
+      "end": "2025-11",
       "bullets": [
         "Research paper: Understanding and Predicting Regularity, Diversity, and Adaptability in Human Mobility"
       ]
@@ -205,21 +205,77 @@
     }
   ],
   "awards": [
-    { "year": "2024", "title": "Think Big Postgraduate Scholarship (£6,500)" },
-    { "year": "2023", "title": "President's Prize, Canadian Cartographic Association Mapping Competition" },
-    { "year": "2023", "title": "Graduate Development Award (C$700)" },
-    { "year": "2022", "title": "Arts Grad Funding Spatial (C$5,000)" },
-    { "year": "2021", "title": "Global University Python Quantitative Simulation Investment Competition — Individual Final 6th" },
-    { "year": "2020", "title": "GLO-BUS Business Strategy Simulation — Global Top 50" },
-    { "year": "2018", "title": "Guaranteed and Renewable Scholarship (C$500)" }
+    {
+      "year": "2024",
+      "title": "Think Big Postgraduate Scholarship (£6,500)"
+    },
+    {
+      "year": "2023",
+      "title": "President's Prize, Canadian Cartographic Association Mapping Competition"
+    },
+    {
+      "year": "2023",
+      "title": "Graduate Development Award (C$700)"
+    },
+    {
+      "year": "2022",
+      "title": "Arts Grad Funding Spatial (C$5,000)"
+    },
+    {
+      "year": "2021",
+      "title": "Global University Python Quantitative Simulation Investment Competition — Individual Final 6th"
+    },
+    {
+      "year": "2020",
+      "title": "GLO-BUS Business Strategy Simulation — Global Top 50"
+    },
+    {
+      "year": "2018",
+      "title": "Guaranteed and Renewable Scholarship (C$500)"
+    }
   ],
   "skills": {
-    "data": ["Python", "R", "SQL", "NoSQL", "JavaScript", "Databricks", "Hadoop", "AWS", "Git", "Linux"],
-    "frameworks": ["PyTorch", "TensorFlow", "Keras", "scikit-learn", "NLTK", "NetworkX", "PuLP", "PySpark", "GeoPandas", "ArcPy"],
-    "tools": ["Tableau", "Power BI", "Google Analytics", "Esri Suite", "QGIS", "AutoCAD"]
+    "data": [
+      "Python",
+      "R",
+      "SQL",
+      "NoSQL",
+      "JavaScript",
+      "Databricks",
+      "Hadoop",
+      "AWS",
+      "Git",
+      "Linux"
+    ],
+    "frameworks": [
+      "PyTorch",
+      "TensorFlow",
+      "Keras",
+      "scikit-learn",
+      "NLTK",
+      "NetworkX",
+      "PuLP",
+      "PySpark",
+      "GeoPandas",
+      "ArcPy"
+    ],
+    "tools": [
+      "Tableau",
+      "Power BI",
+      "Google Analytics",
+      "Esri Suite",
+      "QGIS",
+      "AutoCAD"
+    ]
   },
   "certifications": [
-    { "title": "Artificial Intelligence", "org": "University of Toronto" },
-    { "title": "Data Science", "org": "University of Waterloo" }
+    {
+      "title": "Artificial Intelligence",
+      "org": "University of Toronto"
+    },
+    {
+      "title": "Data Science",
+      "org": "University of Waterloo"
+    }
   ]
 }

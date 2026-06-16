@@ -10,8 +10,8 @@ interface Country {
   lat: number;
   lng: number;
   count: number;
-  /** Individual geotagged photo positions [lat, lng] */
-  dots: [number, number][];
+  /** Individual geotagged photos — position + city label (localized) */
+  dots: { lat: number; lng: number; city?: string }[];
 }
 interface Props {
   countries: Country[];
@@ -27,51 +27,35 @@ const py = (lat: number) => (85 - lat) * 2;
     <g class="text-ink-muted" opacity="0.35">
       {(dots as [number, number][]).map(([x, y]) => <circle cx={x} cy={y} r="1.1" fill="currentColor" />)}
     </g>
-    <!-- Decorative pulses kept outside the links so the click targets stay stable -->
-    <g aria-hidden="true">
-      {countries.map((c) => (
-        <circle cx={px(c.lng)} cy={py(c.lat)} r="11" fill="var(--accent)" opacity="0.15" class="marker-pulse" />
-      ))}
-    </g>
     {countries.map((c) => (
       <a
         href={`#gallery-${c.id}`}
         class="map-marker group outline-none"
         data-country={c.id}
-        aria-label={`${c.name} — ${c.count} photographs`}
+        aria-label={c.name}
       >
-        <circle cx={px(c.lng)} cy={py(c.lat)} r="10" fill="transparent" />
-        {/* One dot per geotagged photo — the actual footprint */}
-        {c.dots.map(([lat, lng]) => (
-          <circle
-            cx={px(lng)} cy={py(lat)} r="1.8"
-            fill="var(--accent)" opacity="0.75"
-            class="transition-opacity group-hover:opacity-100"
-          />
-        ))}
-        <circle cx={px(c.lng)} cy={py(c.lat)} r="4.5" fill="var(--accent)" class="transition-transform group-hover:scale-150 group-focus-visible:scale-150" style="transform-origin: center; transform-box: fill-box;" />
-        <title>{`${c.name} · ${c.count} photos`}</title>
+        {/* One dot per geotagged photo — the country's footprint, and the only
+            hit target so neighbouring countries' dots aren't mis-attributed.
+            Each dot shows its own city on hover. */}
+        {c.dots.map((dot) => {
+          const place = dot.city ? `${dot.city} · ${c.name}` : c.name;
+          return (
+            <circle
+              cx={px(dot.lng)} cy={py(dot.lat)} r="2.4"
+              fill="var(--accent)" opacity="0.75"
+              data-place={place}
+              class="map-dot transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+              <title>{place}</title>
+            </circle>
+          );
+        })}
       </a>
     ))}
   </svg>
   <div id="map-tooltip" class="pointer-events-none absolute hidden rounded-md border px-3 py-1.5 font-mono text-xs"
     style="border-color: var(--line); background: var(--bg-elevated); color: var(--ink);"></div>
 </div>
-
-<style>
-  .marker-pulse {
-    animation: marker-pulse 2.6s ease-in-out infinite;
-    transform-origin: center;
-    transform-box: fill-box;
-  }
-  @keyframes marker-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.15; }
-    50% { transform: scale(1.5); opacity: 0.05; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .marker-pulse { animation: none; }
-  }
-</style>
 
 <script>
   import { gsap } from 'gsap';
@@ -91,14 +75,13 @@ const py = (lat: number) => (85 - lat) * 2;
       handlers.push([el, ev, fn]);
     };
 
+    // Navigation: clicking a country's dots smooth-scrolls to its gallery.
     map.querySelectorAll<SVGAElement>('.map-marker').forEach((marker) => {
       const id = marker.dataset.country!;
-      const target = () => document.getElementById(`gallery-${id}`);
-
       on(marker, 'click', ((e: Event) => {
         if (prefersReducedMotion()) return; // native anchor jump
         e.preventDefault();
-        const t = target();
+        const t = document.getElementById(`gallery-${id}`);
         if (!t) return;
         gsap.to(window, { scrollTo: { y: t, offsetY: 80 }, duration: 0.8, ease: 'power3.inOut' });
         gsap.fromTo(
@@ -108,19 +91,22 @@ const py = (lat: number) => (85 - lat) * 2;
         );
         history.replaceState(null, '', `#gallery-${id}`);
       }) as EventListener);
+    });
 
-      if (tooltip) {
-        on(marker, 'mousemove', ((e: Event) => {
+    // Tooltip: each dot shows its own city.
+    if (tooltip) {
+      map.querySelectorAll<SVGCircleElement>('.map-dot').forEach((dot) => {
+        on(dot, 'mousemove', ((e: Event) => {
           const me = e as MouseEvent;
           const r = map.getBoundingClientRect();
-          tooltip.textContent = marker.getAttribute('aria-label');
+          tooltip.textContent = dot.dataset.place || '';
           tooltip.classList.remove('hidden');
           tooltip.style.left = `${me.clientX - r.left + 14}px`;
           tooltip.style.top = `${me.clientY - r.top - 10}px`;
         }) as EventListener);
-        on(marker, 'mouseleave', (() => tooltip.classList.add('hidden')) as EventListener);
-      }
-    });
+        on(dot, 'mouseleave', (() => tooltip.classList.add('hidden')) as EventListener);
+      });
+    }
 
     return () => handlers.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
   });

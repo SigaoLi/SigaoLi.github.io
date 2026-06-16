@@ -41,7 +41,8 @@ const countries = await Promise.all(
         const full = await getImage({ src: meta, width: 2048, format: 'webp', quality: 80 });
         const lqip = await lqipFor(c.id, item.src);
         const alt = (lang === 'zh' ? item.altZh : item.alt) || `${c.name} — travel photograph ${i + 1}`;
-        return { meta, fullUrl: full.src, lqip, alt, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
+        const city = (lang === 'zh' ? item.cityZh : item.city) as string | undefined;
+        return { meta, fullUrl: full.src, lqip, alt, city, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
       })
     );
     return { ...c, displayName: lang === 'zh' ? c.nameZh : c.name, photos: items };
@@ -52,9 +53,9 @@ const total = countries.reduce((n, c) => n + c.photos.length, 0);
 const mapCountries = countries.map((c) => {
   const dots = c.photos
     .filter((i) => typeof i.lat === 'number')
-    .map((i) => [i.lat!, i.lng!] as [number, number]);
-  const anchorLat = dots.length ? dots.reduce((s, dd) => s + dd[0], 0) / dots.length : c.lat;
-  const anchorLng = dots.length ? dots.reduce((s, dd) => s + dd[1], 0) / dots.length : c.lng;
+    .map((i) => ({ lat: i.lat!, lng: i.lng!, city: i.city }));
+  const anchorLat = dots.length ? dots.reduce((s, dd) => s + dd.lat, 0) / dots.length : c.lat;
+  const anchorLng = dots.length ? dots.reduce((s, dd) => s + dd.lng, 0) / dots.length : c.lng;
   return { id: c.id, name: c.displayName, lat: anchorLat, lng: anchorLng, count: c.photos.length, dots };
 });
 

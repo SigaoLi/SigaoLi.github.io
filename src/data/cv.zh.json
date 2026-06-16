@@ -1,8 +1,8 @@
 {
   "_note": "Extracted from CV__Sigao_Li.pdf (2025 edition) + current role confirmed by Sigao 2026-06-11. PDF refresh post-launch is a data-only change.",
   "current": {
-    "title": "AI 产品经理",
-    "org": "意鹰科技（Ebest Mobile）",
+    "title": "AI产品经理",
+    "org": "上海意鹰信息技术有限公司",
     "location": "中国上海",
     "coords": "31.2304° N, 121.4737° E",
     "start": "2026-04",
@@ -16,7 +16,7 @@
       "location": "英国布里斯托",
       "coords": "51.4545° N, 2.5879° W",
       "start": "2024-09",
-      "end": "2025-08",
+      "end": "2025-11",
       "bullets": [
         "研究论文：理解与预测人类移动中的规律性、多样性与适应性"
       ]
@@ -34,7 +34,7 @@
     },
     {
       "title": "地理分析荣誉学士，辅修经济学",
-      "org": "瑞尔森大学（现多伦多都会大学）",
+      "org": "瑞尔森大学",
       "location": "加拿大多伦多",
       "coords": "43.6577° N, 79.3788° W",
       "start": "2018-09",
@@ -46,11 +46,11 @@
   ],
   "experience": [
     {
-      "title": "商业分析顾问",
-      "org": "IBM 与布里斯托大学",
-      "location": "英国布里斯托",
-      "start": "2025-01",
-      "end": "2025-04",
+      "title": "咨询项目经理",
+      "org": "上海和今信息科技有限公司",
+      "location": "中国上海",
+      "start": "2026-01",
+      "end": "2026-04",
       "bullets": [
         "设计了一个基于 Web 的门户，利用 NLP 对年报、推文及回复进行情感分析",
         "执行了 MOST、SWOT 和 PESTLE 分析，并可视化呈现结果"
@@ -69,7 +69,7 @@
     },
     {
       "title": "商业分析师",
-      "org": "爱奇艺",
+      "org": "上海爱奇艺文化传媒有限公司",
       "location": "中国上海",
       "start": "2021-06",
       "end": "2021-08",
@@ -80,7 +80,7 @@
     },
     {
       "title": "数据分析师",
-      "org": "妙盈科技",
+      "org": "颖投信息科技 (上海) 有限公司",
       "location": "中国上海",
       "start": "2021-04",
       "end": "2021-06",
@@ -90,7 +90,7 @@
     },
     {
       "title": "产品分析师",
-      "org": "搜狐",
+      "org": "北京搜狐互联网信息服务有限公司",
       "location": "中国北京",
       "start": "2021-02",
       "end": "2021-04",
@@ -103,17 +103,19 @@
     {
       "title": "研究助理 — 可持续发展研究",
       "org": "布里斯托大学",
+      "location": "英国布里斯托",
       "start": "2025-06",
-      "end": "present",
+      "end": "2025-08",
       "bullets": [
         "构建了一个基于 LLM 的系统，用于识别网页结构、抓取 CSR/ESG 报告并提取元数据，汇入可持续发展数据集"
       ]
     },
     {
-      "title": "研究助理 — AI 与运筹学",
+      "title": "研究助理 — AI与运筹学",
       "org": "布里斯托大学",
+      "location": "英国布里斯托",
       "start": "2025-05",
-      "end": "present",
+      "end": "2025-10",
       "bullets": [
         "使用视觉语言模型提取环境线索，并构建数据集，用于微调 LLM 进行事故轨迹模拟"
       ]
@@ -121,8 +123,9 @@
     {
       "title": "研究助理 — 交通大数据",
       "org": "布里斯托大学",
+      "location": "英国布里斯托",
       "start": "2024-12",
-      "end": "present",
+      "end": "2025-07",
       "bullets": [
         "利用 Graph Transformer + 贝叶斯优化（PyEPO）进行需求预测，为行程调度提供决策支持"
       ]
@@ -130,6 +133,7 @@
     {
       "title": "研究助理 — 自然语言处理",
       "org": "布里斯托大学",
+      "location": "英国布里斯托",
       "start": "2024-07",
       "end": "2025-04",
       "bullets": [
@@ -137,8 +141,9 @@
       ]
     },
     {
-      "title": "研究助理",
+      "title": "研究助理 - 认知老化",
       "org": "多伦多都会大学认知老化实验室",
+      "location": "加拿大多伦多",
       "start": "2024-03",
       "end": "2024-09",
       "bullets": [
@@ -148,6 +153,7 @@
     {
       "title": "研究助理 — 健康地理学",
       "org": "瑞尔森大学",
+      "location": "加拿大多伦多",
       "start": "2022-09",
       "end": "2022-12",
       "bullets": [
@@ -157,6 +163,7 @@
     {
       "title": "研究助理 — GIS",
       "org": "瑞尔森大学",
+      "location": "加拿大多伦多",
       "start": "2022-07",
       "end": "2022-08",
       "bullets": [
@@ -166,10 +173,23 @@
   ],
   "volunteering": [
     {
-      "title": "总监，GISource",
+      "title": "联合主席",
       "org": "GISphere",
-      "start": "2024-04",
+      "location": "全球",
+      "start": "2026-05",
       "end": "present",
+      "bullets": [
+        "跨职能开发定制 LLM 聊天机器人，用于信息收集和技术支持",
+        "领导 4 人团队设计基于 Azure 的 ETL 管道（Google Sheets → MySQL），将任务时间缩短 80%",
+        "发布 50 余篇关于 GIS 项目申请的博客，阅读量超 5 万"
+      ]
+    },
+    {
+      "title": "部门负责人 - GISource",
+      "org": "GISphere",
+      "location": "全球",
+      "start": "2024-04",
+      "end": "2026-04",
       "bullets": [
         "跨职能开发定制 LLM 聊天机器人，用于信息收集和技术支持",
         "领导 4 人团队设计基于 Azure 的 ETL 管道（Google Sheets → MySQL），将任务时间缩短 80%",
@@ -179,6 +199,7 @@
     {
       "title": "校园合伙人",
       "org": "GISphere",
+      "location": "全球",
       "start": "2022-05",
       "end": "2024-03",
       "bullets": [
@@ -188,8 +209,9 @@
     {
       "title": "学术助理",
       "org": "布里斯托中国学生学者联谊会",
+      "location": "英国布里斯托",
       "start": "2024-07",
-      "end": "present",
+      "end": "2025-04",
       "bullets": [
         "策划学术资源，撰写关于申请时间线的微信公众号文章"
       ]
@@ -197,6 +219,7 @@
     {
       "title": "校园大使",
       "org": "易智瑞信息技术有限公司",
+      "location": "中国北京",
       "start": "2021-08",
       "end": "2022-08",
       "bullets": [
@@ -205,21 +228,126 @@
     }
   ],
   "awards": [
-    { "year": "2024", "title": "Think Big 研究生奖学金（£6,500）" },
-    { "year": "2023", "title": "加拿大制图协会制图竞赛会长奖" },
-    { "year": "2023", "title": "研究生发展奖（C$700）" },
-    { "year": "2022", "title": "文科研究生空间基金（C$5,000）" },
-    { "year": "2021", "title": "全球高校 Python 量化模拟投资大赛 — 个人决赛第六名" },
-    { "year": "2020", "title": "GLO-BUS 商业战略模拟 — 全球前 50 强" },
-    { "year": "2018", "title": "保证可再生奖学金（C$500）" }
+    {
+      "year": "2024",
+      "title": "Think Big 研究生奖学金（£6,500）"
+    },
+    {
+      "year": "2023",
+      "title": "加拿大制图协会制图竞赛会长奖"
+    },
+    {
+      "year": "2023",
+      "title": "研究生发展奖（C$700）"
+    },
+    {
+      "year": "2022",
+      "title": "文科研究生空间基金（C$5,000）"
+    },
+    {
+      "year": "2021",
+      "title": "全球高校 Python 量化模拟投资大赛 — 个人决赛第六名"
+    },
+    {
+      "year": "2020",
+      "title": "GLO-BUS 商业战略模拟 — 全球前 50 强"
+    },
+    {
+      "year": "2018",
+      "title": "保证可再生奖学金（C$500）"
+    }
   ],
-  "skills": {
-    "data": ["Python", "R", "SQL", "NoSQL", "JavaScript", "Databricks", "Hadoop", "AWS", "Git", "Linux"],
-    "frameworks": ["PyTorch", "TensorFlow", "Keras", "scikit-learn", "NLTK", "NetworkX", "PuLP", "PySpark", "GeoPandas", "ArcPy"],
-    "tools": ["Tableau", "Power BI", "Google Analytics", "Esri Suite", "QGIS", "AutoCAD"]
-  },
+  "skills": [
+    {
+      "label": "AI 技术栈",
+      "items": [
+        "Prompt Engineering",
+        "Function Calling",
+        "Agent Workflow",
+        "LangChain",
+        "Autogen",
+        "Redis",
+        "Qdrant",
+        "FastAPI"
+      ]
+    },
+    {
+      "label": "分析工具",
+      "items": [
+        "SQL",
+        "Python",
+        "A/B Testing",
+        "Claude Code",
+        "Codex",
+        "Cursor",
+        "Dify",
+        "AI Studio",
+        "NotebookLM",
+        "Looker Studio"
+      ]
+    },
+    {
+      "label": "数据与工程",
+      "items": [
+        "Python",
+        "R",
+        "SQL",
+        "NoSQL",
+        "JavaScript",
+        "Databricks",
+        "Hadoop",
+        "AWS",
+        "Git",
+        "Linux"
+      ]
+    },
+    {
+      "label": "机器学习框架",
+      "items": [
+        "PyTorch",
+        "TensorFlow",
+        "Keras",
+        "scikit-learn",
+        "NLTK",
+        "NetworkX",
+        "PuLP",
+        "PySpark",
+        "GeoPandas",
+        "ArcPy"
+      ]
+    },
+    {
+      "label": "工具",
+      "items": [
+        "Tableau",
+        "Power BI",
+        "Google Analytics",
+        "Esri Suite",
+        "QGIS",
+        "AutoCAD"
+      ]
+    }
+  ],
   "certifications": [
-    { "title": "人工智能", "org": "多伦多大学" },
-    { "title": "数据科学", "org": "滑铁卢大学" }
+    {
+      "title": "人工智能",
+      "org": "多伦多大学"
+    },
+    {
+      "title": "数据科学",
+      "org": "滑铁卢大学"
+    },
+    {
+      "title": "PMP",
+      "org": "在读"
+    },
+    {
+      "title": "驾驶证",
+      "org": "C1"
+    },
+    {
+      "title": "CPR/AED",
+      "org": "红十字会"
+    }
   ]
 }

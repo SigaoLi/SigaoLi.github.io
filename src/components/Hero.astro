@@ -1,13 +1,16 @@
 ---
+import { Image } from 'astro:assets';
 import ParticleField from './ParticleField.astro';
+import profile from '../assets/profile.jpg';
 import { localizePath, t, type Lang } from '../lib/i18n';
 
 const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
 const d = t(lang).hero;
+const a = t(lang).about;
 const L = (p: string) => localizePath(lang, p);
 ---
 
-<section class="relative overflow-hidden" style="min-height: calc(100svh - 57px);">
+<section class="relative overflow-hidden">
   <ParticleField />
 
   <!-- Contour texture (A2) -->
@@ -22,30 +25,58 @@ const L = (p: string) => localizePath(lang, p);
     <circle cx="300" cy="262" r="4" fill="currentColor"/>
   </svg>
 
-  <div class="relative mx-auto flex max-w-6xl flex-col justify-center px-6" style="min-height: calc(100svh - 57px);">
-    <p class="font-mono text-xs sm:text-sm text-ink-muted tracking-wider">
-      {d.coords}
-    </p>
+  <div class="relative mx-auto flex max-w-6xl items-center px-6 py-20" style="min-height: calc(100svh - 57px);">
+    <div class="grid w-full items-center gap-10 md:grid-cols-[1fr_300px] md:gap-16">
+      <!-- Identity + intro -->
+      <div>
+        <p class="font-mono text-xs sm:text-sm text-ink-muted tracking-wider">
+          {d.coords}
+        </p>
 
-    <h1 id="hero-name" class="mt-5 font-display text-[clamp(3rem,9vw,6.5rem)] leading-[1.02] tracking-tight">
-      Sigao Li
-    </h1>
+        <h1 id="hero-name" class="mt-5 font-display text-[clamp(2.75rem,7vw,5rem)] leading-[1.04] tracking-tight">
+          {lang === 'zh' ? '李思高' : 'Sigao Li'}
+        </h1>
 
-    <p id="hero-tagline" class="mt-5 text-base sm:text-lg text-ink-muted">
-      {d.tagline}
-    </p>
+        <p id="hero-tagline" class="mt-4 text-base sm:text-lg text-ink-muted">
+          {d.tagline}
+        </p>
 
-    <p id="hero-narrative" class="mt-3 max-w-xl font-display text-xl sm:text-2xl" style="color: var(--accent);">
-      {d.narrative}
-    </p>
+        <p id="hero-narrative" class="mt-3 max-w-xl font-display text-xl sm:text-2xl" style="color: var(--accent);">
+          {d.narrative}
+        </p>
 
-    <div id="hero-cta" class="mt-10 flex items-center gap-6">
-      <a href={L('/work')}
-        class="inline-block rounded-full px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
-        style="background: var(--accent); color: var(--bg);">
-        {d.viewWork}
-      </a>
-      <a href={L('/photography')} class="link-underline text-sm">{d.lensLink}</a>
+        <div id="hero-bio" class="mt-6 max-w-xl space-y-4 text-sm sm:text-base text-ink-muted">
+          <p>
+            {a.p1} <a class="link-underline" href="https://gisphere.info/" rel="noopener noreferrer" target="_blank">GISphere</a>{a.p1b}
+          </p>
+          <p>
+            {a.p2a} <a class="link-underline" href={L('/photography')}>{a.lensName}</a>{a.p2b}
+          </p>
+        </div>
+
+        <div id="hero-cta" class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <a href={L('/work')}
+            class="inline-block rounded-full px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+            style="background: var(--accent); color: var(--bg);">
+            {d.viewWork}
+          </a>
+          <a href={L('/cv')} class="link-underline text-sm">{a.fullCv}</a>
+          <a href={L('/photography')} class="link-underline text-sm">{d.lensLink}</a>
+        </div>
+      </div>
+
+      <!-- Portrait -->
+      <div id="hero-portrait" class="order-first w-44 sm:w-56 md:order-none md:w-full justify-self-center md:justify-self-end">
+        <Image
+          src={profile}
+          alt={a.portraitAlt}
+          width={600}
+          widths={[240, 300, 600]}
+          sizes="(max-width: 768px) 240px, 300px"
+          class="rounded-xl border"
+          style="border-color: var(--line);"
+        />
+      </div>
     </div>
 
     <!-- Scroll hint -->
@@ -74,9 +105,11 @@ const L = (p: string) => localizePath(lang, p);
     const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
     tl.from(split.chars, { y: 90, opacity: 0, duration: 1.1, stagger: 0.04 }, 0.15)
-      .from('#hero-tagline', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.65')
+      .from('#hero-portrait', { opacity: 0, scale: 0.96, duration: 0.9, ease: 'power3.out' }, 0.25)
+      .from('#hero-tagline', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.7')
       .from('#hero-narrative', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.5')
-      .from('#hero-cta', { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.45')
+      .from('#hero-bio', { y: 18, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.45')
+      .from('#hero-cta', { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.4')
       .from('#hero-contours .contour', { drawSVG: '0%', duration: 1.4, stagger: 0.15, ease: 'power2.inOut' }, 0.4)
       .from('#hero-scroll-hint', { opacity: 0, duration: 0.5 }, '-=0.3');
 
