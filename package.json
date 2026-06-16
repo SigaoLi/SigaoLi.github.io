@@ -30,5 +30,8 @@
     "playwright": "^1.60.0",
     "topojson-client": "^3.1.0",
     "world-atlas": "^2.0.2"
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
   }
 }
