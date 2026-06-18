@@ -2,6 +2,7 @@
 // Shared CV page, rendered by /cv and /zh/cv.
 import Base from '../../layouts/Base.astro';
 import SectionHeading from '../SectionHeading.astro';
+import FlowField from '../FlowField.astro';
 import cvEn from '../../data/cv.json';
 import cvZh from '../../data/cv.zh.json';
 import { t, type Lang } from '../../lib/i18n';
@@ -75,7 +76,9 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
 ---
 
 <Base title={d.title} description={d.desc}>
-  <main class="mx-auto max-w-3xl px-6 pt-16 pb-8">
+  <div class="relative isolate">
+  <FlowField />
+  <main class="cv-frost relative mx-auto max-w-3xl px-6 pt-16 pb-8">
     <header>
       <p class="font-mono text-xs tracking-[0.2em] text-ink-muted uppercase reveal">{d.kicker}</p>
       <h1 class="mt-3 font-display text-4xl sm:text-5xl reveal">{lang === 'zh' ? '李思高' : 'Sigao Li'}</h1>
@@ -95,7 +98,7 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
       <section class="mt-20" id={s.id}>
         <SectionHeading title={s.title} />
         <div class="timeline relative mt-10 pl-10">
-          <div class="absolute left-[5px] top-1 bottom-1 w-px" style="background: var(--line);" aria-hidden="true"></div>
+          <div class="tl-rail absolute left-[5px] top-1 bottom-1 w-px" style="background: var(--line);" aria-hidden="true"></div>
           <div class="tl-progress absolute left-[4.5px] top-1 bottom-1 w-[2px] origin-top" style="background: var(--accent); transform: scaleY(0);" aria-hidden="true"></div>
 
           <ol class="space-y-12">
@@ -181,7 +184,34 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
       </div>
     </section>
   </main>
+  </div>
 </Base>
+
+<style>
+  /* 套B：正文列的羽化磨砂层——压住背后流场、保证阅读，边缘用 mask 平滑淡出
+     （横+竖渐变求交集），而非硬矩形边。位于 FlowField 之上、文字之下。 */
+  .cv-frost::before {
+    content: "";
+    position: absolute;
+    inset: 0 -16px;
+    z-index: -1;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    -webkit-mask:
+      linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent),
+      linear-gradient(to bottom, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+    -webkit-mask-composite: source-in;
+    mask:
+      linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent),
+      linear-gradient(to bottom, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+    mask-composite: intersect;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cv-frost::before { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+</style>
 
 <script>
   import { gsap } from 'gsap';
@@ -212,7 +242,6 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
 
     const ctx = gsap.context(() => {
       timelines.forEach((tl) => {
-        const progress = tl.querySelector<HTMLElement>('.tl-progress');
         const dots = Array.from(tl.querySelectorAll<HTMLElement>('.tl-dot'));
         const subdots = Array.from(tl.querySelectorAll<HTMLElement>('.tl-subdot'));
         // Merged-org groups: each has its own sub-rail (gray) + sub progress line
@@ -225,6 +254,68 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
           startY: 0,
           endY: 0,
         }));
+
+        // 套B 河流：把笔直的主进度线换成一条蜿蜒的河（SVG path + stroke-dashoffset，
+        // 纯 GPU 揭示、无每帧重绘 → 不引入卡顿）。直线版保留为无 JS 回退，此处隐藏。
+        const railDiv = tl.querySelector<HTMLElement>('.tl-rail');
+        const progDiv = tl.querySelector<HTMLElement>('.tl-progress');
+        if (railDiv) railDiv.style.display = 'none';
+        if (progDiv) progDiv.style.display = 'none';
+        const NS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;overflow:visible';
+        const riverRail = document.createElementNS(NS, 'path');
+        const river = document.createElementNS(NS, 'path');
+        for (const pth of [riverRail, river]) {
+          pth.setAttribute('fill', 'none');
+          pth.setAttribute('stroke-linecap', 'round');
+          pth.setAttribute('stroke-linejoin', 'round');
+        }
+        riverRail.setAttribute('stroke', 'var(--line)');
+        riverRail.setAttribute('stroke-width', '1.5');
+        river.setAttribute('stroke', 'var(--accent)');
+        river.setAttribute('stroke-width', '2.5');
+        svg.appendChild(riverRail);
+        svg.appendChild(river);
+        tl.insertBefore(svg, tl.firstChild);
+        let riverLen = 1;
+        const buildRiver = (dotYs: number[]) => {
+          const H = tl.offsetHeight;
+          svg.setAttribute('width', '28');
+          svg.setAttribute('height', String(H));
+          svg.setAttribute('viewBox', `0 0 28 ${H}`);
+          const x0 = 5.5, amp = 6;
+          // Anchor only on the milestone dots (first → last) so the river starts
+          // and ends exactly on a dot (no overhang). Long gaps between dots are
+          // subdivided into several alternating bows, so even a tall merged-org
+          // group (e.g. Bristol's stacked RA roles) still reads as a meander, not
+          // a straight line.
+          const ys = dotYs.filter((y) => y > 0 && y < H).sort((a, b) => a - b);
+          if (ys.length < 2) {
+            riverRail.setAttribute('d', ''); river.setAttribute('d', '');
+            riverLen = 1; river.style.strokeDasharray = '1'; return;
+          }
+          let dd = `M ${x0} ${ys[0].toFixed(1)}`;
+          let side = 1;
+          for (let i = 1; i < ys.length; i++) {
+            const y0 = ys[i - 1], y1 = ys[i], seg = y1 - y0;
+            const k = Math.max(1, Math.round(seg / 60));
+            for (let s = 1; s <= k; s++) {
+              const a0 = y0 + (seg * (s - 1)) / k;
+              const a1 = y0 + (seg * s) / k;
+              const my = (a0 + a1) / 2;
+              const mx = x0 + side * amp;
+              dd += ` Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x0} ${a1.toFixed(1)}`;
+              side = -side;
+            }
+          }
+          riverRail.setAttribute('d', dd);
+          river.setAttribute('d', dd);
+          riverLen = river.getTotalLength();
+          river.style.strokeDasharray = String(riverLen);
+        };
 
         // Line and dots are driven by one scrubbed progress value (0→1), so a
         // dot turns accent exactly when the growing line reaches its center —
@@ -260,10 +351,11 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
             sg.startY = centerY(first, top);
             sg.endY = centerY(last, top);
           }
+          buildRiver(dots.map((dot) => centerY(dot, top)));
         };
         const render = (p: number) => {
           const tipY = lineTop + p * lineH;
-          if (progress) gsap.set(progress, { scaleY: p });
+          river.style.strokeDashoffset = String(riverLen * (1 - p));
           dots.forEach((dot, i) => paint(dot, p >= dotThresholds[i]));
           subdots.forEach((dot, i) => paint(dot, p >= subThresholds[i], SUB_ACCENT));
           for (const sg of subgroups) {

@@ -20,12 +20,70 @@ const { countries } = Astro.props;
 
 const px = (lng: number) => (lng + 180) * 2;
 const py = (lat: number) => (85 - lat) * 2;
+
+// 概念3 · 地理点网络：连接所有照片点成网（每点连最近 2 个），再叠加各国锚点
+// 之间的洲际弧线作"航线"。弧线向上弓起，JS 让光点沿最长的几条行进。
+type Pt = { x: number; y: number };
+const arc = (a: Pt, b: Pt) => {
+  const len = Math.hypot(a.x - b.x, a.y - b.y);
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2 - len * 0.18;
+  return { d: `M ${a.x.toFixed(1)} ${a.y.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`, len };
+};
+const nearestEdges = (pts: Pt[], k: number, minD: number) => {
+  const seen = new Set<string>();
+  const out: { d: string; len: number }[] = [];
+  pts.forEach((a, i) => {
+    pts
+      .map((b, j) => ({ j, dd: Math.hypot(a.x - b.x, a.y - b.y) }))
+      .filter((o) => o.j !== i && o.dd > minD)
+      .sort((p, q) => p.dd - q.dd)
+      .slice(0, k)
+      .forEach((o) => {
+        const key = i < o.j ? `${i}-${o.j}` : `${o.j}-${i}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(arc(a, pts[o.j]));
+      });
+  });
+  return out;
+};
+const allDots: Pt[] = countries.flatMap((c) => c.dots.map((dt) => ({ x: px(dt.lng), y: py(dt.lat) })));
+// Each country's network anchor = its densest photo point (most neighbours
+// within a small radius; ties broken toward the most central), so routes start
+// from where the photos actually cluster — not the centroid, which can land in
+// empty ocean between an east- and west-coast cluster.
+const densest = (pts: Pt[]): Pt => {
+  if (pts.length <= 1) return pts[0];
+  const R = 8;
+  let best = pts[0], bestScore = -Infinity;
+  for (const a of pts) {
+    let count = 0, sum = 0;
+    for (const b of pts) {
+      const dd = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dd <= R) count++;
+      sum += dd;
+    }
+    const score = count - sum / 1e6;
+    if (score > bestScore) { bestScore = score; best = a; }
+  }
+  return best;
+};
+const anchorPts: Pt[] = countries.map((c) => densest(c.dots.map((dt) => ({ x: px(dt.lng), y: py(dt.lat) }))));
+const edges = [...nearestEdges(allDots, 2, 0.5), ...nearestEdges(anchorPts, 2, 0.5)];
+const arcs = edges.map((e) => e.d);
+// travelling light only on the longest arcs (the intercontinental "routes")
+const pulseArcs = [...edges].sort((a, b) => b.len - a.len).slice(0, 12).map((e) => e.d);
 ---
 
 <div id="world-map" class="relative mx-auto max-w-5xl">
   <svg viewBox="0 0 720 300" class="w-full" role="img" aria-label="World map showing photographed countries">
     <g class="text-ink-muted" opacity="0.35">
       {(dots as [number, number][]).map(([x, y]) => <circle cx={x} cy={y} r="1.1" fill="currentColor" />)}
+    </g>
+    <g class="map-net text-accent" aria-hidden="true">
+      {arcs.map((d) => <path d={d} fill="none" stroke="currentColor" stroke-width="0.4" opacity="0.14" />)}
+      {pulseArcs.map((d) => <path d={d} fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" class="map-pulse" opacity="0.85" />)}
     </g>
     {countries.map((c) => (
       <a
@@ -75,6 +133,19 @@ const py = (lat: number) => (85 - lat) * 2;
       handlers.push([el, ev, fn]);
     };
 
+    // 概念3：让一个短"光点"沿每条弧线行进（stroke-dashoffset，GPU 揭示）。
+    const tweens: gsap.core.Tween[] = [];
+    if (!prefersReducedMotion()) {
+      map.querySelectorAll<SVGPathElement>('.map-pulse').forEach((path, i) => {
+        const len = path.getTotalLength();
+        path.style.strokeDasharray = `3 ${len}`;
+        path.style.strokeDashoffset = '0';
+        tweens.push(
+          gsap.to(path, { strokeDashoffset: -(len + 3), duration: 3.5 + (i % 4), repeat: -1, ease: 'none', delay: i * 0.6 })
+        );
+      });
+    }
+
     // Navigation: clicking a country's dots smooth-scrolls to its gallery.
     map.querySelectorAll<SVGAElement>('.map-marker').forEach((marker) => {
       const id = marker.dataset.country!;
@@ -108,6 +179,9 @@ const py = (lat: number) => (85 - lat) * 2;
       });
     }
 
-    return () => handlers.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
+    return () => {
+      handlers.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
+      tweens.forEach((t) => t.kill());
+    };
   });
 </script>

@@ -91,12 +91,16 @@ const headline = lang === 'zh'
         <div class="mt-6 columns-2 gap-4 md:columns-3 [&>figure]:mb-4 [&>figure]:break-inside-avoid">
           {c.photos.map((p) => (
             <figure
-              class="group cursor-zoom-in overflow-hidden rounded-lg border"
+              class="group relative cursor-zoom-in overflow-hidden rounded-lg border"
               style={`border-color: var(--line); background-image: url('${p.lqip}'); background-size: cover;`}
               data-lightbox
               data-full={p.fullUrl}
               data-alt={p.alt}
               data-label={c.displayName}
+              data-city={p.city}
+              data-coords={p.lat != null && p.lng != null
+                ? `${Math.abs(p.lat).toFixed(1)}°${p.lat >= 0 ? 'N' : 'S'}, ${Math.abs(p.lng).toFixed(1)}°${p.lng >= 0 ? 'E' : 'W'}`
+                : undefined}
               tabindex="0"
               role="button"
               aria-label={`${d.viewLarger}: ${p.alt}`}
@@ -110,9 +114,15 @@ const headline = lang === 'zh'
                 width={1080}
                 widths={[480, 768, 1080]}
                 sizes="(min-width: 768px) 31vw, 46vw"
-                class="w-full transition-transform duration-300 group-hover:scale-[1.03]"
+                class="w-full transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 loading="lazy"
               />
+              {p.city && (
+                <figcaption
+                  class="pointer-events-none absolute bottom-2 left-3 translate-y-1 font-mono text-xs text-white opacity-0 transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100"
+                  style="text-shadow: 0 1px 4px rgba(0,0,0,0.6);"
+                >{p.city}</figcaption>
+              )}
             </figure>
           ))}
         </div>

@@ -1,35 +1,70 @@
-<!-- Photo lightbox: keyboard navigable, focus-trapped, scroll-locked. -->
+<!-- Photo lightbox: keyboard navigable, focus-trapped, scroll-locked.
+     Backdrop is the page itself, frosted (blur) and dimmed with a faint accent
+     wash, so the viewer feels part of the site rather than a black void. -->
 <div
   id="lightbox"
-  class="fixed inset-0 z-[60] hidden items-center justify-center"
-  style="background: rgb(10 10 9 / 0.94);"
+  class="lb-overlay fixed inset-0 z-[60] hidden items-center justify-center"
   role="dialog"
   aria-modal="true"
   aria-label="Photo viewer"
 >
-  <button id="lb-close" class="absolute right-5 top-5 p-2 text-white/70 hover:text-white cursor-pointer" aria-label="Close viewer">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  <div id="lb-counter" class="absolute left-5 top-5 font-mono text-xs tracking-widest text-white/55"></div>
+  <button id="lb-close" class="lb-btn absolute right-5 top-5" aria-label="Close viewer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
   </button>
-  <button id="lb-prev" class="absolute left-3 sm:left-6 p-3 text-white/70 hover:text-white cursor-pointer" aria-label="Previous photo">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+  <button id="lb-prev" class="lb-btn absolute left-3 sm:left-6" aria-label="Previous photo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
   </button>
-  <figure class="flex max-h-[92svh] max-w-[92vw] flex-col items-center">
-    <img id="lb-img" class="max-h-[85svh] max-w-[92vw] rounded object-contain" src="" alt="" />
-    <figcaption id="lb-caption" class="mt-3 font-mono text-xs text-white/60"></figcaption>
+  <figure id="lb-figure" class="flex max-h-[92svh] max-w-[92vw] flex-col items-center">
+    <img id="lb-img" class="max-h-[82svh] max-w-[92vw] rounded-sm object-contain" src="" alt="" />
+    <figcaption class="mt-5 max-w-[64ch] px-6 text-center">
+      <span id="lb-desc" class="block font-display text-base leading-snug text-white/90 sm:text-lg"></span>
+      <span id="lb-meta" class="mt-2.5 flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.15em] text-white/55"></span>
+    </figcaption>
   </figure>
-  <button id="lb-next" class="absolute right-3 sm:right-6 p-3 text-white/70 hover:text-white cursor-pointer" aria-label="Next photo">
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  <button id="lb-next" class="lb-btn absolute right-3 sm:right-6" aria-label="Next photo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
   </button>
 </div>
 
+<style>
+  .lb-overlay {
+    background: color-mix(in srgb, var(--accent) 12%, rgb(10 12 16 / 0.8));
+    backdrop-filter: blur(22px) saturate(1.1);
+    -webkit-backdrop-filter: blur(22px) saturate(1.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .lb-overlay.lb-open { opacity: 1; }
+  #lb-figure { transform: scale(0.97); transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .lb-overlay.lb-open #lb-figure { transform: scale(1); }
+  #lb-img {
+    box-shadow: 0 24px 60px -12px rgb(0 0 0 / 0.6);
+    border: 1px solid rgb(255 255 255 / 0.1);
+  }
+  /* dot motif separator between place and coordinates */
+  #lb-meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .lb-btn {
+    display: grid; place-items: center; width: 40px; height: 40px; border-radius: 9999px;
+    color: rgb(255 255 255 / 0.75); background: rgb(255 255 255 / 0.06);
+    backdrop-filter: blur(4px); cursor: pointer; transition: background 0.2s, color 0.2s;
+  }
+  .lb-btn:hover { color: #fff; background: rgb(255 255 255 / 0.14); }
+  @media (prefers-reduced-motion: reduce) {
+    .lb-overlay, #lb-figure { transition: none; }
+  }
+</style>
+
 <script>
-  import { pageScript } from '../lib/motion';
+  import { pageScript, prefersReducedMotion } from '../lib/motion';
 
   pageScript(() => {
     const lb = document.getElementById('lightbox');
     if (!lb) return;
     const imgEl = document.getElementById('lb-img') as HTMLImageElement;
-    const caption = document.getElementById('lb-caption')!;
+    const descEl = document.getElementById('lb-desc')!;
+    const metaEl = document.getElementById('lb-meta')!;
+    const counterEl = document.getElementById('lb-counter')!;
     const btnClose = document.getElementById('lb-close')!;
     const btnPrev = document.getElementById('lb-prev')!;
     const btnNext = document.getElementById('lb-next')!;
@@ -40,6 +75,7 @@
     let idx = -1;
     let lastFocus: HTMLElement | null = null;
     let loadToken = 0;
+    let closeTimer = 0;
 
     const show = (i: number) => {
       idx = (i + items.length) % items.length;
@@ -56,7 +92,16 @@
         loader.src = full;
       }
       imgEl.alt = el.dataset.alt ?? '';
-      caption.textContent = `${el.dataset.label} · ${idx + 1} / ${items.length}`;
+      descEl.textContent = el.dataset.alt ?? '';
+      // place (city · country) + coordinates, joined by a dot-motif separator
+      const place = [el.dataset.city, el.dataset.label].filter(Boolean).join(' · ');
+      const coords = el.dataset.coords ?? '';
+      metaEl.innerHTML = '';
+      const add = (text: string) => { const s = document.createElement('span'); s.textContent = text; metaEl.appendChild(s); };
+      const sep = () => { const s = document.createElement('span'); s.className = 'sep'; metaEl.appendChild(s); };
+      if (place) add(place);
+      if (coords) { if (place) sep(); add(coords); }
+      counterEl.textContent = `${idx + 1} / ${items.length}`;
       // Preload neighbours
       for (const n of [idx + 1, idx - 1]) {
         const p = new Image();
@@ -65,19 +110,23 @@
     };
 
     const open = (i: number) => {
+      clearTimeout(closeTimer);
       lastFocus = document.activeElement as HTMLElement;
       lb.classList.remove('hidden');
       lb.classList.add('flex');
       document.body.style.overflow = 'hidden';
       show(i);
+      requestAnimationFrame(() => lb.classList.add('lb-open'));
       btnClose.focus();
     };
 
     const close = () => {
-      lb.classList.add('hidden');
-      lb.classList.remove('flex');
+      lb.classList.remove('lb-open');
       document.body.style.overflow = '';
-      imgEl.src = '';
+      const finish = () => { lb.classList.add('hidden'); lb.classList.remove('flex'); imgEl.src = ''; };
+      clearTimeout(closeTimer);
+      if (prefersReducedMotion()) finish();
+      else closeTimer = window.setTimeout(finish, 300);
       lastFocus?.focus();
     };
 

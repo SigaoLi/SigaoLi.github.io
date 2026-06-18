@@ -9,7 +9,11 @@
       {
         "src": "IMG_20170731_154353.jpg",
         "alt": "Thatched pavilions over a quiet pond at Du Fu's Thatched Cottage, Chengdu",
-        "altZh": "成都杜甫草堂，竹影环抱的池畔草亭"
+        "altZh": "成都杜甫草堂，竹影环抱的池畔草亭",
+        "lat": 30.7,
+        "lng": 104,
+        "cityZh": "成都",
+        "city": "Chengdu"
       },
       {
         "src": "IMG_20170801_185249.jpg",
@@ -239,12 +243,20 @@
       {
         "src": "IMG_20190518_054554.jpg",
         "alt": "Dawn breaking over the Toronto skyline",
-        "altZh": "黎明粉霞下的多伦多天际线"
+        "altZh": "黎明粉霞下的多伦多天际线",
+        "lat": 43.6,
+        "lng": -79.4,
+        "cityZh": "多伦多",
+        "city": "Toronto"
       },
       {
         "src": "IMG_20201013_103019.jpg",
         "alt": "Autumn sun glitter on Lake Ontario",
-        "altZh": "安大略湖的秋日波光"
+        "altZh": "安大略湖的秋日波光",
+        "lat": 43.6,
+        "lng": -79.3,
+        "cityZh": "多伦多",
+        "city": "Toronto"
       },
       {
         "src": "IMG_20210904_150759.jpg",
@@ -258,27 +270,47 @@
       {
         "src": "IMG_20211217_110531.jpg",
         "alt": "Winter Rockies panorama from Sulphur Mountain, Banff",
-        "altZh": "班夫硫磺山顶望落基山雪原"
+        "altZh": "班夫硫磺山顶望落基山雪原",
+        "lat": 51.1,
+        "lng": -115.6,
+        "cityZh": "班夫",
+        "city": "Banff"
       },
       {
         "src": "IMG_20211217_122828.jpg",
         "alt": "Banff townsite from above, wrapped in snow",
-        "altZh": "俯瞰雪中的班夫小镇"
+        "altZh": "俯瞰雪中的班夫小镇",
+        "lat": 51.2,
+        "lng": -115.6,
+        "cityZh": "班夫",
+        "city": "Banff"
       },
       {
         "src": "IMG_20211219_130750.jpg",
         "alt": "Skaters far out on frozen Lake Louise",
-        "altZh": "冰封路易斯湖上的滑冰人"
+        "altZh": "冰封路易斯湖上的滑冰人",
+        "lat": 51.4,
+        "lng": -116.2,
+        "cityZh": "路易斯湖",
+        "city": "Lake Louise"
       },
       {
         "src": "IMG_20211220_135153.jpg",
         "alt": "A mountain creek threading through fresh snow, Banff",
-        "altZh": "班夫，新雪间蜿蜒的山涧"
+        "altZh": "班夫，新雪间蜿蜒的山涧",
+        "lat": 51.2,
+        "lng": -115.7,
+        "cityZh": "班夫",
+        "city": "Banff"
       },
       {
         "src": "IMG_20211221_130100.jpg",
         "alt": "A frozen waterfall in the Canadian Rockies",
-        "altZh": "落基山间的冰瀑"
+        "altZh": "落基山间的冰瀑",
+        "lat": 51.2,
+        "lng": -115.8,
+        "cityZh": "班夫",
+        "city": "Banff"
       },
       {
         "src": "IMG_20220429_103038.jpg",
@@ -304,8 +336,8 @@
         "altZh": "尼亚加拉马蹄瀑布与雾中游船",
         "lat": 43.1,
         "lng": -79.1,
-        "cityZh": "尼亚加拉",
-        "city": "Niagara"
+        "cityZh": "尼亚加拉瀑布城",
+        "city": "Niagara Falls"
       },
       {
         "src": "IMG_20220720_152416.jpg",
@@ -372,8 +404,8 @@
       },
       {
         "src": "IMG_20180815_094639.jpg",
-        "alt": "The Washington Monument before the Philadelphia Museum of Art",
-        "altZh": "费城艺术博物馆前的华盛顿纪念雕像",
+        "alt": "The Washington Monument fountain before the Philadelphia Museum of Art",
+        "altZh": "费城艺术博物馆前的华盛顿纪念喷泉雕像",
         "lat": 40,
         "lng": -75.2,
         "cityZh": "费城",
@@ -669,12 +701,12 @@
       },
       {
         "src": "IMG20250906154133.jpg",
-        "alt": "Man O'War Bay's chalk cliffs, Dorset",
-        "altZh": "多塞特，Man O’War 湾的白垩悬崖",
+        "alt": "Man O'War Bay's chalk cliffs near Durdle Door, Dorset",
+        "altZh": "多塞特杜德尔门附近，Man O’War 湾的白垩悬崖",
         "lat": 50.6,
         "lng": -2.3,
-        "cityZh": "多塞特",
-        "city": "Dorset"
+        "cityZh": "卢尔沃斯",
+        "city": "Lulworth"
       },
       {
         "src": "IMG20250909160437.jpg",

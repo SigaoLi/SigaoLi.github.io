@@ -5,6 +5,7 @@ import { Image } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import SectionHeading from '../SectionHeading.astro';
 import DotTag from '../DotTag.astro';
+import ContourField from '../ContourField.astro';
 import { projects } from '../../data/projects';
 import type { Tag } from '../../data/projects';
 import { localizePath, t, type Lang } from '../../lib/i18n';
@@ -34,6 +35,8 @@ const firstImages = await Promise.all(
 ---
 
 <Base title={d.title} description={d.desc}>
+  <div class="relative isolate">
+  <ContourField />
   <main class="mx-auto max-w-6xl px-6 pt-16 pb-8">
     <SectionHeading coords={d.coords} title={d.h1} />
     <p class="mt-4 max-w-2xl text-ink-muted reveal">{d.intro}</p>
@@ -42,8 +45,8 @@ const firstImages = await Promise.all(
       {cases.map((c) => (
         <a
           href={L(`/work/${c.id}`)}
-          class="reveal card-lift group rounded-xl border p-7 flex flex-col"
-          style="border-color: var(--line); background: var(--bg-elevated);"
+          class="reveal card-lift work-card group rounded-xl border p-7 flex flex-col"
+          style="border-color: var(--line);"
         >
           <div class="flex items-center justify-between">
             <DotTag tags={c.data.tags as Tag[]} />
@@ -127,4 +130,11 @@ const firstImages = await Promise.all(
       ))}
     </ul>
   </section>
+  </div>
 </Base>
+
+<style>
+  /* 套A 地形：hover 时卡片略微透明，露出指针下"隆起"的等高线（特效1 接入） */
+  .work-card { background: var(--bg-elevated); transition: background 0.45s ease; }
+  .work-card:hover { background: color-mix(in srgb, var(--bg-elevated) 86%, transparent); }
+</style>

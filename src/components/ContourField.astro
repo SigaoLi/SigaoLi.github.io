@@ -1,0 +1,157 @@
+---
+// Interactive topographic contour field (套A · 地形) — Work page background.
+// Ambient isolines, strongest at the top (the "concept 1" art piece) and
+// fading behind the list; the terrain rises under the cursor. Ported from the
+// validated effects-preview prototype — vanilla canvas, no deps.
+---
+<canvas id="terrain-field" class="pointer-events-none absolute inset-0 -z-10 h-full w-full" aria-hidden="true"></canvas>
+
+<script>
+  import { pageScript, prefersReducedMotion } from '../lib/motion';
+
+  pageScript(() => {
+    const canvas = document.getElementById('terrain-field') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Resolve --accent (hex or rgb) to an [r,g,b] triple — re-read each frame so
+    // it tracks the theme toggle, like ParticleField.
+    const accent = (): [number, number, number] => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      ctx.fillStyle = raw;
+      const s = ctx.fillStyle;
+      if (s[0] === '#') {
+        const n = parseInt(s.length === 4 ? s.slice(1).split('').map((c) => c + c).join('') : s.slice(1), 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      }
+      const m = s.match(/\d+(\.\d+)?/g) || ['27', '73', '101'];
+      return [+m[0], +m[1], +m[2]];
+    };
+
+    // cheap value noise
+    const perm = (() => {
+      const p = Array.from({ length: 256 }, (_, i) => i);
+      let s = 1337;
+      const rnd = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+      for (let i = 255; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
+      return p;
+    })();
+    const pat = (i: number) => perm[((i % 256) + 256) % 256];
+    const fade = (t: number) => t * t * (3 - 2 * t);
+    const lp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const vn = (x: number, y: number) => {
+      const x0 = Math.floor(x), y0 = Math.floor(y), fx = fade(x - x0), fy = fade(y - y0);
+      const v = (ix: number, iy: number) => pat(ix + pat(iy)) / 255;
+      return lp(lp(v(x0, y0), v(x0 + 1, y0), fx), lp(v(x0, y0 + 1), v(x0 + 1, y0 + 1), fx), fy);
+    };
+
+    let w = 0, h = 0;
+    const dpr = Math.min(devicePixelRatio || 1, 1.75);
+    const fit = () => {
+      const r = canvas.getBoundingClientRect();
+      w = r.width; h = r.height;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    fit();
+
+    const cell = 18, scale = 0.07, levels = [0.32, 0.42, 0.52, 0.62, 0.72];
+    const mouse = { x: -9999, y: -9999 };
+
+    const drawField = (t: number, bump: number) => {
+      ctx.clearRect(0, 0, w, h);
+      const ci = mouse.x / cell, cj = mouse.y / cell, sig2 = 2 * 3.4 * 3.4;
+      const f = (i: number, j: number) =>
+        vn(i * scale, j * scale + t) +
+        (bump > 0.01 ? bump * 0.6 * Math.exp(-((i - ci) * (i - ci) + (j - cj) * (j - cj)) / sig2) : 0);
+      const cols = Math.ceil(w / cell);
+      // only march rows in (and just around) the viewport — keeps cost ~one
+      // screenful regardless of how tall the page is.
+      const top = canvas.getBoundingClientRect().top;
+      const jStart = Math.max(0, Math.floor((-top - cell) / cell));
+      const jEnd = Math.min(Math.ceil(h / cell), Math.ceil((-top + innerHeight + cell) / cell));
+      const ix = (a: number, b: number, lv: number) => (lv - a) / (b - a || 1e-6);
+      const acc = accent();
+      ctx.strokeStyle = `rgb(${acc[0]},${acc[1]},${acc[2]})`;
+      ctx.lineWidth = 1;
+      for (let L = 0; L < levels.length; L++) {
+        const lv = levels[L];
+        ctx.globalAlpha = 0.5 * (0.45 + 0.55 * L / levels.length);
+        ctx.beginPath();
+        for (let j = jStart; j < jEnd; j++) for (let i = 0; i < cols; i++) {
+          const x = i * cell, y = j * cell;
+          const a = f(i, j), b = f(i + 1, j), c = f(i + 1, j + 1), d = f(i, j + 1);
+          let idx = 0; if (a > lv) idx |= 8; if (b > lv) idx |= 4; if (c > lv) idx |= 2; if (d > lv) idx |= 1;
+          const T = [x + cell * ix(a, b, lv), y], R = [x + cell, y + cell * ix(b, c, lv)],
+            B = [x + cell * ix(d, c, lv), y + cell], Lf = [x, y + cell * ix(a, d, lv)];
+          const sg = (p: number[], q: number[]) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+          switch (idx) {
+            case 1: case 14: sg(Lf, B); break; case 2: case 13: sg(B, R); break;
+            case 3: case 12: sg(Lf, R); break; case 4: case 11: sg(T, R); break;
+            case 5: sg(Lf, T); sg(B, R); break; case 6: case 9: sg(T, B); break;
+            case 7: case 8: sg(Lf, T); break; case 10: sg(T, R); sg(Lf, B); break;
+          }
+        }
+        ctx.stroke();
+      }
+      if (bump > 0.01) {
+        const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 50);
+        g.addColorStop(0, `rgba(${acc[0]},${acc[1]},${acc[2]},${0.18 * bump})`);
+        g.addColorStop(1, `rgba(${acc[0]},${acc[1]},${acc[2]},0)`);
+        ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mouse.x, mouse.y, 50, 0, 7); ctx.fill();
+      }
+      // vertical fade: strongest at the top (header art piece), faint over the list
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'destination-in';
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(0,0,0,0.9)');
+      grad.addColorStop(0.35, 'rgba(0,0,0,0.4)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.12)');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
+    };
+
+    const isTouch = matchMedia('(hover: none)').matches || innerWidth <= 768;
+    if (prefersReducedMotion() || isTouch) {
+      drawField(0, 0);
+      const onR = () => { fit(); drawField(0, 0); };
+      addEventListener('resize', onR, { passive: true });
+      return () => removeEventListener('resize', onR);
+    }
+
+    let t = 0, bump = 0, raf = 0, running = true, over = false;
+    const onMove = (e: MouseEvent) => {
+      const r = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; over = true;
+    };
+    const onOut = () => { over = false; };
+    const ro = new ResizeObserver(() => fit());
+    if (canvas.parentElement) ro.observe(canvas.parentElement);
+    const tick = () => {
+      bump += ((over ? 1 : 0) - bump) * 0.06;
+      drawField(t, bump);
+      t += 0.0014;
+      if (running) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const onVis = () => {
+      running = document.visibilityState === 'visible';
+      if (running) raf = requestAnimationFrame(tick); else cancelAnimationFrame(raf);
+    };
+    const onResize = () => fit();
+    addEventListener('mousemove', onMove, { passive: true });
+    document.addEventListener('mouseleave', onOut);
+    document.addEventListener('visibilitychange', onVis);
+    addEventListener('resize', onResize, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf); running = false;
+      ro.disconnect();
+      removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseleave', onOut);
+      document.removeEventListener('visibilitychange', onVis);
+      removeEventListener('resize', onResize);
+    };
+  });
+</script>
