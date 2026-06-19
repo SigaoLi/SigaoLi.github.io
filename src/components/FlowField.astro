@@ -51,17 +51,20 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const N = Math.min(520, Math.round((w * h) / 7000));
       parts = Array.from({ length: N }, () => ({ x: Math.random() * w, y: Math.random() * h }));
-      const bg = rgb('--bg', [250, 248, 243]);
-      ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
-      ctx.fillRect(0, 0, w, h);
+      // canvas stays transparent — the page background shows through; trails fade
+      // to transparent (see draw), so no muddy colour build-up.
     };
     fit();
 
     const mouse = { x: -9999, y: -9999, on: false };
 
+    // Cache the resolved colours; re-read only when the theme class flips, not
+    // every frame (getComputedStyle each frame forces a style recalc).
+    let accRGB = rgb('--accent', [27, 73, 101]);
+
     const isTouch = matchMedia('(hover: none)').matches || innerWidth <= 768;
     if (prefersReducedMotion() || isTouch) {
-      const acc = rgb('--accent', [27, 73, 101]);
+      const acc = accRGB;
       ctx.globalAlpha = 0.35; ctx.fillStyle = `rgb(${acc[0]},${acc[1]},${acc[2]})`;
       for (const p of parts) ctx.fillRect(p.x, p.y, 1.4, 1.4);
       ctx.globalAlpha = 1;
@@ -71,11 +74,16 @@
     }
 
     let z = 0, raf = 0, running = true;
+    const themeObs = new MutationObserver(() => { accRGB = rgb('--accent', [27, 73, 101]); });
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     const draw = () => {
-      const bg = rgb('--bg', [250, 248, 243]);
-      const acc = rgb('--accent', [27, 73, 101]);
-      ctx.fillStyle = `rgba(${bg[0]},${bg[1]},${bg[2]},0.06)`;
+      const acc = accRGB;
+      // Fade existing trails toward TRANSPARENT (not toward the bg colour, which
+      // muddied blue→cream into a yellowish tint). The page shows through cleanly.
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,0.085)';
       ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
       for (const p of parts) {
         const a = vn(p.x * 0.006, p.y * 0.006 + z) * Math.PI * 4;
         let vx = Math.cos(a) * 0.9, vy = Math.sin(a) * 0.9, near = 0;
@@ -118,7 +126,7 @@
     addEventListener('resize', onResize, { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf); running = false; ro.disconnect();
+      cancelAnimationFrame(raf); running = false; ro.disconnect(); themeObs.disconnect();
       removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseleave', onOut);
       document.removeEventListener('visibilitychange', onVis);

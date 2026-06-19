@@ -1,12 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Hero from '../../components/Hero.astro';
-import ArcNarrative from '../../components/ArcNarrative.astro';
-import FeaturedCases from '../../components/FeaturedCases.astro';
+// 首页精简为一屏 Hero（无需滚动）。ArcNarrative（三幕）暂移出、文件保留待安家（PRD §20.12）；
+// FeaturedCases（精选作品）已舍弃。
 ---
 
 <Base title="李思高 — AI 产品经理 · 空间数据科学家" description="AI 产品经理，地理空间出身。从地图到模型，以及两者之间的产品。">
   <Hero />
-  <ArcNarrative />
-  <FeaturedCases />
 </Base>

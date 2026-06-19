@@ -68,10 +68,15 @@
     const RADIUS2 = RADIUS * RADIUS;
     const LINK = 100;
 
+    // Cache the resolved colours; re-read only when the theme class flips, not
+    // every frame (getComputedStyle each frame forces a style recalc).
+    let base = toRgb('--ink-muted');
+    let acc = toRgb('--accent');
+    const themeObs = new MutationObserver(() => { base = toRgb('--ink-muted'); acc = toRgb('--accent'); });
+    themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
     const draw = () => {
       ctx.clearRect(0, 0, w, h);
-      const base = toRgb('--ink-muted');
-      const acc = toRgb('--accent');
       const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
 
       for (const p of pts) {
@@ -107,7 +112,7 @@
     if (prefersReducedMotion()) {
       draw(); // static constellation
       window.addEventListener('resize', () => { resize(); draw(); }, { passive: true });
-      return;
+      return () => themeObs.disconnect();
     }
 
     let raf = 0;
@@ -165,6 +170,7 @@
     return () => {
       cancelAnimationFrame(raf);
       running = false;
+      themeObs.disconnect();
       canvas.parentElement?.removeEventListener('mousemove', onMove);
       canvas.parentElement?.removeEventListener('mouseleave', onLeave);
       document.removeEventListener('visibilitychange', onVis);

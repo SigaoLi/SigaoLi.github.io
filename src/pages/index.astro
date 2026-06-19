@@ -1,13 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
-import ArcNarrative from '../components/ArcNarrative.astro';
-import FeaturedCases from '../components/FeaturedCases.astro';
 import { site } from '../lib/site';
+// 首页精简为一屏 Hero（无需滚动）。ArcNarrative（三幕招牌叙事）暂时移出，组件
+// 文件保留待重新安家（见 PRD §20.12）；FeaturedCases（精选作品）已舍弃。
 ---
 
 <Base title={site.title}>
   <Hero />
-  <ArcNarrative />
-  <FeaturedCases />
 </Base>
