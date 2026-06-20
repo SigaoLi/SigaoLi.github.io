@@ -6,6 +6,9 @@
 <canvas id="flow-field" class="pointer-events-none absolute inset-0 -z-10 h-full w-full" aria-hidden="true"></canvas>
 
 <style>
+  /* Promote the flow to its own GPU layer so the CV frost's backdrop-filter
+     samples a cached texture instead of re-rasterising the page each frame. */
+  #flow-field { will-change: transform; transform: translateZ(0); }
   /* Light mode: blend the ink into the paper (richer than a flat overlay).
      Dark mode keeps normal compositing so the glow stays luminous. */
   html:not(.dark) #flow-field { mix-blend-mode: multiply; }
@@ -55,7 +58,7 @@
       w = r.width; h = r.height;
       canvas.width = w * dpr; canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const N = Math.min(520, Math.round((w * h) / 7000));
+      const N = Math.min(420, Math.round((w * h) / 9000));
       parts = Array.from({ length: N }, () => ({ x: Math.random() * w, y: Math.random() * h }));
       // canvas stays transparent — the page background shows through; trails fade
       // to transparent (see draw), so no muddy colour build-up.
@@ -82,15 +85,21 @@
       return () => removeEventListener('resize', onR);
     }
 
-    let z = 0, raf = 0, running = true;
+    let z = 0, raf = 0, running = true, lastDraw = 0;
+    const FRAME = 1000 / 30; // cap ~30fps so the backdrop re-blurs half as often
     const themeObs = new MutationObserver(() => { accRGB = rgb('--accent', [27, 73, 101]); light = !document.documentElement.classList.contains('dark'); });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    const draw = () => {
+    const draw = (now: number) => {
+      if (running) raf = requestAnimationFrame(draw);
+      if (now - lastDraw < FRAME) return;
+      lastDraw = now;
       const acc = accRGB;
-      // Fade existing trails toward TRANSPARENT (not toward the bg colour, which
-      // muddied blue→cream into a yellowish tint). The page shows through cleanly.
+      // Keep a short trail, but fade toward TRANSPARENT (never toward the warm
+      // bg colour — that blue→cream blend was the muddy yellow streak). A faster
+      // fade means the trail clears soon after the cursor moves on, leaving no
+      // lingering line.
       ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = 'rgba(0,0,0,0.085)';
+      ctx.fillStyle = 'rgba(0,0,0,0.16)';
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'source-over';
       for (const p of parts) {
@@ -106,14 +115,13 @@
         }
         p.x += vx; p.y += vy;
         if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) { p.x = Math.random() * w; p.y = Math.random() * h; }
-        ctx.globalAlpha = (light ? 0.42 : 0.3) + near * 0.5;
+        ctx.globalAlpha = (light ? 0.42 : 0.6) + near * 0.4;
         ctx.fillStyle = `rgb(${acc[0]},${acc[1]},${acc[2]})`;
-        const s = (light ? 1.5 : 1.3) + near * 1.6;
+        const s = (light ? 1.5 : 2.2) + near * 1.6;
         ctx.fillRect(p.x, p.y, s, s);
       }
       ctx.globalAlpha = 1;
-      z += 0.0009;
-      if (running) raf = requestAnimationFrame(draw);
+      z += 0.0018;
     };
     raf = requestAnimationFrame(draw);
 
