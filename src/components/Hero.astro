@@ -26,7 +26,7 @@ const L = (p: string) => localizePath(lang, p);
     <circle cx="300" cy="262" r="4" fill="currentColor"/>
   </svg>
 
-  <div class="relative mx-auto flex max-w-6xl items-center px-6 py-20" style="min-height: calc(100svh - 57px);">
+  <div class="relative mx-auto flex max-w-6xl items-center px-6 py-8">
     <div class="grid w-full items-center gap-10 md:grid-cols-[1fr_300px] md:gap-16">
       <!-- Identity + intro -->
       <div>
@@ -34,7 +34,7 @@ const L = (p: string) => localizePath(lang, p);
           {d.coords}
         </p>
 
-        <h1 id="hero-name" class="mt-5 font-display text-[clamp(2.75rem,7vw,5rem)] leading-[1.04] tracking-tight">
+        <h1 id="hero-name" class="mt-4 font-display text-[clamp(2.5rem,6.5vw,4.5rem)] leading-[1.04] tracking-tight">
           {lang === 'zh' ? '李思高' : 'Sigao Li'}
         </h1>
 
@@ -46,7 +46,7 @@ const L = (p: string) => localizePath(lang, p);
           {d.narrative}
         </p>
 
-        <div id="hero-bio" class="mt-6 max-w-xl space-y-4 text-sm sm:text-base text-ink-muted">
+        <div id="hero-bio" class="mt-5 max-w-xl space-y-3 text-sm sm:text-base text-ink-muted">
           <p>
             {a.p1} <a class="link-underline" href="https://gisphere.info/" rel="noopener noreferrer" target="_blank">GISphere</a>{a.p1b}
           </p>
@@ -55,7 +55,7 @@ const L = (p: string) => localizePath(lang, p);
           </p>
         </div>
 
-        <div id="hero-cta" class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div id="hero-cta" class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
           <a href={L('/work')}
             class="inline-block rounded-full px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
             style="background: var(--accent); color: var(--bg);">
@@ -93,14 +93,6 @@ const L = (p: string) => localizePath(lang, p);
         </div>
       </div>
     </div>
-
-    <!-- Scroll hint -->
-    <div id="hero-scroll-hint" class="absolute bottom-8 left-6 flex items-center gap-2 text-ink-muted">
-      <span class="font-mono text-[11px] tracking-widest">{d.scroll}</span>
-      <svg width="12" height="16" viewBox="0 0 12 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-        <path d="M6 1v12M2 9.5 6 14l4-4.5"/>
-      </svg>
-    </div>
   </div>
 </section>
 
@@ -125,8 +117,7 @@ const L = (p: string) => localizePath(lang, p);
       .from('#hero-narrative', { y: 20, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.5')
       .from('#hero-bio', { y: 18, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.45')
       .from('#hero-cta', { y: 16, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.4')
-      .from('#hero-contours .contour', { drawSVG: '0%', duration: 1.4, stagger: 0.15, ease: 'power2.inOut' }, 0.4)
-      .from('#hero-scroll-hint', { opacity: 0, duration: 0.5 }, '-=0.3');
+      .from('#hero-contours .contour', { drawSVG: '0%', duration: 1.4, stagger: 0.15, ease: 'power2.inOut' }, 0.4);
 
     return () => {
       tl.kill();

@@ -3,6 +3,11 @@
      interaction reads clearly (inspired by antigravity.google, kept on-brand). -->
 <canvas id="particle-field" class="absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
 
+<style>
+  /* Light mode: blend the ink into the paper; dark mode keeps the glow. */
+  html:not(.dark) #particle-field { mix-blend-mode: multiply; }
+</style>
+
 <script>
   import { pageScript, prefersReducedMotion } from '../lib/motion';
 
@@ -72,7 +77,10 @@
     // every frame (getComputedStyle each frame forces a style recalc).
     let base = toRgb('--ink-muted');
     let acc = toRgb('--accent');
-    const themeObs = new MutationObserver(() => { base = toRgb('--ink-muted'); acc = toRgb('--accent'); });
+    // Light mode reads a touch flat; give dots/links a little more presence (the
+    // multiply blend that sinks the ink into the paper is set in CSS below).
+    let light = !document.documentElement.classList.contains('dark');
+    const themeObs = new MutationObserver(() => { base = toRgb('--ink-muted'); acc = toRgb('--accent'); light = !document.documentElement.classList.contains('dark'); });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const draw = () => {
@@ -81,10 +89,10 @@
 
       for (const p of pts) {
         const t = p.inf; // 0 (far) → 1 (at cursor)
-        ctx.globalAlpha = 0.42 + t * 0.58;
+        ctx.globalAlpha = (light ? 0.5 : 0.42) + t * 0.5;
         ctx.fillStyle = `rgb(${lerp(base[0], acc[0], t)},${lerp(base[1], acc[1], t)},${lerp(base[2], acc[2], t)})`;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * (1 + t * 2.2), 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.r * (1 + t * 2.2) * (light ? 1.12 : 1), 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -96,7 +104,7 @@
           if (d2 < LINK * LINK) {
             const near = Math.max(pts[i].inf, pts[j].inf);
             const fall = 1 - Math.sqrt(d2) / LINK;
-            ctx.globalAlpha = fall * (0.1 + near * 0.5);
+            ctx.globalAlpha = fall * ((light ? 0.18 : 0.1) + near * 0.5);
             ctx.strokeStyle = `rgb(${lerp(base[0], acc[0], near)},${lerp(base[1], acc[1], near)},${lerp(base[2], acc[2], near)})`;
             ctx.lineWidth = 0.6 + near * 0.6;
             ctx.beginPath();
