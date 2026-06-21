@@ -80,7 +80,7 @@ const headline = lang === 'zh'
       <WorldMap countries={mapCountries} />
     </div>
 
-    {countries.map((c) => (
+    {countries.map((c, ci) => (
       <section id={`gallery-${c.id}`} class="mt-20 scroll-mt-24">
         <div class="flex items-baseline gap-4 reveal">
           <h2 class="font-display text-2xl sm:text-3xl">{c.displayName}</h2>
@@ -89,7 +89,7 @@ const headline = lang === 'zh'
           </span>
         </div>
         <div class="mt-6 columns-2 gap-4 md:columns-3 [&>figure]:mb-4 [&>figure]:break-inside-avoid">
-          {c.photos.map((p) => (
+          {c.photos.map((p, pi) => (
             <figure
               class="group relative cursor-zoom-in overflow-hidden rounded-lg border"
               style={`border-color: var(--line); background-image: url('${p.lqip}'); background-size: cover;`}
@@ -115,7 +115,8 @@ const headline = lang === 'zh'
                 widths={[480, 768, 1080]}
                 sizes="(min-width: 768px) 31vw, 46vw"
                 class="w-full transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                loading="lazy"
+                loading={ci === 0 && pi < 2 ? 'eager' : 'lazy'}
+                fetchpriority={ci === 0 && pi < 2 ? 'high' : undefined}
               />
               {p.city && (
                 <figcaption

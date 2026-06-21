@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# full-resolution photo originals — kept local only, never uploaded.
+# The committed copies under src/assets/photos are downscaled serving masters
+# (max edge 2560px); the build generates avif/webp from those. See PRD §20.13.
+_originals/

@@ -2,6 +2,11 @@
 import '@fontsource-variable/fraunces';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
+// Preload the two above-the-fold faces (Hero display + body), latin wght axis.
+// These same files are referenced by the fontsource CSS, so preload just pulls
+// them forward in parallel with CSS instead of after layout discovers the text.
+import frauncesWoff2 from '@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url';
+import interWoff2 from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
@@ -48,6 +53,8 @@ const zhHref = locale === 'zh' ? path : alternate;
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' https://gc.zgo.at; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://sigaoli.goatcounter.com; font-src 'self' data:; connect-src 'self' https://sigaoli.goatcounter.com; object-src 'none'; base-uri 'self'"
     />
+    <link rel="preload" href={frauncesWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interWoff2} as="font" type="font/woff2" crossorigin />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={new URL(path, Astro.site)} />
     {!path.includes('404') && (

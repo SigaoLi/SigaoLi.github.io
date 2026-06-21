@@ -145,7 +145,7 @@
     }
 
     let t = 0, bump = 0, raf = 0, running = true, over = false, lastDraw = 0;
-    const FRAME = 1000 / 32; // cap redraws ~32fps — the field evolves slowly
+    const FRAME = 1000 / 30; // cap redraws ~30fps — the field evolves slowly
     const onMove = (e: MouseEvent) => {
       const r = canvas.getBoundingClientRect();
       mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; over = true;

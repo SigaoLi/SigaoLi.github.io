@@ -89,19 +89,23 @@
     const FRAME = 1000 / 30; // cap ~30fps so the backdrop re-blurs half as often
     const themeObs = new MutationObserver(() => { accRGB = rgb('--accent', [27, 73, 101]); light = !document.documentElement.classList.contains('dark'); });
     themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    const TRAIL = 6; // tail samples drawn backward along each particle's velocity
     const draw = (now: number) => {
       if (running) raf = requestAnimationFrame(draw);
       if (now - lastDraw < FRAME) return;
       lastDraw = now;
       const acc = accRGB;
-      // Keep a short trail, but fade toward TRANSPARENT (never toward the warm
-      // bg colour — that blue→cream blend was the muddy yellow streak). A faster
-      // fade means the trail clears soon after the cursor moves on, leaving no
-      // lingering line.
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = 'rgba(0,0,0,0.16)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'source-over';
+      // Fully clear every frame — no accumulation buffer. The trail is redrawn
+      // from scratch as a short tail extrapolated backward along each particle's
+      // velocity. The old destination-out fade left a permanent ~1–3/255 alpha
+      // ghost: an 8-bit alpha channel can't decay below that under a
+      // multiplicative fade (a*0.84 rounds back to a for small a), so every
+      // pixel a particle crossed kept a faint residue. Dark mode's normal
+      // compositing showed it as a blue veil; light mode's multiply blend hid
+      // it — which is why the bug only ever looked one-sided. Clearing outright
+      // makes cross-frame residue impossible in either theme.
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = `rgb(${acc[0]},${acc[1]},${acc[2]})`;
       for (const p of parts) {
         const a = vn(p.x * 0.006, p.y * 0.006 + z) * Math.PI * 4;
         let vx = Math.cos(a) * 0.9, vy = Math.sin(a) * 0.9, near = 0;
@@ -115,10 +119,16 @@
         }
         p.x += vx; p.y += vy;
         if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) { p.x = Math.random() * w; p.y = Math.random() * h; }
-        ctx.globalAlpha = (light ? 0.42 : 0.6) + near * 0.4;
-        ctx.fillStyle = `rgb(${acc[0]},${acc[1]},${acc[2]})`;
-        const s = (light ? 1.5 : 2.2) + near * 1.6;
-        ctx.fillRect(p.x, p.y, s, s);
+        const headA = (light ? 0.42 : 0.6) + near * 0.4;
+        const headS = (light ? 1.5 : 2.2) + near * 1.6;
+        // Head + a fading tail. Tail length scales with speed, so the cursor
+        // vortex naturally streaks longer while the calm field stays compact.
+        for (let k = TRAIL; k >= 0; k--) {
+          const f = 1 - k / (TRAIL + 1);
+          ctx.globalAlpha = headA * f * f;
+          const s = headS * (0.5 + 0.5 * f);
+          ctx.fillRect(p.x - vx * k * 1.7, p.y - vy * k * 1.7, s, s);
+        }
       }
       ctx.globalAlpha = 1;
       z += 0.0018;

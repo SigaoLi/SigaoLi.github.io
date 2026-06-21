@@ -125,7 +125,12 @@
 
     let raf = 0;
     let running = true;
-    const tick = () => {
+    let lastStep = 0;
+    const FRAME = 1000 / 30; // cap to ~30fps — ambient field, halves per-second work
+    const tick = (now: number) => {
+      if (running) raf = requestAnimationFrame(tick);
+      if (now - lastStep < FRAME) return;
+      lastStep = now;
       for (const p of pts) {
         // organic ambient drift of the home anchor — keeps the field gently
         // alive even when the cursor is still (wraps at the edges).
@@ -157,7 +162,6 @@
         p.x = p.hx + p.dx; p.y = p.hy + p.dy;
       }
       draw();
-      if (running) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
 
