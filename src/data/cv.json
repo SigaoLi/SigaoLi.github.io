@@ -7,7 +7,8 @@
     "coords": "31.2304° N, 121.4737° E",
     "start": "2026-04",
     "end": "present",
-    "bullets": []
+    "bullets": [],
+    "url": "https://www.ebestmobile.com/"
   },
   "education": [
     {
@@ -19,7 +20,8 @@
       "end": "2025-11",
       "bullets": [
         "Research paper: Understanding and Predicting Regularity, Diversity, and Adaptability in Human Mobility"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "MSA in Spatial Analysis",
@@ -30,7 +32,8 @@
       "end": "2023-10",
       "bullets": [
         "Research paper: Analyzing Lowe's Failure in Canada from a Geographical Perspective"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     },
     {
       "title": "BA (Hons) in Geographic Analysis, Minor in Economics",
@@ -41,7 +44,8 @@
       "end": "2022-06",
       "bullets": [
         "Research paper: The Impact of Population Distribution in the Toronto CMA on Ethnic Retail Location"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     }
   ],
   "experience": [
@@ -54,6 +58,10 @@
       "bullets": [
         "Designed a web-based portal using NLP for sentiment analysis on annual reports, tweets and responses",
         "Performed MOST, SWOT and PESTLE analysis with visualised results"
+      ],
+      "urls": [
+        "https://www.ibm.com/",
+        "https://www.bristol.ac.uk/"
       ]
     },
     {
@@ -65,7 +73,8 @@
       "bullets": [
         "Implemented k-NN customer segmentation and an urbanization index for market screening, optimizing the retail network by 15%",
         "Integrated ML into GIS workflows and revamped enterprise database schema, enhancing operational efficiency by 30%"
-      ]
+      ],
+      "url": "https://www.piinpoint.com/"
     },
     {
       "title": "Business Analyst",
@@ -76,7 +85,8 @@
       "bullets": [
         "Market research on transforming film & TV IP into offline ventures and trends in large brick-and-mortar complexes",
         "Devised data-driven site selection strategies presented to company executives"
-      ]
+      ],
+      "url": "https://ir.iqiyi.com/"
     },
     {
       "title": "Data Analyst",
@@ -86,7 +96,8 @@
       "end": "2021-06",
       "bullets": [
         "ESG research via web scraping of economic data from government and revenue agencies, reducing data collection time by 50%"
-      ]
+      ],
+      "url": "https://www.miotech.com/en-US"
     },
     {
       "title": "Product Analyst",
@@ -96,7 +107,8 @@
       "end": "2021-04",
       "bullets": [
         "Competitive research and diagnostic analysis of user behaviour, boosting user engagement and retention by 20%"
-      ]
+      ],
+      "url": "https://investors.sohu.com/"
     }
   ],
   "research": [
@@ -107,7 +119,8 @@
       "end": "present",
       "bullets": [
         "Built an LLM-based system to identify webpage structures, scrape CSR/ESG reports and extract metadata into a sustainability dataset"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "Research Assistant — AI & Operations Research",
@@ -116,7 +129,8 @@
       "end": "present",
       "bullets": [
         "Used Vision Language Models to extract environmental cues and build a dataset for fine-tuning LLMs on accident trajectory simulation"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "Research Assistant — Transportation Big Data",
@@ -125,7 +139,8 @@
       "end": "present",
       "bullets": [
         "Demand forecasting with Graph Transformer + Bayesian optimization (PyEPO) for trip dispatching decision support"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "Research Assistant — Natural Language Processing",
@@ -134,7 +149,8 @@
       "end": "2025-04",
       "bullets": [
         "Evaluated the impact of party control changes in England on care home quality using ratings, reviews and expenditure data"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "Research Assistant",
@@ -143,7 +159,8 @@
       "end": "2024-09",
       "bullets": [
         "Questionnaire preprocessing, translation and symposium coordination for aging research projects"
-      ]
+      ],
+      "url": "https://psychlabs.torontomu.ca/cal/"
     },
     {
       "title": "Research Assistant — Health Geography",
@@ -152,7 +169,8 @@
       "end": "2022-12",
       "bullets": [
         "Regression analysis of store accessibility vs. consumer health; consumer trajectory modelling with network analysis and geocoding"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     },
     {
       "title": "Research Assistant — GIS",
@@ -161,7 +179,8 @@
       "end": "2022-08",
       "bullets": [
         "Python ETL pipeline aggregating Toronto GTA election results to examine electoral diversity and inclusion"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     }
   ],
   "volunteering": [
@@ -174,7 +193,8 @@
         "Cross-functional development of a custom LLM chatbot for information collection and technical support",
         "Led a team of 4 designing an Azure-based ETL pipeline (Google Sheets → MySQL), reducing task time by 80%",
         "Published 50+ blogs on GIS program applications with 50k+ reads"
-      ]
+      ],
+      "url": "https://gisphere.info/"
     },
     {
       "title": "Campus Partner",
@@ -183,7 +203,8 @@
       "end": "2024-03",
       "bullets": [
         "Partnered with Esri China; organized 'GIS Open Course Week' (10k+ views); co-produced the GISphere Study Abroad Big Data White Paper (2023)"
-      ]
+      ],
+      "url": "https://gisphere.info/"
     },
     {
       "title": "Academic Assistant",
@@ -192,7 +213,8 @@
       "end": "present",
       "bullets": [
         "Academic resource curation and WeChat articles on admission timelines"
-      ]
+      ],
+      "url": "https://www.bristolsu.org.uk/groups/cssa-chinese-students-scholars-association-b151"
     },
     {
       "title": "Campus Ambassador",
@@ -201,7 +223,8 @@
       "end": "2022-08",
       "bullets": [
         "International campaigns reaching 300+ universities and 10k+ students; +15% material downloads"
-      ]
+      ],
+      "url": "https://www.geoscene.cn/"
     }
   ],
   "awards": [

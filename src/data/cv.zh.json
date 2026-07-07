@@ -7,7 +7,8 @@
     "coords": "31.2304° N, 121.4737° E",
     "start": "2026-04",
     "end": "present",
-    "bullets": []
+    "bullets": [],
+    "url": "https://www.ebestmobile.cn/"
   },
   "education": [
     {
@@ -19,7 +20,8 @@
       "end": "2025-11",
       "bullets": [
         "研究论文：理解与预测人类移动中的规律性、多样性与适应性"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "空间分析硕士",
@@ -30,7 +32,8 @@
       "end": "2023-10",
       "bullets": [
         "研究论文：从地理视角分析劳氏公司在加拿大的失败"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     },
     {
       "title": "地理分析荣誉学士，辅修经济学",
@@ -41,7 +44,8 @@
       "end": "2022-06",
       "bullets": [
         "研究论文：多伦多都会区人口分布对少数族裔零售选址的影响"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     }
   ],
   "experience": [
@@ -54,7 +58,8 @@
       "bullets": [
         "设计了一个基于 Web 的门户，利用 NLP 对年报、推文及回复进行情感分析",
         "执行了 MOST、SWOT 和 PESTLE 分析，并可视化呈现结果"
-      ]
+      ],
+      "url": "https://www.heywhale.com/"
     },
     {
       "title": "地理空间数据分析师",
@@ -65,7 +70,8 @@
       "bullets": [
         "实施 k-NN 客户细分与城市化指数进行市场筛选，优化零售网络达 15%",
         "将 ML 集成到 GIS 工作流中，并重构企业数据库架构，提升运营效率 30%"
-      ]
+      ],
+      "url": "https://www.piinpoint.com/"
     },
     {
       "title": "商业分析师",
@@ -76,7 +82,8 @@
       "bullets": [
         "对影视 IP 转化为线下业态及大型商业综合体趋势进行市场研究",
         "制定数据驱动的选址策略，并向公司高管汇报"
-      ]
+      ],
+      "url": "https://www.iqiyi.com/"
     },
     {
       "title": "数据分析师",
@@ -86,7 +93,8 @@
       "end": "2021-06",
       "bullets": [
         "通过网络爬虫从政府和税务机构抓取经济数据进行 ESG 研究，将数据收集时间缩短 50%"
-      ]
+      ],
+      "url": "https://www.miotech.com/zh-CN"
     },
     {
       "title": "产品分析师",
@@ -96,7 +104,8 @@
       "end": "2021-04",
       "bullets": [
         "进行竞品研究与用户行为诊断分析，提升用户参与度和留存率 20%"
-      ]
+      ],
+      "url": "https://www.sohu.com/"
     }
   ],
   "research": [
@@ -108,7 +117,8 @@
       "end": "2025-08",
       "bullets": [
         "构建了一个基于 LLM 的系统，用于识别网页结构、抓取 CSR/ESG 报告并提取元数据，汇入可持续发展数据集"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "研究助理 — AI与运筹学",
@@ -118,7 +128,8 @@
       "end": "2025-10",
       "bullets": [
         "使用视觉语言模型提取环境线索，并构建数据集，用于微调 LLM 进行事故轨迹模拟"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "研究助理 — 交通大数据",
@@ -128,7 +139,8 @@
       "end": "2025-07",
       "bullets": [
         "利用 Graph Transformer + 贝叶斯优化（PyEPO）进行需求预测，为行程调度提供决策支持"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "研究助理 — 自然语言处理",
@@ -138,7 +150,8 @@
       "end": "2025-04",
       "bullets": [
         "利用评分、评论和支出数据，评估英格兰政党控制权变更对养老院质量的影响"
-      ]
+      ],
+      "url": "https://www.bristol.ac.uk/"
     },
     {
       "title": "研究助理 - 认知老化",
@@ -148,7 +161,8 @@
       "end": "2024-09",
       "bullets": [
         "为老龄化研究项目进行问卷预处理、翻译及研讨会协调工作"
-      ]
+      ],
+      "url": "https://psychlabs.torontomu.ca/cal/"
     },
     {
       "title": "研究助理 — 健康地理学",
@@ -158,7 +172,8 @@
       "end": "2022-12",
       "bullets": [
         "对商店可达性与消费者健康进行回归分析；利用网络分析和地理编码进行消费者轨迹建模"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     },
     {
       "title": "研究助理 — GIS",
@@ -168,7 +183,8 @@
       "end": "2022-08",
       "bullets": [
         "构建 Python ETL 管道，聚合多伦多 GTA 选举结果，以考察选举多样性与包容性"
-      ]
+      ],
+      "url": "https://www.torontomu.ca/"
     }
   ],
   "volunteering": [
@@ -182,7 +198,8 @@
         "跨职能开发定制 LLM 聊天机器人，用于信息收集和技术支持",
         "领导 4 人团队设计基于 Azure 的 ETL 管道（Google Sheets → MySQL），将任务时间缩短 80%",
         "发布 50 余篇关于 GIS 项目申请的博客，阅读量超 5 万"
-      ]
+      ],
+      "url": "https://gisphere.info/"
     },
     {
       "title": "部门负责人 - GISource",
@@ -194,7 +211,8 @@
         "跨职能开发定制 LLM 聊天机器人，用于信息收集和技术支持",
         "领导 4 人团队设计基于 Azure 的 ETL 管道（Google Sheets → MySQL），将任务时间缩短 80%",
         "发布 50 余篇关于 GIS 项目申请的博客，阅读量超 5 万"
-      ]
+      ],
+      "url": "https://gisphere.info/"
     },
     {
       "title": "校园合伙人",
@@ -204,7 +222,8 @@
       "end": "2024-03",
       "bullets": [
         "与 Esri 中国合作；组织“GIS 公开课周”（观看量超 1 万）；联合制作《GISphere 留学大数据白皮书（2023）》"
-      ]
+      ],
+      "url": "https://gisphere.info/"
     },
     {
       "title": "学术助理",
@@ -214,7 +233,8 @@
       "end": "2025-04",
       "bullets": [
         "策划学术资源，撰写关于申请时间线的微信公众号文章"
-      ]
+      ],
+      "url": "https://www.bristolsu.org.uk/groups/cssa-chinese-students-scholars-association-b151"
     },
     {
       "title": "校园大使",
@@ -224,7 +244,8 @@
       "end": "2022-08",
       "bullets": [
         "开展国际宣传活动，覆盖 300 余所大学和 1 万余名学生；资料下载量提升 15%"
-      ]
+      ],
+      "url": "https://www.geoscene.cn/"
     }
   ],
   "awards": [

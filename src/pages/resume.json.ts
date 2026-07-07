@@ -25,29 +25,33 @@ export const GET: APIRoute = () => {
         ? [{
             name: cv.current.org,
             position: cv.current.title,
+            url: cv.current.url,
             location: cv.current.location,
             startDate: cv.current.start,
             highlights: cv.current.bullets,
           }]
         : []),
-      ...cv.experience.map((e) => ({
+      ...cv.experience.map((e: any) => ({
         name: e.org,
         position: e.title,
+        url: e.url ?? e.urls?.[0],
         location: e.location,
         startDate: e.start,
         endDate: e.end === 'present' ? undefined : e.end,
         highlights: e.bullets,
       })),
     ],
-    volunteer: cv.volunteering.map((v) => ({
+    volunteer: cv.volunteering.map((v: any) => ({
       organization: v.org,
       position: v.title,
+      url: v.url,
       startDate: v.start,
       endDate: v.end === 'present' ? undefined : v.end,
       highlights: v.bullets,
     })),
     education: cv.education.map((e) => ({
       institution: e.org,
+      url: e.url,
       area: e.title,
       startDate: e.start,
       endDate: e.end,
