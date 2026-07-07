@@ -20,6 +20,13 @@ export default defineConfig({
     '/research': '/work#research',
     '/media': '/photography',
     '/resume': '/cv',
+    '/about': '/',
+    '/talks': '/work',
+    '/portfolio': '/work',
+    '/year-archive': '/work',
+    '/talkmap': '/photography',
+    '/sitemap': '/sitemap-index.xml',
+    '/terms': '/',
   },
   integrations: [
     sitemap({

@@ -37,6 +37,7 @@ const {
 
 const locale = Astro.currentLocale === 'zh' ? 'zh' : 'en';
 const path = Astro.url.pathname;
+const is404 = path.includes('404');
 const alternate = altPath(path);
 const enHref = locale === 'en' ? path : alternate;
 const zhHref = locale === 'zh' ? path : alternate;
@@ -56,9 +57,9 @@ const zhHref = locale === 'zh' ? path : alternate;
     <link rel="preload" href={frauncesWoff2} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={interWoff2} as="font" type="font/woff2" crossorigin />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href={new URL(path, Astro.site)} />
-    {!path.includes('404') && (
+    {!is404 && (
       <>
+        <link rel="canonical" href={new URL(path, Astro.site)} />
         <link rel="alternate" hreflang="en" href={new URL(enHref, Astro.site)} />
         <link rel="alternate" hreflang="zh-CN" href={new URL(zhHref, Astro.site)} />
         <link rel="alternate" hreflang="x-default" href={new URL(enHref, Astro.site)} />
@@ -126,6 +127,18 @@ const zhHref = locale === 'zh' ? path : alternate;
         document.addEventListener('astro:after-swap', apply);
       })();
     </script>
+    {site.goatcounter && is404 && (
+      <script is:inline>
+        // 404 hits must report the visitor's real (missing) URL, prefixed for
+        // grouping in the dashboard — count.js would otherwise collapse them all
+        // into one path.
+        window.goatcounter = {
+          path: function () {
+            return '404-' + location.pathname + location.search;
+          },
+        };
+      </script>
+    )}
     {site.goatcounter && (
       <script
         is:inline
