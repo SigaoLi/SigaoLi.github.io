@@ -1,0 +1,13 @@
+{
+  "name": "sigaoli",
+  "title": "Sigao Li — personal MCP server",
+  "description": "Read-only structured access to Sigao Li's professional profile: identity and career narrative, full CV, and project case studies. Content is bilingual (English/Chinese).",
+  "endpoint": "https://api.sigaoli.com/mcp",
+  "transport": "streamable-http",
+  "protocol_version": "2025-06-18",
+  "authentication": "none",
+  "tools": ["get_profile", "list_experience", "get_case_study"],
+  "website": "https://sigaoli.com",
+  "documentation": "https://sigaoli.com/llms.txt",
+  "contact": "sigao.li@outlook.com"
+}

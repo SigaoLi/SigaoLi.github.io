@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { site } from '../lib/site';
 import cv from '../data/cv.json';
+import { loadPersona } from '../lib/knowledge/manual';
 
 const fmtEntry = (e: { title: string; org: string; location?: string; start: string; end: string; bullets: string[] }) =>
   `### ${e.title} — ${e.org} (${e.start} to ${e.end}${e.location ? `, ${e.location}` : ''})\n${e.bullets.map((b) => `- ${b}`).join('\n')}`;
@@ -11,10 +12,25 @@ const fmtEntry = (e: { title: string; org: string; location?: string; start: str
 export const GET: APIRoute = async () => {
   const cases = (await getCollection('cases')).sort((a, b) => a.data.order - b.data.order);
   const research = (await getCollection('research')).sort((a, b) => a.data.order - b.data.order);
+  // 人工层与 AI 分身共享同一来源(src/data/knowledge/),被动出口不再缺"人味"内容
+  const persona = loadPersona();
 
   const body = `# Sigao Li — full site content
 # Source: ${site.url} · Contact: ${site.email}
 # This file mirrors the site's content for LLM ingestion. Generated at build time.
+# Interactive access: MCP server at ${site.api}/mcp (tools: get_profile, list_experience, get_case_study) · chat at ${site.api}/chat
+
+# Self-narrative (first-person, Chinese source)
+
+${persona.about}
+
+# Frequently asked questions (Chinese source)
+
+${persona.faq}
+
+# Additional notes
+
+${persona.extra}
 
 # Case studies
 

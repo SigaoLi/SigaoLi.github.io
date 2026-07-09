@@ -19,6 +19,12 @@ Machine-readable resume: ${site.url}/resume.json
 Full site content in one file: ${site.url}/llms-full.txt
 中文版站点: ${site.url}/zh/
 
+## AI interfaces (interactive)
+
+- MCP server (Streamable HTTP, no auth): ${site.api}/mcp — tools: get_profile, list_experience, get_case_study. Server card: ${site.url}/.well-known/mcp.json
+- Chat about Sigao (SSE, POST {lang, messages}): ${site.api}/chat — also available as a widget on every page
+- Knowledge pack behind both (JSON, bilingual): ${site.url}/knowledge.json
+
 ## Case studies (what he has built)
 
 ${cases.map((c) => `- [${c.data.title}](${site.url}/work/${c.id}/): ${c.data.tagline} (${c.data.year}${c.data.org ? `, ${c.data.org}` : ''})`).join('\n')}

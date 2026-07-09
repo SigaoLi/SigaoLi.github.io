@@ -1,0 +1,256 @@
+---
+// 全站右下角 AI 聊天浮窗(PRD §22,V1;形态与第三人称口吻为 2026-07-09 Sigao 定案)。
+// 前端只认 api.sigaoli.com(可迁移性约束);流式用 fetch+getReader 解析 SSE(EventSource 不支持 POST)。
+import { t, type Lang } from '../lib/i18n';
+import { site } from '../lib/site';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+const d = t(lang).chat;
+const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
+---
+
+<div id="chat-root" data-lang={lang} data-api={apiBase} data-greeting={d.greeting}
+  data-err-rate={d.errRate} data-err-turns={d.errTurns} data-err-upstream={d.errUpstream} data-err-network={d.errNetwork}>
+  <!-- 浮动按钮 -->
+  <button id="chat-fab" aria-label={d.open} title={d.open} aria-expanded="false" aria-controls="chat-panel"
+    class="fixed bottom-5 right-5 z-[60] flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition-transform hover:scale-105 motion-reduce:transition-none"
+    style="border-color: var(--line); background: var(--bg-elevated); color: var(--accent);">
+    <svg id="chat-fab-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5Z"/>
+      <circle cx="8.6" cy="11.5" r="0.9" fill="currentColor" stroke="none"/>
+      <circle cx="12.5" cy="11.5" r="0.9" fill="currentColor" stroke="none"/>
+      <circle cx="16.4" cy="11.5" r="0.9" fill="currentColor" stroke="none"/>
+    </svg>
+    <svg id="chat-fab-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="hidden" aria-hidden="true">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </svg>
+  </button>
+
+  <!-- 对话面板 -->
+  <section id="chat-panel" role="dialog" aria-label={d.title} hidden
+    class="fixed bottom-20 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border shadow-2xl"
+    style="border-color: var(--line); background: var(--bg-elevated); height: min(540px, calc(100dvh - 8.5rem));">
+    <header class="border-b px-4 py-3" style="border-color: var(--line);">
+      <p class="font-mono text-[10px] uppercase tracking-wider" style="color: var(--accent);">{d.title}</p>
+      <p class="mt-0.5 text-xs text-ink-muted">{d.subtitle}</p>
+    </header>
+
+    <div id="chat-log" role="log" aria-live="polite" class="flex-1 space-y-3 overflow-y-auto px-4 py-4"></div>
+
+    <!-- 常用问题(仅空对话时显示,点击即发送) -->
+    <div id="chat-suggest" class="flex flex-wrap gap-1.5 px-4 pb-2">
+      {t(lang).chat.suggestions.map((q) => (
+        <button type="button" class="chat-chip rounded-full border px-2.5 py-1 text-left text-xs transition-colors">{q}</button>
+      ))}
+    </div>
+
+    <form id="chat-form" class="border-t px-3 py-3" style="border-color: var(--line);">
+      <div class="flex items-end gap-2">
+        <textarea id="chat-input" rows="1" maxlength="2000" placeholder={d.placeholder} autocomplete="off"
+          class="max-h-28 w-full resize-none bg-transparent px-1 py-1.5 text-sm outline-none text-ink placeholder:text-ink-muted"></textarea>
+        <button id="chat-send" type="submit" aria-label={d.send}
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
+          style="background: var(--accent);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m5 12 14 0M13 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="mt-2 flex items-center justify-between gap-2">
+        <p class="text-[10px] leading-tight text-ink-muted">{d.disclaimer}</p>
+        <button id="chat-reset" type="button" class="shrink-0 font-mono text-[10px] uppercase tracking-wider text-ink-muted hover:text-ink">{d.reset}</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<style>
+  .chat-chip { border-color: var(--line); color: var(--ink-muted); }
+  .chat-chip:hover { border-color: var(--accent); color: var(--ink); }
+</style>
+
+<!-- 气泡由运行时 JS 创建,拿不到 Astro 作用域属性,样式须 is:global -->
+<style is:global>
+  .chat-msg { max-width: 85%; border-radius: 0.75rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; line-height: 1.55; overflow-wrap: anywhere; }
+  .chat-msg.user { margin-left: auto; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--ink); }
+  .chat-msg.bot { margin-right: auto; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .chat-msg.bot code { font-family: var(--font-mono, monospace); font-size: 0.8em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; }
+  .chat-msg.pending::after { content: '…'; opacity: 0.5; }
+</style>
+
+<script>
+  import { pageScript } from '../lib/motion';
+
+  const MAX_TURNS = 12; // 与 worker/src/core/config.ts 的 maxTurns 一致
+  type Msg = { role: 'user' | 'assistant'; content: string };
+
+  const store = {
+    load: (): Msg[] => { try { return JSON.parse(sessionStorage.getItem('sigaoli-chat') ?? '[]'); } catch { return []; } },
+    save: (h: Msg[]) => sessionStorage.setItem('sigaoli-chat', JSON.stringify(h)),
+    clear: () => sessionStorage.removeItem('sigaoli-chat'),
+  };
+
+  // 极简安全渲染:先转义 HTML,再恢复 **粗体** / `代码` / 换行
+  const render = (text: string): string =>
+    text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>');
+
+  pageScript(() => {
+    const root = document.getElementById('chat-root');
+    if (!root) return;
+    const fab = document.getElementById('chat-fab')!;
+    const fabOpen = document.getElementById('chat-fab-open')!;
+    const fabClose = document.getElementById('chat-fab-close')!;
+    const panel = document.getElementById('chat-panel') as HTMLElement;
+    const log = document.getElementById('chat-log')!;
+    const form = document.getElementById('chat-form') as HTMLFormElement;
+    const input = document.getElementById('chat-input') as HTMLTextAreaElement;
+    const sendBtn = document.getElementById('chat-send') as HTMLButtonElement;
+    const resetBtn = document.getElementById('chat-reset')!;
+    const suggest = document.getElementById('chat-suggest') as HTMLElement;
+    const { lang, api, greeting } = root.dataset as { lang: 'en' | 'zh'; api: string; greeting: string };
+    const errText: Record<string, string> = {
+      rate_limited: root.dataset.errRate!,
+      turn_limit: root.dataset.errTurns!,
+      upstream_unavailable: root.dataset.errUpstream!,
+      network: root.dataset.errNetwork!,
+    };
+
+    let history = store.load();
+    let busy = false;
+    let aborter: AbortController | null = null;
+
+    // 使用量埋点:走站点既有 GoatCounter,只记事件名,不含对话内容;dev 构建不上报
+    const track = (name: string) => {
+      if (!import.meta.env.PROD) return;
+      (window as unknown as { goatcounter?: { count?: (o: object) => void } }).goatcounter?.count?.({
+        path: name,
+        event: true,
+      });
+    };
+
+    const bubble = (cls: 'user' | 'bot', html: string): HTMLElement => {
+      const el = document.createElement('div');
+      el.className = `chat-msg ${cls}`;
+      el.innerHTML = html;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+      return el;
+    };
+    const paint = () => {
+      log.innerHTML = '';
+      bubble('bot', render(greeting));
+      for (const m of history) bubble(m.role === 'user' ? 'user' : 'bot', render(m.content));
+      suggest.hidden = history.length > 0;
+    };
+    const setBusy = (b: boolean) => { busy = b; sendBtn.disabled = b; };
+
+    // 面板开合状态跨页保持(View Transitions 切页后恢复;恢复时不抢焦点)
+    const toggle = (open?: boolean, focus = true) => {
+      const show = open ?? panel.hidden;
+      panel.hidden = !show;
+      fab.setAttribute('aria-expanded', String(show));
+      fabOpen.classList.toggle('hidden', show);
+      fabClose.classList.toggle('hidden', !show);
+      sessionStorage.setItem('sigaoli-chat-open', show ? '1' : '0');
+      if (show) { paint(); if (focus) { input.focus(); track('chat-open'); } }
+    };
+    if (sessionStorage.getItem('sigaoli-chat-open') === '1') toggle(true, false);
+
+    const send = async (text: string) => {
+      track('chat-send');
+      suggest.hidden = true;
+      history.push({ role: 'user', content: text });
+      store.save(history);
+      bubble('user', render(text));
+      const botEl = bubble('bot', '');
+      botEl.classList.add('pending');
+      setBusy(true);
+      aborter = new AbortController();
+      let acc = '';
+      try {
+        const res = await fetch(`${api}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lang, messages: history }),
+          signal: aborter.signal,
+        });
+        if (!res.ok || !res.body) {
+          const code = (await res.json().catch(() => ({ error: '' }))).error as string;
+          botEl.innerHTML = render(errText[code] ?? errText.upstream_unavailable);
+          return;
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          let idx: number;
+          while ((idx = buf.indexOf('\n')) >= 0) {
+            const line = buf.slice(0, idx).trim();
+            buf = buf.slice(idx + 1);
+            if (!line.startsWith('data:')) continue;
+            try {
+              const evt = JSON.parse(line.slice(5));
+              if (evt.delta) {
+                acc += evt.delta;
+                botEl.classList.remove('pending');
+                botEl.innerHTML = render(acc);
+                log.scrollTop = log.scrollHeight;
+              }
+            } catch { /* 忽略坏行 */ }
+          }
+        }
+        if (acc) { history.push({ role: 'assistant', content: acc }); store.save(history); }
+        else botEl.innerHTML = render(errText.upstream_unavailable);
+      } catch {
+        if (acc) { history.push({ role: 'assistant', content: acc }); store.save(history); }
+        else botEl.innerHTML = render(errText.network);
+      } finally {
+        botEl.classList.remove('pending');
+        setBusy(false);
+        aborter = null;
+      }
+    };
+
+    const trySend = (text: string) => {
+      if (!text || busy) return;
+      if (history.filter((m) => m.role === 'user').length >= MAX_TURNS) {
+        bubble('bot', render(errText.turn_limit));
+        return;
+      }
+      input.value = '';
+      input.style.height = '';
+      void send(text);
+    };
+    const onSubmit = (e: Event) => {
+      e.preventDefault();
+      trySend(input.value.trim());
+    };
+    const onChip = (e: Event) => {
+      const chip = (e.target as HTMLElement).closest<HTMLElement>('.chat-chip');
+      if (chip) trySend(chip.textContent!.trim());
+    };
+    const onKeydown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+      if (e.key === 'Escape') toggle(false);
+    };
+    const autosize = () => { input.style.height = ''; input.style.height = `${Math.min(input.scrollHeight, 112)}px`; };
+    const onReset = () => { history = []; store.clear(); paint(); input.focus(); };
+    const onFab = () => toggle();
+
+    fab.addEventListener('click', onFab);
+    form.addEventListener('submit', onSubmit);
+    suggest.addEventListener('click', onChip);
+    input.addEventListener('keydown', onKeydown);
+    input.addEventListener('input', autosize);
+    resetBtn.addEventListener('click', onReset);
+
+    return () => { aborter?.abort(); };
+  });
+</script>

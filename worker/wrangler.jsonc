@@ -1,0 +1,30 @@
+// sigaoli-api — Chatbot(/chat)与后续 MCP(/mcp)的单 Worker(PRD §22.2)。
+// 部署:npx wrangler deploy;正式域名 api.sigaoli.com 在 Cloudflare 面板绑自定义域。
+// 密钥用 wrangler secret put(DEEPSEEK_API_KEY / NEWAPI_API_KEY / NEWAPI_BASE_URL),
+// 本地开发放 .dev.vars(已 gitignore,绝不入仓库)。
+{
+  "name": "sigaoli-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  // MCP SDK(@modelcontextprotocol/sdk)依赖 Node API,需开 nodejs_compat
+  "compatibility_flags": ["nodejs_compat"],
+  // 只走正式域名,不开 workers.dev 子域;custom_domain 部署时自动建 DNS 记录与证书
+  "workers_dev": false,
+  "routes": [{ "pattern": "api.sigaoli.com", "custom_domain": true }],
+  "vars": {
+    // 生产从线上站点拉知识包;本地开发在 .dev.vars 覆写为 localhost
+    "KNOWLEDGE_URL": "https://sigaoli.com/knowledge.json",
+    "ALLOWED_ORIGINS": "https://sigaoli.com,https://www.sigaoli.com"
+  },
+  // Workers 原生 Rate Limiting(免费档可用;宽松过滤器,精确额度靠各 API 侧硬顶兜底)
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "CHAT_RATE_LIMITER",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": { "limit": 5, "period": 60 }
+      }
+    ]
+  }
+}
