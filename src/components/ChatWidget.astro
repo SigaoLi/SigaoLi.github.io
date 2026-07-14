@@ -1,5 +1,13 @@
 ---
-// 全站右下角 AI 聊天浮窗(PRD §22,V1;形态与第三人称口吻为 2026-07-09 Sigao 定案)。
+// 全站右下角 AI 聊天浮窗(PRD §22,V1)。
+// 入口=数字门童 Zoe(PRD §23,2026-07-14 动作系统实装):全站固定右下角,零走位;
+// - 跨页 transition:persist:切页原地不断帧,睡眠状态延续;切页瞬间抽「切页反应」(18/19/20)
+// - 静默层:idle 常驻;75s 无活动入睡(坐→趴),hover/点击/聊天才醒(滚动不吵醒);23-6 点进站已睡
+// - 微动层:舔爪/打哈欠 2-3 分钟低频随机,滚动中绝不播,同一动作不连播
+// - 互动层:hover=唤醒/逗猫计数;打字=倾听;等首 token=歪头思考;流式回复=敲地面⇄傲娇随机轮换(播完当前段切回)
+//   (07-15 Sigao 定「移动非叠加」:凑近看你只在切页反应池,傲娇只在打字轮换)
+// - 彩蛋层(每会话各一次):睡醒伸懒腰替普通起身;回头客挥手;连续逗猫 3 次玩球;道谢/道别作揖
+// 素材=锚点图为节点、片段为边(首尾帧钉死故硬切连贯),生产手册 docs/zoe-production-handbook.md。
 // 前端只认 api.sigaoli.com(可迁移性约束);流式用 fetch+getReader 解析 SSE(EventSource 不支持 POST)。
 import { t, type Lang } from '../lib/i18n';
 import { site } from '../lib/site';
@@ -10,25 +18,22 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
 ---
 
 <div id="chat-root" data-lang={lang} data-api={apiBase} data-greeting={d.greeting}
+  data-bubble={d.bubble} data-meow={d.meow} data-open={d.open}
   data-err-rate={d.errRate} data-err-turns={d.errTurns} data-err-upstream={d.errUpstream} data-err-network={d.errNetwork}>
-  <!-- 浮动按钮 -->
-  <button id="chat-fab" aria-label={d.open} title={d.open} aria-expanded="false" aria-controls="chat-panel"
-    class="fixed bottom-5 right-5 z-[60] flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition-transform hover:scale-105 motion-reduce:transition-none"
-    style="border-color: var(--line); background: var(--bg-elevated); color: var(--accent);">
-    <svg id="chat-fab-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 8.5-8.5 8.38 8.38 0 0 1 8.5 8.5Z"/>
-      <circle cx="8.6" cy="11.5" r="0.9" fill="currentColor" stroke="none"/>
-      <circle cx="12.5" cy="11.5" r="0.9" fill="currentColor" stroke="none"/>
-      <circle cx="16.4" cy="11.5" r="0.9" fill="currentColor" stroke="none"/>
-    </svg>
-    <svg id="chat-fab-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="hidden" aria-hidden="true">
-      <path d="M18 6 6 18M6 6l12 12"/>
-    </svg>
+  <!-- Zoe 舞台:零尺寸锚点按钮,子元素 bottom:0 对齐脚底地面线;transform 定位右下角。
+       transition:persist=跨页保留 DOM,视频不断帧(语言切换时面板重建、舞台沿用,标签由 JS 同步) -->
+  <button id="chat-fab" transition:persist="zoe-stage" aria-label={d.open} title={d.open} aria-expanded="false" aria-controls="chat-panel"
+    class="zoe-stage fixed left-0 top-0 z-[59]">
+    <video id="zoe-a" muted playsinline aria-hidden="true"></video>
+    <video id="zoe-b" muted playsinline aria-hidden="true"></video>
+    <img id="zoe-still" src="/zoe/zoe-sit.webp" alt="" hidden style="height:150px" aria-hidden="true" />
+    <span id="zoe-bubble" hidden aria-hidden="true">{d.bubble}</span>
   </button>
 
   <!-- 对话面板 -->
+  <!-- 桌面端面板让位到 Zoe 左侧(Sigao 07-12 定:Zoe 在对话框右侧);移动端仍贴右、盖住 Zoe -->
   <section id="chat-panel" role="dialog" aria-label={d.title} hidden
-    class="fixed bottom-20 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border shadow-2xl"
+    class="fixed bottom-20 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border shadow-2xl md:bottom-5 md:right-[11.25rem]"
     style="border-color: var(--line); background: var(--bg-elevated); height: min(540px, calc(100dvh - 8.5rem));">
     <header class="border-b px-4 py-3" style="border-color: var(--line);">
       <p class="font-mono text-[10px] uppercase tracking-wider" style="color: var(--accent);">{d.title}</p>
@@ -67,6 +72,34 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
 <style>
   .chat-chip { border-color: var(--line); color: var(--ink-muted); }
   .chat-chip:hover { border-color: var(--accent); color: var(--ink); }
+  /* 实体碰撞盒 160×180,margin 负偏移使 transform 锚点=脚底中心(零尺寸盒会被点击/无障碍工具忽略) */
+  .zoe-stage { background: none; border: none; padding: 0; cursor: pointer; will-change: transform; pointer-events: auto;
+    width: 160px; height: 180px; margin-left: -80px; margin-top: -180px; }
+  .zoe-stage video, .zoe-stage img {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    max-width: none; /* 默认 video max-width:100% 会把宽画幅片段压进 160px 碰撞盒 → 猫缩小(07-12 尺寸 bug 根因) */
+    display: none;
+    filter: drop-shadow(0 5px 12px rgb(0 0 0 / 0.16));
+  }
+  .zoe-stage .on { display: block; }
+  .zoe-stage:focus-visible video, .zoe-stage:focus-visible img { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+  /* 问候/喵~ 气泡:锚在猫头上方,尾巴指向她;点击(冒泡到按钮)即开聊 */
+  #zoe-bubble {
+    position: absolute; right: 4px; bottom: calc(100% + 12px);
+    max-width: 180px; width: max-content; text-align: left; /* 230→180:配合头像左移/Zoe 右移,紧凑视口不遮社交图标 */
+    padding: 0.5rem 0.75rem; border-radius: 0.75rem; border-bottom-right-radius: 2px;
+    border: 1px solid var(--line); background: var(--bg-elevated); color: var(--ink);
+    font-size: 0.8rem; line-height: 1.5; box-shadow: 0 6px 20px rgb(0 0 0 / 0.12);
+    transform-origin: 90% 100%; animation: zoe-bubble-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  #zoe-bubble::after {
+    content: ''; position: absolute; right: 18px; bottom: -5px; width: 10px; height: 10px;
+    background: var(--bg-elevated); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    transform: rotate(45deg);
+  }
+  #zoe-bubble[hidden] { display: none; }
+  @keyframes zoe-bubble-pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+  @media (prefers-reduced-motion: reduce) { #zoe-bubble { animation: none; } }
 </style>
 
 <!-- 气泡由运行时 JS 创建,拿不到 Astro 作用域属性,样式须 is:global -->
@@ -90,6 +123,88 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     clear: () => sessionStorage.removeItem('sigaoli-chat'),
   };
 
+  // ---- Zoe 片段清单(素材 public/zoe/,600p VP9 alpha;管线 scripts/zoe-prod2.mjs,手册 docs/zoe-production-handbook.md) ----
+  // 锚点图结构:所有片段首尾帧钉在 坐(a-sit2)/趴(b-loaf2) 锚点上 → 任意组合硬切即连贯;
+  // loop 片段(首=尾)天然无缝;listen/think/type 首尾也是锚点,可动态开 loop 循环。
+  type ZoeClip = { src: string; loop?: boolean };
+  const ZOE: Record<string, ZoeClip> = {
+    idle: { src: 'idle', loop: true },
+    loaf: { src: 'loaf', loop: true },
+    loafToSit: { src: 'loaf-to-sit' },
+    sitToLoaf: { src: 'sit-to-loaf' },
+    stretch: { src: 'stretch' },
+    attend: { src: 'attend' },
+    listen: { src: 'listen', loop: true },
+    think: { src: 'think', loop: true },
+    type: { src: 'type', loop: true },
+    groom: { src: 'groom' },
+    yawn: { src: 'yawn' },
+    wave: { src: 'wave' },
+    ball: { src: 'ball' },
+    bow: { src: 'bow' },
+    proud: { src: 'proud' },
+    startle: { src: 'startle' },
+    earflick: { src: 'earflick' },
+    glance: { src: 'glance' },
+  };
+
+  // 计时旋钮(PRD §23.2);?zoe-fast 把分钟级等待缩到秒级(本地验收/E2E 用,不影响正常访客)
+  const FAST = new URLSearchParams(location.search).has('zoe-fast');
+  const T = {
+    loafDwell: 2000,                      // 进场秀起身前趴着停留
+    sleepAfter: FAST ? 6_000 : 75_000,    // 无活动入睡(60-90s 取中)
+    microMin: FAST ? 10_000 : 120_000,    // 微动间隔 2-3 分钟
+    microMax: FAST ? 15_000 : 180_000,
+    scrollQuiet: FAST ? 2_000 : 8_000,    // 滚动停止多久后才允许自发动作
+    switchNone: FAST ? 1_000 : 8_000,     // 切页反应:间隔内不出动作
+    switchSmall: FAST ? 5_000 : 30_000,   // 切页反应:间隔内只出小动作
+    ballWindow: 45_000,                   // 连续逗猫计数窗口
+  };
+  // 彩蛋触发词(道谢/道别→作揖 bow,每会话一次;傲娇已移至打字轮换不再当彩蛋,07-15 Sigao 定)
+  const THANKS_RE = /谢谢|谢啦|谢了|感谢|多谢|辛苦|thank|thx/i;
+  const BYE_RE = /再见|拜拜|回见|告辞|晚安|下次聊|goodbye|\bbye\b|see you|farewell|good night/i;
+
+  // ---- 模块级单例:transition:persist 下模块只执行一次,状态跨页存活;pageScript 每页只做接线 ----
+  const Z = {
+    booted: false,
+    interactive: false, // 桌面+精细指针+非 reduced;false 时只有 idle,一律不加戏(§23 移动端/无障碍)
+    reduced: false,
+    vids: [] as HTMLVideoElement[],
+    still: null as HTMLImageElement | null,
+    fab: null as HTMLElement | null,
+    bubbleEl: null as HTMLElement | null,
+    cur: 0,
+    gen: 0,
+    state: 'boot' as 'boot' | 'show' | 'idle' | 'sleep' | 'wake' | 'listen' | 'think' | 'type' | 'act',
+    lastActivity: Date.now(),
+    lastScroll: 0,
+    lastSwitch: 0,
+    lastAuto: 0,      // 上次自发/互动动作(全局频率闸)
+    lastMicro: '',
+    hovers: [] as number[],
+    pendingEgg: '' as '' | 'bow',
+    sleepTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    microTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    listenTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    bubbleTimer: 0 as ReturnType<typeof setTimeout> | 0,
+  };
+  let history: Msg[] = [];
+  let busy = false;
+  let aborter: AbortController | null = null;
+
+  const $ = (id: string) => document.getElementById(id);
+  const rootData = () => ($('chat-root')?.dataset ?? {}) as Record<string, string>;
+  const panelOpen = () => { const p = $('chat-panel'); return !!p && !p.hidden; };
+  const eggUsed = (k: string) => sessionStorage.getItem(`sigaoli-zoe-egg-${k}`) === '1';
+  const useEgg = (k: string) => sessionStorage.setItem(`sigaoli-zoe-egg-${k}`, '1');
+  const warm = (names: string[]) => { for (const n of names) { try { void fetch(`/zoe/${n}.webm`); } catch { /* 预热失败不致命 */ } } };
+
+  // 使用量埋点:走站点既有 GoatCounter,只记事件名,不含对话内容;dev 构建不上报
+  const track = (name: string) => {
+    if (!import.meta.env.PROD) return;
+    (window as unknown as { goatcounter?: { count?: (o: object) => void } }).goatcounter?.count?.({ path: name, event: true });
+  };
+
   // 极简安全渲染:先转义 HTML,再恢复 **粗体** / `代码` / 换行
   const render = (text: string): string =>
     text
@@ -98,140 +213,380 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\n/g, '<br>');
 
-  pageScript(() => {
-    const root = document.getElementById('chat-root');
-    if (!root) return;
-    const fab = document.getElementById('chat-fab')!;
-    const fabOpen = document.getElementById('chat-fab-open')!;
-    const fabClose = document.getElementById('chat-fab-close')!;
-    const panel = document.getElementById('chat-panel') as HTMLElement;
-    const log = document.getElementById('chat-log')!;
-    const form = document.getElementById('chat-form') as HTMLFormElement;
-    const input = document.getElementById('chat-input') as HTMLTextAreaElement;
-    const sendBtn = document.getElementById('chat-send') as HTMLButtonElement;
-    const resetBtn = document.getElementById('chat-reset')!;
-    const suggest = document.getElementById('chat-suggest') as HTMLElement;
-    const { lang, api, greeting } = root.dataset as { lang: 'en' | 'zh'; api: string; greeting: string };
-    const errText: Record<string, string> = {
-      rate_limited: root.dataset.errRate!,
-      turn_limit: root.dataset.errTurns!,
-      upstream_unavailable: root.dataset.errUpstream!,
-      network: root.dataset.errNetwork!,
-    };
+  // ================= Zoe 播放引擎 =================
+  const place = () => { if (Z.fab) Z.fab.style.transform = `translate3d(${innerWidth - 94}px, ${innerHeight - 28}px, 0)`; };
+  const showEl = (el: HTMLElement) => {
+    el.classList.add('on');
+    for (const e of [...Z.vids, Z.still!]) if (e && e !== el) e.classList.remove('on');
+  };
+  const prepOn = (v: HTMLVideoElement, name: string): Promise<HTMLVideoElement> => {
+    const url = `/zoe/${ZOE[name].src}.webm`;
+    if (v.src.endsWith(url)) v.currentTime = 0;
+    else v.src = url;
+    v.style.height = '180px'; v.style.bottom = '-15px'; // 幅底距脚底 1/12
+    return new Promise((res) => {
+      if (v.readyState >= 3) res(v);
+      else v.addEventListener('canplay', () => res(v), { once: true });
+    });
+  };
+  // 元素复用策略:优先留在已装同片段的元素上(免重载)
+  const prep = (name: string): Promise<HTMLVideoElement> => {
+    let v = Z.vids[Z.cur];
+    if (!v.src.endsWith(`/zoe/${ZOE[name].src}.webm`)) v = Z.vids[Z.cur ^= 1];
+    return prepOn(v, name);
+  };
+  // 播放一段;非 loop 段 resolve 于 ended;gen 变化(被新动作打断)即中止
+  // loopOverride: 首尾=锚点的片段都可无缝循环,按场景临时开(如傲娇在打字阶段循环、彩蛋时单次)
+  const playZ = async (name: string, g: number, loopOverride?: boolean) => {
+    const v = await prep(name);
+    if (g !== Z.gen) return;
+    v.loop = loopOverride ?? !!ZOE[name].loop;
+    void v.play(); showEl(v);
+    if (v.loop) return;
+    await new Promise((r) => v.addEventListener('ended', r, { once: true }));
+  };
+  const showBubble = (text: string, ms: number) => {
+    const bub = Z.bubbleEl;
+    if (!bub) return;
+    bub.textContent = text;
+    bub.hidden = false;
+    clearTimeout(Z.bubbleTimer);
+    Z.bubbleTimer = setTimeout(() => { bub.hidden = true; }, ms);
+  };
 
-    let history = store.load();
-    let busy = false;
-    let aborter: AbortController | null = null;
-
-    // 使用量埋点:走站点既有 GoatCounter,只记事件名,不含对话内容;dev 构建不上报
-    const track = (name: string) => {
-      if (!import.meta.env.PROD) return;
-      (window as unknown as { goatcounter?: { count?: (o: object) => void } }).goatcounter?.count?.({
-        path: name,
-        event: true,
-      });
-    };
-
-    const bubble = (cls: 'user' | 'bot', html: string): HTMLElement => {
-      const el = document.createElement('div');
-      el.className = `chat-msg ${cls}`;
-      el.innerHTML = html;
-      log.appendChild(el);
-      log.scrollTop = log.scrollHeight;
-      return el;
-    };
-    const paint = () => {
-      log.innerHTML = '';
-      bubble('bot', render(greeting));
-      for (const m of history) bubble(m.role === 'user' ? 'user' : 'bot', render(m.content));
-      suggest.hidden = history.length > 0;
-    };
-    const setBusy = (b: boolean) => { busy = b; sendBtn.disabled = b; };
-
-    // 面板开合状态跨页保持(View Transitions 切页后恢复;恢复时不抢焦点)
-    const toggle = (open?: boolean, focus = true) => {
-      const show = open ?? panel.hidden;
-      panel.hidden = !show;
-      fab.setAttribute('aria-expanded', String(show));
-      fabOpen.classList.toggle('hidden', show);
-      fabClose.classList.toggle('hidden', !show);
-      sessionStorage.setItem('sigaoli-chat-open', show ? '1' : '0');
-      if (show) { paint(); if (focus) { input.focus(); track('chat-open'); } }
-    };
-    if (sessionStorage.getItem('sigaoli-chat-open') === '1') toggle(true, false);
-
-    const send = async (text: string) => {
-      track('chat-send');
-      suggest.hidden = true;
-      history.push({ role: 'user', content: text });
-      store.save(history);
-      bubble('user', render(text));
-      const botEl = bubble('bot', '');
-      botEl.classList.add('pending');
-      setBusy(true);
-      aborter = new AbortController();
-      let acc = '';
-      try {
-        const res = await fetch(`${api}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lang, messages: history }),
-          signal: aborter.signal,
-        });
-        if (!res.ok || !res.body) {
-          const code = (await res.json().catch(() => ({ error: '' }))).error as string;
-          botEl.innerHTML = render(errText[code] ?? errText.upstream_unavailable);
-          return;
-        }
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buf = '';
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += decoder.decode(value, { stream: true });
-          let idx: number;
-          while ((idx = buf.indexOf('\n')) >= 0) {
-            const line = buf.slice(0, idx).trim();
-            buf = buf.slice(idx + 1);
-            if (!line.startsWith('data:')) continue;
-            try {
-              const evt = JSON.parse(line.slice(5));
-              if (evt.delta) {
-                acc += evt.delta;
-                botEl.classList.remove('pending');
-                botEl.innerHTML = render(acc);
-                log.scrollTop = log.scrollHeight;
-              }
-            } catch { /* 忽略坏行 */ }
-          }
-        }
-        if (acc) { history.push({ role: 'assistant', content: acc }); store.save(history); }
-        else botEl.innerHTML = render(errText.upstream_unavailable);
-      } catch {
-        if (acc) { history.push({ role: 'assistant', content: acc }); store.save(history); }
-        else botEl.innerHTML = render(errText.network);
-      } finally {
-        botEl.classList.remove('pending');
-        setBusy(false);
-        aborter = null;
+  // ================= 状态编排(触发矩阵 PRD §23.2) =================
+  const markActivity = () => { Z.lastActivity = Date.now(); };
+  const scheduleSleep = () => {
+    clearTimeout(Z.sleepTimer);
+    if (!Z.interactive) return;
+    const gap = T.sleepAfter - (Date.now() - Z.lastActivity);
+    Z.sleepTimer = setTimeout(() => {
+      if (Date.now() - Z.lastActivity < T.sleepAfter) { scheduleSleep(); return; }
+      // 面板开着(在聊/在读)或不在 idle(在演出)则顺延
+      if (Z.state === 'idle' && !panelOpen()) void fallAsleep();
+      else scheduleSleep();
+    }, Math.max(gap, 1000));
+  };
+  const enterIdle = () => {
+    const g = ++Z.gen;
+    Z.state = 'idle';
+    Z.lastActivity = Date.now(); // 入睡倒计时从「坐定」起算——刚演完动作 1 秒就睡显得突兀
+    void playZ('idle', g);
+    scheduleSleep();
+  };
+  const fallAsleep = async () => {
+    const g = ++Z.gen;
+    Z.state = 'sleep';
+    warm(['stretch', 'loaf-to-sit']); // 醒来要用
+    await playZ('sitToLoaf', g);
+    if (g !== Z.gen) return;
+    void playZ('loaf', g);
+  };
+  // 醒来:首次(每会话)伸懒腰彩蛋,其余普通起身;滚动不吵醒(不在唤醒触发源里)
+  const wake = async (after?: () => void) => {
+    if (Z.state !== 'sleep') return;
+    const g = ++Z.gen;
+    Z.state = 'wake';
+    const stretch = !eggUsed('stretch');
+    if (stretch) useEgg('stretch');
+    await playZ(stretch ? 'stretch' : 'loafToSit', g);
+    if (g !== Z.gen) return;
+    enterIdle();
+    after?.();
+  };
+  // 一次性动作(微动/彩蛋/切页反应):播完回 idle;startle 中段配「喵~」字气泡(无声视觉喵)
+  const act = async (name: string) => {
+    const g = ++Z.gen;
+    Z.state = 'act';
+    Z.lastAuto = Date.now();
+    if (name === 'startle') {
+      setTimeout(() => { if (g === Z.gen) showBubble(rootData().meow ?? '喵~', 1800); }, 3000);
+    }
+    await playZ(name, g);
+    Z.lastAuto = Date.now(); // 间隔闸从动作「结束」重算——否则长片段(玩球 10s)播完即刻够格,微动会抢在入睡前插队
+    if (g !== Z.gen) return;
+    enterIdle();
+  };
+  // 微动调度:2-3 分钟一次,仅 idle+滚动停止+页面可见;舔爪/哈欠交替不连播
+  const scheduleMicro = () => {
+    clearTimeout(Z.microTimer);
+    if (!Z.interactive) return;
+    Z.microTimer = setTimeout(() => {
+      const quiet = Date.now() - Z.lastScroll > T.scrollQuiet;
+      const spaced = Date.now() - Z.lastAuto > T.microMin; // 全局自发频率闸
+      if (Z.state === 'idle' && quiet && spaced && document.visibilityState === 'visible') {
+        const pick = Z.lastMicro === 'groom' ? 'yawn' : Z.lastMicro === 'yawn' ? 'groom' : Math.random() < 0.5 ? 'groom' : 'yawn';
+        Z.lastMicro = pick;
+        void act(pick);
       }
-    };
+      scheduleMicro();
+    }, T.microMin + Math.random() * (T.microMax - T.microMin));
+  };
+  // 切页反应池:大(慌张四顾+喵)~2 成 / 小(竖耳眨眼、侧瞥、凑近看你)均分其余(凑近 07-15 Sigao 加入)
+  // 防打扰闸:睡着/在演不反应;8s 内再切不出;30s 内连切或面板开着只出小动作
+  const pageSwitchReaction = () => {
+    const since = Date.now() - Z.lastSwitch;
+    Z.lastSwitch = Date.now();
+    if (!Z.interactive || Z.state !== 'idle') return;
+    if (since < T.switchNone) return;
+    const smallOnly = since < T.switchSmall || panelOpen();
+    if (!smallOnly && Math.random() < 0.2) { void act('startle'); return; }
+    const pool = ['earflick', 'glance', 'attend'];
+    void act(pool[Math.floor(Math.random() * pool.length)]);
+  };
+  // hover:睡→醒;idle→只做逗猫计数,连续 3 次(45s 窗口)→玩球彩蛋
+  // (凑近看你已移至切页反应池,hover 不再演,07-15 Sigao 定「移动非叠加」)
+  const onStageEnter = () => {
+    if (!Z.interactive) return;
+    markActivity();
+    if (Z.state === 'sleep') { void wake(); return; }
+    if (Z.state !== 'idle') return;
+    const now = Date.now();
+    if (now - (Z.hovers[Z.hovers.length - 1] ?? 0) < 1000) return; // 边缘抖动去重
+    Z.hovers = Z.hovers.filter((t) => now - t < T.ballWindow);
+    Z.hovers.push(now);
+    if (Z.hovers.length >= 3 && !eggUsed('ball')) { useEgg('ball'); Z.hovers = []; void act('ball'); }
+  };
+  // 进场秀:趴→起身坐好→(回头客加挥手)→idle+问候气泡;每会话一次,期间即可点击开聊
+  const entryShow = async (returning: boolean) => {
+    const g = ++Z.gen;
+    Z.state = 'show';
+    sessionStorage.setItem('sigaoli-zoe-shown', '1'); // 开演即记名,切页不复演
+    place();
+    warm(['loaf-to-sit', 'idle']);
+    await playZ('loaf', g);
+    await new Promise((r) => setTimeout(r, T.loafDwell)); if (g !== Z.gen) return;
+    await playZ('loafToSit', g); if (g !== Z.gen) return;
+    if (returning && !eggUsed('wave')) { useEgg('wave'); await playZ('wave', g); if (g !== Z.gen) return; }
+    enterIdle();
+    if (!panelOpen()) showBubble(rootData().bubble ?? '', 8000); // 面板已开(演出期间点开)则不再冒
+  };
+  // 深夜模式(23:00-6:00 进站):不演秀不冒气泡,已趴着睡;hover/开面板才醒(醒来天然接伸懒腰彩蛋)
+  const nightInit = () => {
+    sessionStorage.setItem('sigaoli-zoe-shown', '1');
+    place();
+    Z.state = 'sleep';
+    void playZ('loaf', ++Z.gen);
+  };
+  const sitAtCorner = () => {
+    place();
+    if (Z.reduced) { Z.still!.hidden = false; showEl(Z.still!); Z.state = 'idle'; }
+    else enterIdle();
+  };
 
-    const trySend = (text: string) => {
-      if (!text || busy) return;
-      if (history.filter((m) => m.role === 'user').length >= MAX_TURNS) {
-        bubble('bot', render(errText.turn_limit));
+  // ---- 聊天联动(互动层):打字=倾听 / 等首 token=歪头思考 / 流式=轻拍打字(播完当前段切回) ----
+  const zoeTyping = () => {
+    markActivity(); scheduleSleep();
+    if (!Z.interactive) return;
+    if (Z.state === 'sleep') { void wake(); return; }
+    if (Z.state === 'idle') { const g = ++Z.gen; Z.state = 'listen'; void playZ('listen', g); }
+    clearTimeout(Z.listenTimer);
+    Z.listenTimer = setTimeout(() => { if (Z.state === 'listen') enterIdle(); }, 4000);
+  };
+  const zoeChatStart = (text: string) => {
+    markActivity(); scheduleSleep();
+    if (!Z.interactive) return;
+    if (!eggUsed('bow') && (THANKS_RE.test(text) || BYE_RE.test(text))) Z.pendingEgg = 'bow';
+    clearTimeout(Z.listenTimer);
+    const start = () => { const g = ++Z.gen; Z.state = 'think'; void playZ('think', g); };
+    if (Z.state === 'sleep') void wake(start);
+    // 演出中(彩蛋/进场/起身)不打断——锚点结构下中途硬切=姿势跳变;本轮不演思考,演完自然回 idle
+    else if (Z.state === 'idle' || Z.state === 'listen' || Z.state === 'think' || Z.state === 'type') start();
+  };
+  const zoeChatStreaming = () => {
+    if (!Z.interactive || Z.state !== 'think') return;
+    const g = ++Z.gen;
+    Z.state = 'type';
+    // 打字阶段随机轮换:敲地面(type) / 傲娇昂首(proud),循环播——傲娇只在此处激活(07-15 Sigao 定)
+    // 积压(PRD §23.5,Sigao 07-15):将来引入语义路由——简单问题→傲娇,复杂问题→敲地板
+    void playZ(Math.random() < 0.5 ? 'type' : 'proud', g, true);
+  };
+  const zoeChatDone = () => {
+    if (!Z.interactive) return;
+    const egg = Z.pendingEgg; Z.pendingEgg = '';
+    const finish = () => { if (egg) { useEgg(egg); void act(egg); } else enterIdle(); };
+    if (Z.state === 'type') {
+      // 「播完当前段切回」(§23.2):关 loop 等本轮播完,不生硬打断
+      const v = Z.vids[Z.cur], g = Z.gen;
+      v.loop = false;
+      v.addEventListener('ended', () => { if (g === Z.gen) finish(); }, { once: true });
+    } else if (Z.state === 'think' || Z.state === 'listen') finish();
+  };
+
+  // ================= 面板逻辑(每页 DOM 重建,运行时查询防引用过期) =================
+  const bubbleMsg = (cls: 'user' | 'bot', html: string): HTMLElement => {
+    const log = $('chat-log')!;
+    const el = document.createElement('div');
+    el.className = `chat-msg ${cls}`;
+    el.innerHTML = html;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+    return el;
+  };
+  const paint = () => {
+    const log = $('chat-log'), suggest = $('chat-suggest');
+    if (!log || !suggest) return;
+    log.innerHTML = '';
+    bubbleMsg('bot', render(rootData().greeting ?? ''));
+    for (const m of history) bubbleMsg(m.role === 'user' ? 'user' : 'bot', render(m.content));
+    suggest.hidden = history.length > 0;
+  };
+  const setBusy = (b: boolean) => {
+    busy = b;
+    const btn = $('chat-send') as HTMLButtonElement | null;
+    if (btn) btn.disabled = b;
+  };
+  // 面板开合状态跨页保持(View Transitions 切页后恢复;恢复时不抢焦点)
+  const toggle = (open?: boolean, focus = true) => {
+    const panel = $('chat-panel');
+    if (!panel) return;
+    const show = open ?? panel.hidden;
+    panel.hidden = !show;
+    Z.fab?.setAttribute('aria-expanded', String(show));
+    sessionStorage.setItem('sigaoli-chat-open', show ? '1' : '0');
+    if (show) {
+      if (Z.bubbleEl) Z.bubbleEl.hidden = true;
+      paint();
+      if (focus) { ($('chat-input') as HTMLTextAreaElement | null)?.focus(); track('chat-open'); }
+      warm(['listen', 'think', 'type']); // 聊天四件套预热
+      markActivity(); scheduleSleep();
+      if (Z.state === 'sleep') void wake();
+    }
+  };
+
+  const send = async (text: string) => {
+    track('chat-send');
+    const { lang, api } = rootData();
+    const errText: Record<string, string> = {
+      rate_limited: rootData().errRate!,
+      turn_limit: rootData().errTurns!,
+      upstream_unavailable: rootData().errUpstream!,
+      network: rootData().errNetwork!,
+    };
+    const suggest = $('chat-suggest');
+    if (suggest) suggest.hidden = true;
+    history.push({ role: 'user', content: text });
+    store.save(history);
+    bubbleMsg('user', render(text));
+    const botEl = bubbleMsg('bot', '');
+    botEl.classList.add('pending');
+    setBusy(true);
+    zoeChatStart(text);
+    aborter = new AbortController();
+    let acc = '';
+    try {
+      const res = await fetch(`${api}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang, messages: history }),
+        signal: aborter.signal,
+      });
+      if (!res.ok || !res.body) {
+        const code = (await res.json().catch(() => ({ error: '' }))).error as string;
+        botEl.innerHTML = render(errText[code] ?? errText.upstream_unavailable);
         return;
       }
-      input.value = '';
-      input.style.height = '';
-      void send(text);
-    };
-    const onSubmit = (e: Event) => {
-      e.preventDefault();
-      trySend(input.value.trim());
-    };
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buf.indexOf('\n')) >= 0) {
+          const line = buf.slice(0, idx).trim();
+          buf = buf.slice(idx + 1);
+          if (!line.startsWith('data:')) continue;
+          try {
+            const evt = JSON.parse(line.slice(5));
+            if (evt.delta) {
+              acc += evt.delta;
+              zoeChatStreaming();
+              botEl.classList.remove('pending');
+              botEl.innerHTML = render(acc);
+              const log = $('chat-log');
+              if (log) log.scrollTop = log.scrollHeight;
+            }
+          } catch { /* 忽略坏行 */ }
+        }
+      }
+      if (acc) { history.push({ role: 'assistant', content: acc }); store.save(history); }
+      else botEl.innerHTML = render(errText.upstream_unavailable);
+    } catch {
+      if (acc) { history.push({ role: 'assistant', content: acc }); store.save(history); }
+      else botEl.innerHTML = render(errText.network);
+    } finally {
+      botEl.classList.remove('pending');
+      setBusy(false);
+      aborter = null;
+      zoeChatDone();
+    }
+  };
+
+  const trySend = (text: string) => {
+    if (!text || busy) return;
+    const input = $('chat-input') as HTMLTextAreaElement | null;
+    if (history.filter((m) => m.role === 'user').length >= MAX_TURNS) {
+      bubbleMsg('bot', render(rootData().errTurns ?? ''));
+      return;
+    }
+    if (input) { input.value = ''; input.style.height = ''; }
+    void send(text);
+  };
+
+  // ================= 全局单次绑定(仅首个页面执行) =================
+  const bindGlobal = () => {
+    // 舞台在 transition:persist 下跨页存活,监听只绑一次
+    Z.fab!.addEventListener('click', () => { markActivity(); toggle(); });
+    Z.fab!.addEventListener('pointerenter', onStageEnter);
+    addEventListener('resize', place);
+    addEventListener('click', markActivity, { capture: true, passive: true }); // 点导航/任意点击=活动
+
+    // 滚动=活动(重置入睡计时)但不吵醒;页脚彩蛋随「凑近看你」移入切页反应池而取消(07-15)
+    addEventListener('scroll', () => {
+      Z.lastScroll = Date.now();
+      markActivity();
+    }, { passive: true });
+  };
+
+  pageScript(() => {
+    const root = $('chat-root');
+    if (!root) return;
+    // 每页刷新 DOM 引用(舞台=persist 同节点;面板=新节点)
+    Z.fab = $('chat-fab');
+    Z.vids = [$('zoe-a') as HTMLVideoElement, $('zoe-b') as HTMLVideoElement];
+    Z.still = $('zoe-still') as HTMLImageElement;
+    Z.bubbleEl = $('zoe-bubble');
+    // persist 舞台的本地化标签跟随当前页语言
+    Z.fab?.setAttribute('aria-label', rootData().open ?? '');
+    Z.fab?.setAttribute('title', rootData().open ?? '');
+
+    if (!Z.booted) {
+      Z.booted = true;
+      history = store.load();
+      Z.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      Z.interactive = !Z.reduced && innerWidth >= 768 && matchMedia('(pointer: fine)').matches;
+      bindGlobal();
+      const hour = new Date().getHours();
+      const shown = !!sessionStorage.getItem('sigaoli-zoe-shown');
+      const chatOpen = sessionStorage.getItem('sigaoli-chat-open') === '1';
+      // 回头客=上个会话来过(localStorage 跨会话,sessionStorage 界定本会话)
+      const returning = localStorage.getItem('sigaoli-zoe-seen') === '1' && !shown && !chatOpen;
+      try { localStorage.setItem('sigaoli-zoe-seen', '1'); } catch { /* 隐私模式可拒 */ }
+      if (!Z.interactive) sitAtCorner();
+      else if (!shown && !chatOpen && (hour >= 23 || hour < 6)) nightInit();
+      else if (!shown && !chatOpen) void entryShow(returning);
+      else enterIdle();
+      scheduleMicro();
+    } else {
+      pageSwitchReaction(); // persist 跨页不断帧,切页瞬间抽反应(§23.3)
+    }
+
+    // ---- 面板接线(每页新 DOM) ----
+    const form = $('chat-form') as HTMLFormElement;
+    const input = $('chat-input') as HTMLTextAreaElement;
+    const onSubmit = (e: Event) => { e.preventDefault(); trySend(input.value.trim()); };
     const onChip = (e: Event) => {
       const chip = (e.target as HTMLElement).closest<HTMLElement>('.chat-chip');
       if (chip) trySend(chip.textContent!.trim());
@@ -240,17 +595,24 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
       if (e.key === 'Escape') toggle(false);
     };
-    const autosize = () => { input.style.height = ''; input.style.height = `${Math.min(input.scrollHeight, 112)}px`; };
+    const onInput = () => {
+      input.style.height = '';
+      input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+      zoeTyping();
+    };
     const onReset = () => { history = []; store.clear(); paint(); input.focus(); };
-    const onFab = () => toggle();
-
-    fab.addEventListener('click', onFab);
     form.addEventListener('submit', onSubmit);
-    suggest.addEventListener('click', onChip);
+    $('chat-suggest')!.addEventListener('click', onChip);
     input.addEventListener('keydown', onKeydown);
-    input.addEventListener('input', autosize);
-    resetBtn.addEventListener('click', onReset);
+    input.addEventListener('input', onInput);
+    $('chat-reset')!.addEventListener('click', onReset);
+    if (sessionStorage.getItem('sigaoli-chat-open') === '1') toggle(true, false);
 
-    return () => { aborter?.abort(); };
+    // 清理只针对本页面板;Zoe 状态跨页存活(persist),不在此重置
+    return () => {
+      aborter?.abort();
+      clearTimeout(Z.listenTimer);
+      if (Z.state === 'listen' || Z.state === 'think') enterIdle(); // type 由 zoeChatDone 的 ended 收尾
+    };
   });
 </script>

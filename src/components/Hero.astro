@@ -67,7 +67,8 @@ const L = (p: string) => localizePath(lang, p);
       </div>
 
       <!-- Portrait -->
-      <div id="hero-portrait" class="order-first w-44 sm:w-56 md:order-none md:w-full justify-self-center md:justify-self-end">
+      <!-- md:mr-10 整体左移头像+图标:给右下角 Zoe 的问候气泡让位,紧凑视口(≤800 高)下不再遮图标(07-13 Sigao 定) -->
+      <div id="hero-portrait" class="order-first w-44 sm:w-56 md:order-none md:w-full justify-self-center md:justify-self-end md:mr-10">
         <Image
           src={profile}
           alt={a.portraitAlt}
