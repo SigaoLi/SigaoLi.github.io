@@ -1,0 +1,107 @@
+---
+// 隐私说明页（PRD §22 privacy）。双语手写（法务性文案不走机翻）。
+// 语气正式（Sigao 07-15 定：页面正式，Zoe 在对话里被问到才用轻松猫话答，见 knowledge/faq.md）。
+// 描述当前真实行为：客户端本地存储 + 聊天转发第三方 AI + 匿名统计 + 无服务端留存。
+// 回头客画像（Stage 3 记忆功能）落地后，「保存在你设备上的信息」一节需补名字/画像与 opt-in 口径；
+// EU 供应商路由落地后，可在「与驺虞的对话」一节补一句欧盟访客数据经欧盟节点处理。
+import Base from '../../layouts/Base.astro';
+import { type Lang } from '../../lib/i18n';
+import { site } from '../../lib/site';
+
+const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
+
+const copy = {
+  en: {
+    metaTitle: 'Privacy Notice — Sigao Li',
+    metaDesc: 'What this website collects, how it is used, and the choices available to you.',
+    kicker: 'Privacy',
+    title: 'Privacy Notice',
+    intro:
+      'This notice explains what information this website collects, how it is used, and the choices available to you. In brief: the site retains very little, most of it remains in your browser rather than on a server, and you may erase it at any time.',
+    sections: [
+      {
+        h: 'Information stored on your device',
+        p: 'The site saves a small amount of information locally in your browser: your theme (light or dark) and language preferences, a flag indicating that you have visited before, and — only if you choose to tell Zoe your name — that name, so she can greet you on a later visit. This information remains on your device; it is not transmitted to the site owner, nor can the site owner access it. Clearing your browser data, or selecting “Forget me” in the chat, removes it entirely.',
+      },
+      {
+        h: 'Conversations with Zoe',
+        p: 'When you interact with Zoe, the site’s assistant, the messages you send are transmitted to third-party AI services that generate her replies and, in a separate lightweight request, suggest a page that may help you or recognise a name you offer. Conversations are not stored on the site’s servers; they remain only within the current browser session and are discarded when the tab is closed. Please do not enter sensitive personal information into the chat.',
+      },
+      {
+        h: 'Analytics',
+        p: 'The site uses a privacy-focused analytics tool (GoatCounter) that records aggregate page views without cookies and without identifying individual visitors. It does not record the content of your conversations with Zoe.',
+      },
+      {
+        h: 'What the site does not do',
+        p: 'The site does not require accounts or logins, does not use advertising trackers, does not sell or share your data, and does not build a profile of you on any server.',
+      },
+      {
+        h: 'Your choices',
+        p: 'All information the site retains is stored on your device and may be removed at any time. Use “Forget me” in the chat window, or clear your browser data.',
+      },
+    ],
+    contactH: 'Contact',
+    contactP: 'For any questions regarding this notice, please contact',
+    updated: 'Last updated 15 July 2026',
+  },
+  zh: {
+    metaTitle: '隐私说明 — 李思高',
+    metaDesc: '本网站收集哪些信息、如何使用，以及你可行使的选择。',
+    kicker: '隐私说明',
+    title: '隐私说明',
+    intro:
+      '本说明介绍本网站收集哪些信息、如何使用，以及你可行使的选择。简而言之：本站几乎不留存你的信息，仅有的少量也保存在你的浏览器中而非服务器上，你可随时清除。',
+    sections: [
+      {
+        h: '保存在你设备上的信息',
+        p: '本站会在你的浏览器中保存少量信息：你的主题（深色/浅色）与语言偏好、一个表示你曾到访的标记，以及——仅在你主动告诉驺虞你的称呼时——该称呼，以便她在你下次到访时与你打招呼。这些信息保留在你的设备上，不会传输给网站所有者，所有者也无法访问。清除浏览器数据，或在对话中选择「忘记我」，即可将其完全移除。',
+      },
+      {
+        h: '与驺虞的对话',
+        p: '当你与本站助手驺虞交流时，你发送的消息会传输至第三方 AI 服务，用于生成她的回复，以及在一个单独的轻量请求中判断可为你推荐的页面、或识别你告知的称呼。对话不会存储在本站服务器上，仅保留于当前浏览器会话中，关闭标签页后即被丢弃。请勿在对话中输入敏感的个人信息。',
+      },
+      {
+        h: '访问统计',
+        p: '本站使用注重隐私的统计工具（GoatCounter），它在不使用 cookie、不识别个人访客的前提下记录聚合的页面访问量，且不会记录你与驺虞的对话内容。',
+      },
+      {
+        h: '本站不会做的事',
+        p: '本站不要求注册或登录，不使用广告追踪器，不出售或共享你的数据，也不会在任何服务器上为你建立画像。',
+      },
+      {
+        h: '你的选择',
+        p: '本站保留的全部信息均存于你的设备上，你可随时清除：使用对话窗口中的「忘记我」，或清除浏览器数据。',
+      },
+    ],
+    contactH: '联系方式',
+    contactP: '如对本说明有任何疑问，请联系',
+    updated: '最后更新于 2026 年 7 月 15 日',
+  },
+}[lang];
+---
+
+<Base title={copy.metaTitle} description={copy.metaDesc}>
+  <main class="mx-auto max-w-2xl px-6 py-16 md:py-24">
+    <p class="font-mono text-[11px] uppercase tracking-wider" style="color: var(--accent);">{copy.kicker}</p>
+    <h1 class="font-display mt-2 text-3xl md:text-4xl">{copy.title}</h1>
+    <p class="mt-5 text-lg leading-relaxed text-ink-muted">{copy.intro}</p>
+
+    <div class="mt-10 space-y-8">
+      {copy.sections.map((s) => (
+        <section>
+          <h2 class="font-display text-xl">{s.h}</h2>
+          <p class="mt-2 leading-relaxed text-ink-muted">{s.p}</p>
+        </section>
+      ))}
+      <section>
+        <h2 class="font-display text-xl">{copy.contactH}</h2>
+        <p class="mt-2 leading-relaxed text-ink-muted">
+          {copy.contactP}
+          <a href={`mailto:${site.email}`} class="underline underline-offset-2 hover:opacity-80" style="color: var(--accent);">{site.email}</a>.
+        </p>
+      </section>
+    </div>
+
+    <p class="mt-12 font-mono text-xs text-ink-muted opacity-70">{copy.updated}</p>
+  </main>
+</Base>

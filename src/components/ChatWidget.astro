@@ -2,23 +2,32 @@
 // 全站右下角 AI 聊天浮窗(PRD §22,V1)。
 // 入口=数字门童 Zoe(PRD §23,2026-07-14 动作系统实装):全站固定右下角,零走位;
 // - 跨页 transition:persist:切页原地不断帧,睡眠状态延续;切页瞬间抽「切页反应」(18/19/20)
-// - 静默层:idle 常驻;75s 无活动入睡(坐→趴),hover/点击/聊天才醒(滚动不吵醒);23-6 点进站已睡
+// - 静默层:idle 常驻(定格静息⇄间歇播放,拉开眨眼/眯眼间隔);75s 无活动入睡(坐→趴),hover/点击/聊天才醒(滚动不吵醒);23-6 点进站已睡
 // - 微动层:舔爪/打哈欠 2-3 分钟低频随机,滚动中绝不播,同一动作不连播
 // - 互动层:hover=唤醒/逗猫计数;打字=倾听;等首 token=歪头思考;流式回复=敲地面⇄傲娇随机轮换(播完当前段切回)
 //   (07-15 Sigao 定「移动非叠加」:凑近看你只在切页反应池,傲娇只在打字轮换)
 // - 彩蛋层(每会话各一次):睡醒伸懒腰替普通起身;回头客挥手;连续逗猫 3 次玩球;道谢/道别作揖
 // 素材=锚点图为节点、片段为边(首尾帧钉死故硬切连贯),生产手册 docs/zoe-production-handbook.md。
 // 前端只认 api.sigaoli.com(可迁移性约束);流式用 fetch+getReader 解析 SSE(EventSource 不支持 POST)。
-import { t, type Lang } from '../lib/i18n';
+import { t, localizePath, type Lang } from '../lib/i18n';
 import { site } from '../lib/site';
 
 const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
 const d = t(lang).chat;
 const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
+const privacyHref = localizePath(lang, '/privacy');
+// 意图引导 chip 配置(§23.5):label=Zoe 口吻文案,href=本地化版块路径 / mailto。分类器只回 chip 键名。
+const guides = JSON.stringify({
+  work: { label: d.guide.work, href: localizePath(lang, '/work') },
+  cv: { label: d.guide.cv, href: localizePath(lang, '/cv') },
+  photography: { label: d.guide.photography, href: localizePath(lang, '/photography') },
+  email: { label: d.guide.email, href: `mailto:${site.email}` },
+});
 ---
 
-<div id="chat-root" data-lang={lang} data-api={apiBase} data-greeting={d.greeting}
-  data-bubble={d.bubble} data-meow={d.meow} data-open={d.open}
+<div id="chat-root" data-lang={lang} data-api={apiBase} data-greeting={d.greeting} data-guides={guides}
+  data-bubble={d.bubble} data-meow={d.meow} data-open={d.open} data-forgotten={d.forgotten}
+  data-welcome-back={d.welcomeBack} data-ask-name={d.askName} data-name-ack={d.nameAck}
   data-err-rate={d.errRate} data-err-turns={d.errTurns} data-err-upstream={d.errUpstream} data-err-network={d.errNetwork}>
   <!-- Zoe 舞台:零尺寸锚点按钮,子元素 bottom:0 对齐脚底地面线;transform 定位右下角。
        transition:persist=跨页保留 DOM,视频不断帧(语言切换时面板重建、舞台沿用,标签由 JS 同步) -->
@@ -62,8 +71,14 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
         </button>
       </div>
       <div class="mt-2 flex items-center justify-between gap-2">
-        <p class="text-[10px] leading-tight text-ink-muted">{d.disclaimer}</p>
-        <button id="chat-reset" type="button" class="shrink-0 font-mono text-[10px] uppercase tracking-wider text-ink-muted hover:text-ink">{d.reset}</button>
+        <p class="text-[10px] leading-tight text-ink-muted">
+          {d.disclaimer}
+          <a href={privacyHref} class="underline underline-offset-2 hover:text-ink">{d.privacy}</a>
+        </p>
+        <div class="flex shrink-0 items-center gap-2">
+          <button id="zoe-forget" type="button" class="font-mono text-[10px] uppercase tracking-wider text-ink-muted hover:text-ink">{d.forget}</button>
+          <button id="chat-reset" type="button" class="font-mono text-[10px] uppercase tracking-wider text-ink-muted hover:text-ink">{d.reset}</button>
+        </div>
       </div>
     </form>
   </section>
@@ -109,6 +124,16 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
   .chat-msg.bot { margin-right: auto; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
   .chat-msg.bot code { font-family: var(--font-mono, monospace); font-size: 0.8em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; }
   .chat-msg.pending::after { content: '…'; opacity: 0.5; }
+  /* 意图引导 chip:回复下方可点的版块导航/邮箱(§23.5) */
+  .chat-guide { margin-right: auto; }
+  .chat-guide-chip {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    border: 1px solid var(--line); border-radius: 9999px;
+    padding: 0.3rem 0.75rem; font-size: 0.8rem; line-height: 1.2;
+    color: var(--accent); text-decoration: none; white-space: nowrap;
+    transition: border-color 0.15s, background-color 0.15s;
+  }
+  .chat-guide-chip:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 </style>
 
 <script>
@@ -121,6 +146,19 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     load: (): Msg[] => { try { return JSON.parse(sessionStorage.getItem('sigaoli-chat') ?? '[]'); } catch { return []; } },
     save: (h: Msg[]) => sessionStorage.setItem('sigaoli-chat', JSON.stringify(h)),
     clear: () => sessionStorage.removeItem('sigaoli-chat'),
+  };
+
+  // 回头客画像(§23.5 记忆):只存访客本地设备(localStorage),你不持有;可一键「忘记我」清 sigaoli-zoe-*。
+  // v1 只用于问候认人(名字不进 /chat 提示词,零注入面);后续可加兴趣追踪 + 注入。
+  type Profile = { name?: string; visits: number; lastVisit?: string; askCount?: number };
+  const profile = {
+    data: { visits: 0 } as Profile,
+    load() {
+      try { this.data = { visits: 0, ...JSON.parse(localStorage.getItem('sigaoli-zoe-profile') ?? '{}') }; }
+      catch { this.data = { visits: 0 }; }
+      return this.data;
+    },
+    save() { try { localStorage.setItem('sigaoli-zoe-profile', JSON.stringify(this.data)); } catch { /* 隐私模式可拒 */ } },
   };
 
   // ---- Zoe 片段清单(素材 public/zoe/,600p VP9 alpha;管线 scripts/zoe-prod2.mjs,手册 docs/zoe-production-handbook.md) ----
@@ -159,6 +197,9 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     switchNone: FAST ? 1_000 : 8_000,     // 切页反应:间隔内不出动作
     switchSmall: FAST ? 5_000 : 30_000,   // 切页反应:间隔内只出小动作
     ballWindow: 45_000,                   // 连续逗猫计数窗口
+    idleRestMin: FAST ? 2_000 : 5_000,    // idle 静息定格时长(眯眼间隔≈静息+一次播放5s)
+    idleRestMax: FAST ? 4_000 : 10_000,
+    nameWindow: FAST ? 30_000 : 120_000,  // 问名后多久内的回复才当名字应答(过期静默作罢,不误判)
   };
   // 彩蛋触发词(道谢/道别→作揖 bow,每会话一次;傲娇已移至打字轮换不再当彩蛋,07-15 Sigao 定)
   const THANKS_RE = /谢谢|谢啦|谢了|感谢|多谢|辛苦|thank|thx/i;
@@ -183,14 +224,18 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     lastMicro: '',
     hovers: [] as number[],
     pendingEgg: '' as '' | 'bow',
+    awaitingName: false, // 已问名、等访客下一条消息作答(§23.5 回头客问名)
+    askNameAt: 0,        // 问名时刻;超过 T.nameWindow 未答即作罢(不误把后来的提问当名字)
     sleepTimer: 0 as ReturnType<typeof setTimeout> | 0,
     microTimer: 0 as ReturnType<typeof setTimeout> | 0,
+    idleTimer: 0 as ReturnType<typeof setTimeout> | 0,
     listenTimer: 0 as ReturnType<typeof setTimeout> | 0,
     bubbleTimer: 0 as ReturnType<typeof setTimeout> | 0,
   };
   let history: Msg[] = [];
   let busy = false;
   let aborter: AbortController | null = null;
+  let guideEl: HTMLElement | null = null; // 当前引导 chip(只保留最新一条,§23.5)
 
   const $ = (id: string) => document.getElementById(id);
   const rootData = () => ($('chat-root')?.dataset ?? {}) as Record<string, string>;
@@ -253,6 +298,18 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     clearTimeout(Z.bubbleTimer);
     Z.bubbleTimer = setTimeout(() => { bub.hidden = true; }, ms);
   };
+  // 「忘记我」(隐私):清掉本站在你设备上留的 Zoe 记忆——现仅回头客标记 sigaoli-zoe-seen,
+  // Stage 3 的画像 sigaoli-zoe-profile 同前缀一并清。只动 localStorage,不碰当前对话(那是「重新开聊」)。
+  const forgetVisitor = () => {
+    try {
+      for (const k of Object.keys(localStorage)) {
+        if (k.startsWith('sigaoli-zoe')) localStorage.removeItem(k);
+      }
+    } catch { /* 隐私模式可拒 */ }
+    profile.data = { visits: 0 }; // 同步清内存态,否则本会话 Zoe 还记得名字
+    Z.awaitingName = false;
+    showBubble(rootData().forgotten ?? '', 3200);
+  };
 
   // ================= 状态编排(触发矩阵 PRD §23.2) =================
   const markActivity = () => { Z.lastActivity = Date.now(); };
@@ -267,11 +324,25 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
       else scheduleSleep();
     }, Math.max(gap, 1000));
   };
+  // idle 呼吸循环:定格首帧「静息」几秒 → 完整播一次(呼吸/眨眼/摆尾) → 再静息,如此往复。
+  // (07-15 Sigao:idle 片段自带 ~1.7s 长眯眼,连续循环时眯眼显得太频繁 → 拉开播放间隔降低眯眼频次。
+  //  用视频自身首帧定格、不切 webp:静息帧即末帧=首帧锚点,零跳变、无镜像方向/构图不一致风险)
+  const idleRest = async (g: number) => {
+    const v = await prep('idle');
+    if (g !== Z.gen) return;
+    v.loop = false; v.currentTime = 0; v.pause(); showEl(v); // 先定格首帧(睁眼锚点)
+    for (;;) {
+      await new Promise((r) => { Z.idleTimer = setTimeout(r, T.idleRestMin + Math.random() * (T.idleRestMax - T.idleRestMin)); });
+      if (g !== Z.gen) return; // 被动作/入睡打断(gen 变)即退出,不清 timer 交由 gen 闸兜底
+      await playZ('idle', g, false); // 播一次即停在末帧(=首帧锚点),下一轮静息无缝接续
+      if (g !== Z.gen) return;
+    }
+  };
   const enterIdle = () => {
     const g = ++Z.gen;
     Z.state = 'idle';
     Z.lastActivity = Date.now(); // 入睡倒计时从「坐定」起算——刚演完动作 1 秒就睡显得突兀
-    void playZ('idle', g);
+    void idleRest(g);
     scheduleSleep();
   };
   const fallAsleep = async () => {
@@ -359,7 +430,21 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     await playZ('loafToSit', g); if (g !== Z.gen) return;
     if (returning && !eggUsed('wave')) { useEgg('wave'); await playZ('wave', g); if (g !== Z.gen) return; }
     enterIdle();
-    if (!panelOpen()) showBubble(rootData().bubble ?? '', 8000); // 面板已开(演出期间点开)则不再冒
+    // 落座问候(面板已开=演出期间点开,则不冒):认识的老朋友直呼其名;回头且没留名 → 主动问名(=opt-in);其余通用
+    if (!panelOpen()) {
+      const p = profile.data;
+      if (p.name) {
+        showBubble((rootData().welcomeBack ?? '').replace('%s', p.name), 8000);
+      } else if (returning && (p.askCount ?? 0) < 2) { // 回头无名,最多问 2 次(跨会话),之后不再打扰
+        showBubble(rootData().askName ?? '', 9000);
+        Z.awaitingName = true;
+        Z.askNameAt = Date.now();
+        p.askCount = (p.askCount ?? 0) + 1;
+        profile.save();
+      } else {
+        showBubble(rootData().bubble ?? '', 8000);
+      }
+    }
   };
   // 深夜模式(23:00-6:00 进站):不演秀不冒气泡,已趴着睡;hover/开面板才醒(醒来天然接伸懒腰彩蛋)
   const nightInit = () => {
@@ -427,6 +512,7 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     const log = $('chat-log'), suggest = $('chat-suggest');
     if (!log || !suggest) return;
     log.innerHTML = '';
+    guideEl = null; // 引导 chip 随 log 重绘清空
     bubbleMsg('bot', render(rootData().greeting ?? ''));
     for (const m of history) bubbleMsg(m.role === 'user' ? 'user' : 'bot', render(m.content));
     suggest.hidden = history.length > 0;
@@ -454,7 +540,73 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     }
   };
 
+  // 意图引导(§23.5):并行请求 /classify,拿到 chip 就在该条回复下方渲染可点引导(版块导航/邮箱)。
+  // 失败/none/超限一律无引导——独立 fetch,与 /chat 解耦,绝不阻塞或影响主回复。
+  const renderGuidanceChip = (chip: string, afterEl: HTMLElement) => {
+    let guides: Record<string, { label: string; href: string }>;
+    try { guides = JSON.parse(rootData().guides ?? '{}'); } catch { return; }
+    const g = guides[chip];
+    if (!g) return;
+    if (guideEl) guideEl.remove(); // 只保留最新一条引导 chip
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-guide';
+    const a = document.createElement('a');
+    a.href = g.href;
+    a.className = 'chat-guide-chip';
+    a.textContent = g.label;
+    wrap.appendChild(a);
+    afterEl.insertAdjacentElement('afterend', wrap);
+    guideEl = wrap;
+    const log = $('chat-log');
+    if (log) log.scrollTop = log.scrollHeight;
+  };
+  const classifyGuidance = async (text: string, afterEl: HTMLElement) => {
+    try {
+      const { lang, api } = rootData();
+      const res = await fetch(`${api}/classify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang, message: text }),
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { chip?: string };
+      if (data.chip && data.chip !== 'none') renderGuidanceChip(data.chip, afterEl);
+    } catch { /* 引导锦上添花,失败静默 */ }
+  };
+  // 回头客问名(§23.5):已问名时,把访客下一条消息送 /classify mode=name 提取名字;空 = 软拒。
+  const captureName = async (text: string): Promise<string> => {
+    try {
+      const { lang, api } = rootData();
+      const res = await fetch(`${api}/classify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang, message: text, mode: 'name' }),
+      });
+      if (!res.ok) return '';
+      const data = (await res.json()) as { name?: string };
+      return (data.name ?? '').trim();
+    } catch { return ''; }
+  };
+
   const send = async (text: string) => {
+    // 问名进行中且未过期:这条若是名字→记住+确认(不发 /chat);不是/已过期→静默作罢(不罚,
+    // 问询次数已由 askCount 上限控制),照常回答这条消息。
+    if (Z.awaitingName) {
+      Z.awaitingName = false;
+      if (Date.now() - Z.askNameAt <= T.nameWindow) {
+        setBusy(true);
+        const name = await captureName(text);
+        setBusy(false);
+        if (name) {
+          profile.data.name = name;
+          profile.save();
+          bubbleMsg('user', render(text));
+          bubbleMsg('bot', render((rootData().nameAck ?? '').replace('%s', name)));
+          return;
+        }
+      }
+    }
+    if (guideEl) { guideEl.remove(); guideEl = null; } // 新消息=清掉上一条回复的引导 chip
     track('chat-send');
     const { lang, api } = rootData();
     const errText: Record<string, string> = {
@@ -472,6 +624,7 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     botEl.classList.add('pending');
     setBusy(true);
     zoeChatStart(text);
+    void classifyGuidance(text, botEl); // 并行意图分类,非阻塞
     aborter = new AbortController();
     let acc = '';
     try {
@@ -565,6 +718,10 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     if (!Z.booted) {
       Z.booted = true;
       history = store.load();
+      profile.load();
+      profile.data.visits += 1;
+      profile.data.lastVisit = new Date().toISOString().slice(0, 10);
+      profile.save();
       Z.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       Z.interactive = !Z.reduced && innerWidth >= 768 && matchMedia('(pointer: fine)').matches;
       bindGlobal();
@@ -606,6 +763,7 @@ const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
     input.addEventListener('keydown', onKeydown);
     input.addEventListener('input', onInput);
     $('chat-reset')!.addEventListener('click', onReset);
+    $('zoe-forget')?.addEventListener('click', forgetVisitor);
     if (sessionStorage.getItem('sigaoli-chat-open') === '1') toggle(true, false);
 
     // 清理只针对本页面板;Zoe 状态跨页存活(persist),不在此重置

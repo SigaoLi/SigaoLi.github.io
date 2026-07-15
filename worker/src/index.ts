@@ -2,6 +2,7 @@
 // 出口:/chat(对人,SSE)· /mcp(对 AI,Streamable HTTP)· /healthz。
 import { makeRuntime, type Env } from './adapter/cloudflare';
 import { handleChat } from './core/chat';
+import { handleClassify } from './core/classify';
 import { corsHeaders, json } from './core/http';
 import { makeMcpHandler } from './mcp';
 
@@ -15,6 +16,8 @@ export default {
     let res: Response;
     if (pathname === '/chat' && request.method === 'POST') {
       res = await handleChat(request, rt);
+    } else if (pathname === '/classify' && request.method === 'POST') {
+      res = await handleClassify(request, rt); // 意图引导 chip;失败静默返回 none,不影响 /chat
     } else if (pathname === '/mcp') {
       // MCP 与 chat 共用同一 IP 限流(调用方是脚本,不放宽)
       if (!(await rt.rateLimit(rt.clientIp(request)))) {

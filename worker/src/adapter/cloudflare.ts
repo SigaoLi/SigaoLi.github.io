@@ -27,5 +27,7 @@ export function makeRuntime(env: Env): Runtime {
     // binding 缺失(本地极简启动)时放行 —— 生产必须配置 ratelimit binding
     rateLimit: async (key) => (env.CHAT_RATE_LIMITER ? (await env.CHAT_RATE_LIMITER.limit({ key })).success : true),
     clientIp: (request) => request.headers.get('CF-Connecting-IP') ?? 'unknown',
+    // CF 在边缘注入 CF-IPCountry(2 位码;'XX'/'T1' 等=未知)。终局迁服务器时换等价 GeoIP 头。
+    country: (request) => request.headers.get('CF-IPCountry') ?? '',
   };
 }

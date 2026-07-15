@@ -1,5 +1,5 @@
 ---
-import { t, type Lang } from '../lib/i18n';
+import { t, localizePath, type Lang } from '../lib/i18n';
 
 const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
 const d = t(lang).footer;
@@ -22,5 +22,6 @@ const { extra } = Astro.props;
     <p class="font-mono text-xs text-ink-muted">© {year} {lang === 'zh' ? '李思高' : 'Sigao Li'}</p>
     {extra && <p class="font-mono text-xs text-ink-muted mt-1">{extra}</p>}
     <p class="text-xs text-ink-muted mt-1 opacity-70">{d.built}</p>
+    <a href={localizePath(lang, '/privacy')} class="mt-2 inline-block font-mono text-xs text-ink-muted underline-offset-2 hover:text-ink hover:underline">{d.privacy}</a>
   </div>
 </footer>

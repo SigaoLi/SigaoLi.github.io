@@ -17,7 +17,7 @@ export const altPath = (path: string) =>
 export const ui = {
   en: {
     nav: { home: 'Home', work: 'Work', cv: 'CV', lens: 'Through My Lens', toggleTheme: 'Toggle theme', menu: 'Open menu', lang: '中文' },
-    footer: { built: 'Designed to deployed — entirely vibe-coded.', photoRights: 'All photographs © Sigao Li, all rights reserved.' },
+    footer: { built: 'Designed to deployed — entirely vibe-coded.', photoRights: 'All photographs © Sigao Li, all rights reserved.', privacy: 'Privacy' },
     chat: {
       open: 'Chat with Zoe about Sigao',
       bubble: 'Meow~ welcome! Got questions about Sigao? Ask me!',
@@ -28,6 +28,9 @@ export const ui = {
       placeholder: 'Ask me anything, meow…',
       send: 'Send',
       disclaimer: 'AI-generated — even cats err. Confirm important matters by email.',
+      privacy: 'Privacy',
+      forget: 'Forget me',
+      forgotten: "Poof — forgotten, meow. We'll meet fresh next time.",
       close: 'Close chat',
       errRate: 'Paws too fast, meow — wait a minute and try again.',
       errTurns: 'This chat hit its limit — I need a nap. Start a fresh one below, meow.',
@@ -40,6 +43,10 @@ export const ui = {
         'What is his tech stack?',
         'How can I reach him?',
       ],
+      guide: { work: 'See his work →', cv: 'Browse his CV →', photography: 'Wander the photos →', email: 'Email him ✉' },
+      welcomeBack: 'Welcome back, %s! 😺 What can I dig up for you today?',
+      askName: 'We meet again, meow~ I never did catch your name — what should I call you?',
+      nameAck: 'Got it — %s it is, meow. So, what would you like to know about Sigao?',
     },
     hero: {
       coords: '31.2304° N, 121.4737° E — AND COUNTING',
@@ -93,7 +100,7 @@ export const ui = {
   },
   zh: {
     nav: { home: '首页', work: '作品', cv: '简历', lens: '镜头之下', toggleTheme: '切换主题', menu: '打开菜单', lang: 'EN' },
-    footer: { built: '从设计到上线，全程 vibe coding。', photoRights: '所有摄影作品 © 李思高，保留所有权利。' },
+    footer: { built: '从设计到上线，全程 vibe coding。', photoRights: '所有摄影作品 © 李思高，保留所有权利。', privacy: '隐私说明' },
     chat: {
       open: '找驺虞聊聊思高',
       bubble: '喵呀～欢迎！有关于思高的问题，都可以来问我！',
@@ -104,6 +111,9 @@ export const ui = {
       placeholder: '想问什么喵…',
       send: '发送',
       disclaimer: 'AI 生成（猫也会出错），重要事项请以邮件与本人确认。',
+      privacy: '隐私',
+      forget: '忘记我',
+      forgotten: '噗——本猫把你忘了喵，下次重新认识。',
       close: '关闭对话',
       errRate: '爪速太快了喵——休息一分钟再来。',
       errTurns: '聊得太久本猫要去打盹了——点下方重新开聊喵。',
@@ -111,6 +121,10 @@ export const ui = {
       errNetwork: '网络毛线团断了喵，请重试。',
       reset: '重新开聊',
       suggestions: ['你家主人现在做什么工作喵？', '他最拿得出手的项目是什么？', '他的技术栈是什么？', '怎么联系他？'],
+      guide: { work: '看看主人的作品 →', cv: '翻翻他的简历 →', photography: '逛逛「镜头之下」→', email: '给主人发邮件 ✉' },
+      welcomeBack: '%s，你回来啦喵～今天想打听点什么？',
+      askName: '又见面啦喵～上次忘了问，你怎么称呼？',
+      nameAck: '记住啦，%s 喵～那你想了解思高的什么？',
     },
     hero: {
       coords: '31.2304° N, 121.4737° E — 足迹仍在继续',

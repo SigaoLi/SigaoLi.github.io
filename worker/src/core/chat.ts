@@ -4,7 +4,7 @@ import { LIMITS } from './config';
 import { json } from './http';
 import { getKnowledge } from './knowledge';
 import { buildSystemPrompt } from './prompt';
-import { openCompletionStream, providerChain, type UpstreamMessage } from './providers';
+import { isEuLike, openCompletionStream, providerChain, type UpstreamMessage } from './providers';
 import { relayStream } from './sse';
 import type { ChatMessage, ChatRequestBody, Runtime } from './types';
 
@@ -54,11 +54,14 @@ export async function handleChat(request: Request, rt: Runtime): Promise<Respons
     ...trimHistory(checked.messages, LIMITS.maxHistoryChars),
   ];
 
-  const chain = providerChain(rt.secrets);
+  // EU/EEA/UK 访客:数据不出欧盟(只用 NewAPI,不回退 DeepSeek 中国直连)
+  const country = rt.country(request);
+  const euLike = isEuLike(country);
+  const chain = providerChain(rt.secrets, euLike);
   try {
     const { upstream, provider } = await openCompletionStream(chain, upstreamMessages, LIMITS.maxTokens);
     // 使用量日志(wrangler tail 可查):只记元数据,不含对话内容
-    console.log(`[chat] lang=${lang} turns=${checked.messages.filter((m) => m.role === 'user').length} provider=${provider.name}`);
+    console.log(`[chat] lang=${lang} country=${country || '??'} eu=${euLike} turns=${checked.messages.filter((m) => m.role === 'user').length} provider=${provider.name}`);
     return new Response(relayStream(upstream.body!, provider.name), {
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',

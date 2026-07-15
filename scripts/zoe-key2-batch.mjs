@@ -1,5 +1,6 @@
 // zoe-key2-batch.mjs — V2 全片段批量抠像（PRD §23）
-// 参数沿用 V1 定型值(chromakey 0x0044FD 0.20/0.10 + despill mix0.7 expand1)
+// 参数(chromakey 0x0044FD 0.20/0.10 + despill mix0.7);despill 07-15 修正 green=0:blue=-1:expand=0
+// (原 expand=1 用绿幕默认刻度砍浅色区绿通道→嘴/耳/眼偏品红;详见 zoe-prod2.mjs 注释)
 // 特殊裁剪: 14-stretch 宽幅 896(运动范围 206-1068,避两角水印); 16-ball 含左缘 864+左上水印涂蓝
 // 幂等: 已存在的 webm 跳过(超时中断后重跑即续)
 import { execFileSync } from 'node:child_process';
@@ -22,7 +23,7 @@ for (const file of readdirSync(SRC).filter((f) => f.endsWith('.mp4')).sort()) {
   const name = file.replace('.mp4', '');
   const out = path.join(OUT, `${name}.webm`);
   if (existsSync(out)) { console.log(`skip ${name} (exists)`); continue; }
-  const vf = `${CROPS[name] ?? DEFAULT_CROP},chromakey=${KEY}:0.20:0.10,despill=type=blue:mix=0.7:expand=1`;
+  const vf = `${CROPS[name] ?? DEFAULT_CROP},chromakey=${KEY}:0.20:0.10,despill=type=blue:mix=0.7:expand=0:green=0:blue=-1`;
   const t0 = Date.now();
   execFileSync(ffmpegPath, [
     '-y', '-i', path.join(SRC, file),

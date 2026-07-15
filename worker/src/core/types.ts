@@ -15,6 +15,8 @@ export interface Runtime {
   /** 返回 true = 放行;key 通常为访客 IP */
   rateLimit(key: string): Promise<boolean>;
   clientIp(request: Request): string;
+  /** 访客 2 位国别码(CF-IPCountry);未知返回 ''。用于 EU 数据路由(避开中国直连)。 */
+  country(request: Request): string;
 }
 
 export interface ChatMessage {

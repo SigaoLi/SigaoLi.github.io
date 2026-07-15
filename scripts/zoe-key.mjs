@@ -15,7 +15,9 @@ if (!inFile || !outFile) {
 const KEY = '0x0044FD';
 // 参数经三组对比实验定型(shots/key-tests.png):0.20/0.10+despill0.7 蓝边净、深条纹完好;
 // similarity ≥0.25 会把深条纹键成半透明灰,勿再调高
-const vf = `crop=${cw}:${chh}:${cx}:${cy},chromakey=${KEY}:0.20:0.10,despill=type=blue:mix=0.7:expand=1`;
+// despill 07-15 修正 green=0:blue=-1:expand=0(原 expand=1 用绿幕默认刻度砍浅色区绿通道→
+// 嘴/耳/眼偏品红;V1 当年蓝边看着净全靠 chromakey,despill 一直在帮倒忙。详见 zoe-prod2.mjs)
+const vf = `crop=${cw}:${chh}:${cx}:${cy},chromakey=${KEY}:0.20:0.10,despill=type=blue:mix=0.7:expand=0:green=0:blue=-1`;
 
 execFileSync(ffmpegPath, [
   '-y', '-i', inFile,

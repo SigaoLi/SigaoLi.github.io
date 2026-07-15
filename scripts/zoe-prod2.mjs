@@ -1,5 +1,8 @@
 // zoe-prod2.mjs — V2 生产编码: 源 mp4 → 600p VP9 alpha → public/zoe/（语义化命名）
 // 与 QC 版(zoe-key2-batch)同键出参数,多 hflip + scale=-2:600 + CRF35(生产体积)
+// despill 修正(07-15 Sigao 报告嘴/耳/眼偏红品紫):type=blue 时 ffmpeg 的通道刻度默认仍是
+// green=-1/blue=0(为绿幕设计),会把浅色区绿通道砍掉(白毛 ΔG≈-52)→ 品红。必须显式
+// green=0:blue=-1 才是真正削蓝溢色;expand 归 0 使中性色不受影响,只修真正带蓝的边缘像素。
 // 04 额外出倒放版 loaf-to-sit(起身,「眼睛最后才闭」故倒放自然,V1 同法)
 // 全局镜像(07-15 Sigao 验收定):成片统一 hflip——素材保持原方向生产,显示时左右反转
 // (趴姿头转向屏幕中央、打字拍向面板侧;可灵没听"往左下拍"的提示词,翻转恰好修正)
@@ -39,7 +42,7 @@ for (const [src, name, rev] of JOBS) {
   if (existsSync(out) && process.argv[2] !== '--force') {
     // public/zoe 旧猫同名文件必须覆盖,以 mtime 判断: 简化为本脚本总是覆盖
   }
-  const vf = `${CROPS[src] ?? DEFAULT_CROP},chromakey=${KEY}:0.20:0.10,despill=type=blue:mix=0.7:expand=1,hflip,scale=-2:600${rev ? ',reverse' : ''}`;
+  const vf = `${CROPS[src] ?? DEFAULT_CROP},chromakey=${KEY}:0.20:0.10,despill=type=blue:mix=0.7:expand=0:green=0:blue=-1,hflip,scale=-2:600${rev ? ',reverse' : ''}`;
   const t0 = Date.now();
   execFileSync(ffmpegPath, [
     '-y', '-i', path.join(SRC, `${src}.mp4`),
