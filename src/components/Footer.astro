@@ -14,14 +14,18 @@ const { extra } = Astro.props;
 
 <footer class="mt-6 border-t" style="border-color: var(--line);">
   <!-- Contour texture echo -->
-  <svg class="w-full h-10 opacity-[0.06]" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
+  <svg class="w-full h-8 opacity-[0.06]" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true">
     <path d="M0 28 C 150 8, 280 36, 430 22 S 720 4, 900 24 S 1100 34, 1200 16" fill="none" stroke="currentColor" stroke-width="1.5"/>
     <path d="M0 36 C 180 20, 320 44, 480 32 S 760 16, 940 34 S 1120 42, 1200 28" fill="none" stroke="currentColor" stroke-width="1"/>
   </svg>
-  <div class="mx-auto max-w-6xl px-6 pb-10">
-    <p class="font-mono text-xs text-ink-muted">© {year} {lang === 'zh' ? '李思高' : 'Sigao Li'}</p>
+  <div class="mx-auto max-w-6xl px-6 pb-8">
+    <!-- 隐私链接并入版权行:独占一行会让首页超出一屏(07-16 Sigao 反馈首页出现滚动) -->
+    <p class="font-mono text-xs text-ink-muted">
+      © {year} {lang === 'zh' ? '李思高' : 'Sigao Li'}
+      <span aria-hidden="true"> · </span>
+      <a href={localizePath(lang, '/privacy')} class="underline-offset-2 hover:text-ink hover:underline">{d.privacy}</a>
+    </p>
     {extra && <p class="font-mono text-xs text-ink-muted mt-1">{extra}</p>}
     <p class="text-xs text-ink-muted mt-1 opacity-70">{d.built}</p>
-    <a href={localizePath(lang, '/privacy')} class="mt-2 inline-block font-mono text-xs text-ink-muted underline-offset-2 hover:text-ink hover:underline">{d.privacy}</a>
   </div>
 </footer>

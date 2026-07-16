@@ -68,7 +68,8 @@ export interface PackLangSlice {
   }[];
   photos: {
     totalPhotos: number;
-    countries: { name: string; photos: number; cities: string[] }[];
+    // descriptions=每张的画面描述(灯箱 alt 同源);可选=兼容旧版知识包缓存(worker 先于站点部署的窗口期)
+    countries: { name: string; photos: number; cities: string[]; descriptions?: string[] }[];
   };
 }
 

@@ -56,7 +56,7 @@ export interface Persona {
 
 export interface PhotoSummary {
   totalPhotos: number;
-  countries: { name: string; photos: number; cities: string[] }[];
+  countries: { name: string; photos: number; cities: string[]; descriptions: string[] }[];
 }
 
 /** 同源层的单语言切片 — Worker 按访客语言只取一片,减半 prompt 体积 */

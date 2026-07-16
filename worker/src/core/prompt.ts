@@ -36,13 +36,24 @@ function fmtCases(cases: PackLangSlice['cases']): string {
     .join('\n\n---\n\n');
 }
 
+// 摄影节除清单外附「反编造」硬约束:模型只有城市名时会给照片脑补画面与拍摄故事,
+// 甚至编出集外国家再自圆其说(07-16 实例:虚构柬埔寨洞里萨湖并称"还没上线")。
+// 描述与灯箱 alt 同源=画面内容可谈;拍摄过程/幕后故事知识里没有=不得编。
 export function fmtPhotos(photos: PackLangSlice['photos'], lang: 'en' | 'zh'): string {
   const head =
     lang === 'zh'
-      ? `「镜头之下」共 ${photos.totalPhotos} 张照片,足迹 ${photos.countries.length} 个国家:`
-      : `"Through My Lens" holds ${photos.totalPhotos} photographs across ${photos.countries.length} countries:`;
+      ? `「镜头之下」共 ${photos.totalPhotos} 张照片,足迹 ${photos.countries.length} 个国家。下面是**全部**照片的完整清单(每行=一张照片的画面描述)。
+摄影问题只能依据这份清单回答:清单之外的国家、城市、照片一律不存在——直说主人没拍过/相册里没有,不许脑补"拍了没上线";
+每张照片你知道的只有画面本身,拍摄过程、时间、幕后故事你并不知道,不要编。被问"最喜欢哪张"可以用猫视角挑清单里的真实照片聊画面。`
+      : `"Through My Lens" holds ${photos.totalPhotos} photographs across ${photos.countries.length} countries. Below is the **complete** list (one line = one photo's actual content).
+Answer photography questions strictly from this list: any country, city or photo not listed does not exist — say so plainly instead of inventing "unpublished" shots.
+You only know what each photo shows; you do NOT know when or how it was taken, so never invent backstories. For "which is your favourite", pick real photos from the list and talk about what's in the frame.`;
   return `${head}\n${photos.countries
-    .map((c) => `- ${c.name}(${c.photos}): ${c.cities.join(lang === 'zh' ? '、' : ', ')}`)
+    .map((c) => {
+      const line = `- ${c.name}(${c.photos}): ${c.cities.join(lang === 'zh' ? '、' : ', ')}`;
+      const shots = (c.descriptions ?? []).map((d) => `  · ${d}`).join('\n');
+      return shots ? `${line}\n${shots}` : line;
+    })
     .join('\n')}`;
 }
 

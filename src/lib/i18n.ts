@@ -47,6 +47,10 @@ export const ui = {
       welcomeBack: 'Welcome back, %s! 😺 What can I dig up for you today?',
       askName: 'We meet again, meow~ I never did catch your name — what should I call you?',
       nameAck: 'Got it — %s it is, meow. So, what would you like to know about Sigao?',
+      namePlaceholder: 'Your name',
+      nameOk: 'Tell Zoe',
+      nameNo: 'No thanks',
+      nameDeclined: "Okay meow — I won't ask again.",
     },
     hero: {
       coords: '31.2304° N, 121.4737° E — AND COUNTING',
@@ -125,6 +129,10 @@ export const ui = {
       welcomeBack: '%s，你回来啦喵～今天想打听点什么？',
       askName: '又见面啦喵～上次忘了问，你怎么称呼？',
       nameAck: '记住啦，%s 喵～那你想了解思高的什么？',
+      namePlaceholder: '怎么称呼',
+      nameOk: '告诉驺虞',
+      nameNo: '不用啦',
+      nameDeclined: '好哒，不问啦喵～',
     },
     hero: {
       coords: '31.2304° N, 121.4737° E — 足迹仍在继续',
