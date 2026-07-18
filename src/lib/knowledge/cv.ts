@@ -6,6 +6,7 @@ import cvZh from '../../data/cv.zh.json';
 import type { CvEntry, KnowledgeCv, SkillGroup } from './types';
 
 interface RawEntry {
+  id?: string;
   title: string;
   org: string;
   location?: string;
@@ -22,6 +23,7 @@ const EN_SKILL_LABELS: Record<string, string> = {
 };
 
 const pickEntry = (e: RawEntry): CvEntry => ({
+  ...(e.id ? { id: e.id } : {}),
   title: e.title,
   org: e.org,
   ...(e.location ? { location: e.location } : {}),

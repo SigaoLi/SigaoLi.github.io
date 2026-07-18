@@ -20,6 +20,8 @@ const fmt = (s: string) => {
 };
 
 type Entry = {
+  /** Stable anchor id (`#cv-<id>`), shared with the knowledge pack so Zoe's guide chips can deep-link here. */
+  id?: string;
   title: string;
   org: string;
   location?: string;
@@ -116,7 +118,7 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
 
           <ol class="space-y-12">
             {s.groups.map((g) => (
-              <li class="tl-entry relative">
+              <li class="tl-entry relative" id={g.roles.length === 1 && g.roles[0].id ? `cv-${g.roles[0].id}` : undefined}>
                 <span class="tl-dot absolute -left-10 top-1.5 block h-[11px] w-[11px] rounded-full border-2"
                   style="border-color: var(--accent); background: var(--bg);" aria-hidden="true"></span>
                 <div class="flex items-baseline justify-between gap-3">
@@ -140,7 +142,7 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
                     <div class="tl-subline absolute left-[2.5px] w-[2px] origin-top" style="background: color-mix(in srgb, var(--accent) 55%, var(--bg)); transform: scaleY(0);" aria-hidden="true"></div>
                     <ol class="space-y-7">
                       {g.roles.map((r) => (
-                        <li class="relative pl-7">
+                        <li class="relative pl-7" id={r.id ? `cv-${r.id}` : undefined}>
                           <span class="tl-subdot absolute left-0 top-1.5 block h-2 w-2 rounded-full border"
                             style="border-color: color-mix(in srgb, var(--accent) 55%, var(--bg)); background: var(--bg);" aria-hidden="true"></span>
                           <p class="font-mono text-xs text-ink-muted">{fmt(r.start)} — {fmt(r.end)}</p>
@@ -236,6 +238,24 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
   .org-link:hover::after,
   .org-link:focus-visible::after {
     opacity: 1;
+  }
+
+  /* 深链落点（/cv#cv-<id>，Zoe 引导 chip）：accent 底色短暂闪现标出条目。
+     scroll-margin-top 让所有锚点跳转（同页点击/跨页导航/JS 兜底）都落在视口 35% 高度处
+     ——中间略偏上，符合阅读视线（Sigao 07-18 验收反馈：顶到最上面不舒服）。 */
+  .timeline li[id] {
+    scroll-margin-top: 35vh;
+  }
+  .timeline li:target {
+    border-radius: 0.5rem;
+    animation: cv-target-flash 2.4s ease-out 0.25s both;
+  }
+  @keyframes cv-target-flash {
+    0%, 25% { background-color: color-mix(in srgb, var(--accent) 14%, transparent); }
+    100% { background-color: transparent; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .timeline li:target { animation: none; background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
   }
 
   /* 套B 磨砂层（FlowField 之上、正文之下）。亮/暗分别处理。 */
@@ -454,6 +474,12 @@ const skillGroups: [string, string[]][] = Array.isArray(sk)
 
         measure();
         render(0); // load: line collapsed, only the first node blue
+
+        // 深链落点兜底：View Transitions 跨页导航到 /cv#cv-<id> 时路由器不保证滚到锚点，
+        // 量完时间轴后手动滚一次；block:'start' 会尊重 scroll-margin-top(35vh)，
+        // 与原生锚点跳转落点一致（:target 高亮由 CSS 负责）。
+        const hash = decodeURIComponent(location.hash.slice(1));
+        if (hash) document.getElementById(hash)?.scrollIntoView({ block: 'start' });
 
         // Entry slide-in reveal (independent of the progress line).
         tl.querySelectorAll<HTMLElement>('.tl-entry').forEach((entry) => {

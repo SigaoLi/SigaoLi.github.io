@@ -2,6 +2,8 @@
 // Worker(/chat、/mcp)按此结构消费;字段增删须同步 PRD §22 与 Worker 侧。
 
 export interface CvEntry {
+  /** 稳定锚点 id（CV 页 `#cv-<id>`）——Worker 分类器深链白名单同源于此 */
+  id?: string;
   title: string;
   org: string;
   location?: string;

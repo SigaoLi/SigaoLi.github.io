@@ -18,6 +18,13 @@ export default defineConfig({
     '/publications': '/work',
     '/publication/2024-trying': '/work',
     '/research': '/work#research',
+    // 第二批（2026-07-18，GoatCounter `404-` 实测数据）：旧 Jekyll _research/ 详情页仍被外部收录
+    '/research/business-geography': '/work#research',
+    '/research/quantitative-finance': '/work#research',
+    '/research/environmental-monitoring': '/work#research',
+    '/research/crime-analysis': '/work#research',
+    '/research/public-health': '/work#research',
+    '/research/social-media': '/work#research',
     '/media': '/photography',
     '/resume': '/cv',
     '/about': '/',

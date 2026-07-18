@@ -119,8 +119,8 @@
         }
         p.x += vx; p.y += vy;
         if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) { p.x = Math.random() * w; p.y = Math.random() * h; }
-        const headA = (light ? 0.42 : 0.6) + near * 0.4;
-        const headS = (light ? 1.5 : 2.2) + near * 1.6;
+        const headA = (light ? 0.5 : 0.6) + near * 0.4; // 亮色 0.42→0.5(Sigao 07-18:两侧点再亮一点点;multiply 下亮=更深)
+        const headS = (light ? 1.6 : 2.2) + near * 1.6;
         // Head + a fading tail. Tail length scales with speed, so the cursor
         // vortex naturally streaks longer while the calm field stays compact.
         for (let k = TRAIL; k >= 0; k--) {

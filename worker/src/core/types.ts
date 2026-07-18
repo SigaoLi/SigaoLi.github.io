@@ -27,11 +27,16 @@ export interface ChatMessage {
 export interface ChatRequestBody {
   lang?: 'en' | 'zh';
   messages: ChatMessage[];
+  /** 访客兴趣(§23.5):客户端本地画像的枚举摘要(work/cv/photography,至多 2 项)。
+   *  worker 白名单校验后自拼可信句进 prompt——客户端任何自由文本都不进提示词(零注入面)。 */
+  interests?: string[];
 }
 
 // —— 知识包结构(与站点 src/lib/knowledge/types.ts 的 KnowledgePack 对应,此处只声明消费到的字段) ——
 
 export interface PackCvEntry {
+  // id=CV 页锚点(`#cv-<id>`),深链 chip 白名单;可选=兼容旧版知识包缓存(worker 先于站点部署的窗口期)
+  id?: string;
   title: string;
   org: string;
   location?: string;

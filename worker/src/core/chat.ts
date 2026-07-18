@@ -8,6 +8,20 @@ import { isEuLike, openCompletionStream, providerChain, type UpstreamMessage } f
 import { relayStream } from './sse';
 import type { ChatMessage, ChatRequestBody, Runtime } from './types';
 
+// 兴趣注入的白名单(§23.5):只接受这三个枚举值,其余一律丢弃。
+// 客户端画像是访客完全可控的(localStorage),任何自由文本都不进 prompt——
+// worker 只认枚举,再由 prompt.ts 自拼可信句,注入面为零。
+const INTEREST_CATS = ['work', 'cv', 'photography'] as const;
+export function sanitizeInterests(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  const seen: string[] = [];
+  for (const x of raw) {
+    if (typeof x === 'string' && (INTEREST_CATS as readonly string[]).includes(x) && !seen.includes(x)) seen.push(x);
+    if (seen.length >= 2) break;
+  }
+  return seen;
+}
+
 /** 历史超长时从最旧开始丢弃(保底保留最后一条 user 消息)。 */
 function trimHistory(messages: ChatMessage[], maxChars: number): ChatMessage[] {
   const kept: ChatMessage[] = [];
@@ -48,9 +62,10 @@ export async function handleChat(request: Request, rt: Runtime): Promise<Respons
   if (!checked.ok) return json({ error: checked.error }, checked.status);
 
   const lang = body.lang === 'en' ? 'en' : 'zh';
+  const interests = sanitizeInterests(body.interests);
   const pack = await getKnowledge(rt.knowledgeUrl);
   const upstreamMessages: UpstreamMessage[] = [
-    { role: 'system', content: buildSystemPrompt(pack, lang) },
+    { role: 'system', content: buildSystemPrompt(pack, lang, interests) },
     ...trimHistory(checked.messages, LIMITS.maxHistoryChars),
   ];
 

@@ -63,7 +63,23 @@ function fmtResearch(research: PackLangSlice['research']): string {
     .join('\n\n');
 }
 
-export function buildSystemPrompt(pack: KnowledgePack, lang: 'en' | 'zh'): string {
+// 访客兴趣可信句(§23.5):interests 已经过 chat.ts 白名单校验(仅枚举),这里映射为固定文案——
+// 句子由 worker 拼装,客户端字节永不进入 prompt。指令刻意克制:顺着聊,不复读,不"我在追踪你"。
+const INTEREST_LABELS: Record<'en' | 'zh', Record<string, string>> = {
+  zh: { work: '作品案例', cv: '简历与经历', photography: '摄影作品' },
+  en: { work: 'his projects and case studies', cv: 'his CV and background', photography: 'his photography' },
+};
+function fmtVisitorContext(interests: string[], lang: 'en' | 'zh'): string {
+  const labels = interests.map((i) => INTEREST_LABELS[lang][i]).filter(Boolean);
+  if (!labels.length) return '';
+  return lang === 'zh'
+    ? `\n\n# 访客线索(来自访客自己浏览器的匿名偏好,不含身份信息)
+这位访客在本站浏览时更关注:${labels.join('、')}。开场或话题合适时,可以自然地顺着这个方向聊或推荐相关页面;只轻轻带一次,不要反复提及,也绝不要让访客觉得"被追踪"。`
+    : `\n\n# Visitor context (anonymous preference from the visitor's own browser; no identity)
+This visitor has mostly been browsing: ${labels.join(', ')}. Early in the conversation, or when the topic fits, you may naturally lean toward this and suggest related pages — mention it lightly at most once, and never make the visitor feel tracked.`;
+}
+
+export function buildSystemPrompt(pack: KnowledgePack, lang: 'en' | 'zh', interests: string[] = []): string {
   const slice = pack[lang];
   const p = pack.profile;
   const langLine =
@@ -84,6 +100,11 @@ export function buildSystemPrompt(pack: KnowledgePack, lang: 'en' | 'zh'): strin
 - 你无权替主人做任何承诺(报价、答应合作、约定时间),此类请求一律引导访客发邮件:${p.email}(${lang === 'zh' ? '"这个得找主人本人喵"' : `"that's above my paw grade — email my human"`})。
 - ${langLine}
 - 只依据下方知识回答;知识之外的信息直说不知道(${lang === 'zh' ? '"这个本猫没听主人提过喵"' : `"my human never mentioned that within earshot of my ears, meow"`}),不编造、不推测主人的观点。
+- ${
+    lang === 'zh'
+      ? '网站本身可以逛:简历页时间轴上的机构名可以点击直达对方官网,作品页每个案例都有独立页面,照片都在「镜头之下」。聊到某家公司、某段经历或某个案例时,顺口提醒访客"简历页/作品页可以点进去看"(你的回复下方也可能出现对应的引导按钮);但别每条回复都提。**不要在回复里写 URL 或 markdown 链接**(聊天窗不渲染链接,路径也容易写错),说页面名称就够了。'
+      : 'The site itself is worth pointing to: on the CV page each organisation name is a clickable link to its website, every case study has its own page in Work, and the photos live in "Through My Lens". When a company, role or project comes up, feel free to mention that visitors can click through on the CV or Work page (a guide button may also appear under your reply) — just not in every message. **Never write URLs or markdown links in replies** (the chat window does not render links and paths are easy to get wrong); page names are enough.'
+  }
 - 严格遵守下方「回答规范」与「边界清单」。
 
 # 基本信息
@@ -119,5 +140,5 @@ ${fmtCases(slice.cases)}
 ${fmtResearch(slice.research)}
 
 # 摄影足迹(数据实时同步自网站)
-${fmtPhotos(slice.photos, lang)}`;
+${fmtPhotos(slice.photos, lang)}${fmtVisitorContext(interests, lang)}`;
 }

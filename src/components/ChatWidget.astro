@@ -16,12 +16,18 @@ const lang: Lang = Astro.currentLocale === 'zh' ? 'zh' : 'en';
 const d = t(lang).chat;
 const apiBase = import.meta.env.DEV ? 'http://localhost:8787' : site.api;
 const privacyHref = localizePath(lang, '/privacy');
-// 意图引导 chip 配置(§23.5):label=Zoe 口吻文案,href=本地化版块路径 / mailto。分类器只回 chip 键名。
+// 意图引导 chip 配置(§23.5):label=Zoe 口吻文案,href=本地化版块路径 / mailto。
+// 深链(07-17):分类器还可能回 target(案例 slug / CV 条目 id,worker 白名单校验过),
+// 前端用 caseTpl/cvTpl 模板 + workBase/cvPath 拼具体落点。
 const guides = JSON.stringify({
   work: { label: d.guide.work, href: localizePath(lang, '/work') },
   cv: { label: d.guide.cv, href: localizePath(lang, '/cv') },
   photography: { label: d.guide.photography, href: localizePath(lang, '/photography') },
   email: { label: d.guide.email, href: `mailto:${site.email}` },
+  caseTpl: d.guide.caseTpl,
+  cvTpl: d.guide.cvTpl,
+  workBase: localizePath(lang, '/work'),
+  cvPath: localizePath(lang, '/cv'),
 });
 ---
 
@@ -175,6 +181,8 @@ const guides = JSON.stringify({
     transition: border-color 0.15s, background-color 0.15s;
   }
   .chat-guide-chip:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  /* 深链 chip 文案可能较长(公司全名/案例标题),超出面板宽度时省略号收尾 */
+  .chat-guide-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 </style>
 
 <script>
@@ -190,9 +198,10 @@ const guides = JSON.stringify({
   };
 
   // 回头客画像(§23.5 记忆):只存访客本地设备(localStorage),你不持有;可一键「忘记我」清 sigaoli-zoe-*。
-  // v1 只用于问候认人(名字不进 /chat 提示词,零注入面);后续可加兴趣追踪 + 注入。
+  // 名字只用于问候认人(不进 /chat 提示词,零注入面);interests=兴趣等效秒(07-17 定案,见下方兴趣追踪)。
   // declined=点过「不用啦」,永不再问(07-16 Sigao 定);此后唯一留名路径=对话里自报名字。
-  type Profile = { name?: string; visits: number; lastVisit?: string; askCount?: number; declined?: boolean };
+  type Cat = 'work' | 'cv' | 'photography';
+  type Profile = { name?: string; visits: number; lastVisit?: string; askCount?: number; declined?: boolean; interests?: Partial<Record<Cat, number>> };
   const profile = {
     data: { visits: 0 } as Profile,
     load() {
@@ -202,6 +211,41 @@ const guides = JSON.stringify({
     },
     save() { try { localStorage.setItem('sigaoli-zoe-profile', JSON.stringify(this.data)); } catch { /* 隐私模式可拒 */ } },
   };
+
+  // ---- 兴趣追踪(§23.5,07-17 Sigao 定案):门控停留时长为主 + 动作事件折算,合成「等效秒」----
+  // 纯点击/意图计数被否决(简历长读零点击、作品狂点短停,计数失真),故以停留时长当底、深度动作加权:
+  // - 计时门控:标签页不可见暂停 / 60s 无输入(指针、滚动、按键)暂停 / 单次页面浏览封顶 5min(防挂机灌分)
+  // - 事件折算:案例详情页 +30(每会话每案例一次) / 灯箱 +10(会话封顶 60,防连翻 76 张灌爆) / CV 机构外链 +30 / 引导 chip +20
+  // 全部存本地画像 profile.interests;/chat 只发「≥90s 的前二版块」枚举数组(worker 再白名单校验+自拼可信句)。
+  // 原则:看了多久当底、做了什么加权、不确定就闭嘴——错误的个性化比没有更伤。
+  const IT = {
+    tick: 5,            // 计时步长(秒)=写盘节流
+    pageCap: 300,       // 单次页面浏览计时封顶
+    idleAfterMs: 60_000,
+    catCap: 3600,       // 单版块总分上限
+    minReport: 90,      // 达标才上报
+    evCase: 30, evLightbox: 10, evOrgLink: 30, evChip: 20,
+    lightboxCap: 60,
+  };
+  const IT_CATS: readonly Cat[] = ['work', 'cv', 'photography'];
+  const itState = { cat: '' as Cat | '', accrued: 0, lastInput: Date.now(), lightboxGain: 0, seenCases: new Set<string>() };
+  const addInterest = (cat: Cat, sec: number) => {
+    const p = profile.data;
+    p.interests = { ...(p.interests ?? {}), [cat]: Math.min(IT.catCap, (p.interests?.[cat] ?? 0) + sec) };
+    profile.save();
+  };
+  // 路由→版块桶:/work 与案例详情全归 work,中文前缀抹平;非三版块(首页/隐私等)不计时
+  const pathCat = (path: string): Cat | '' => {
+    const p = path.replace(/^\/zh(?=\/|$)/, '') || '/';
+    if (p === '/work' || p.startsWith('/work/')) return 'work';
+    if (p === '/cv' || p === '/cv/') return 'cv';
+    if (p === '/photography' || p === '/photography/') return 'photography';
+    return '';
+  };
+  const topInterests = (): Cat[] =>
+    IT_CATS.filter((c) => (profile.data.interests?.[c] ?? 0) >= IT.minReport)
+      .sort((a, b) => (profile.data.interests?.[b] ?? 0) - (profile.data.interests?.[a] ?? 0))
+      .slice(0, 2);
 
   // ---- Zoe 片段清单(素材 public/zoe/,600p VP9 alpha;管线 scripts/zoe-prod2.mjs,手册 docs/zoe-production-handbook.md) ----
   // 锚点图结构:所有片段首尾帧钉在 坐(a-sit2)/趴(b-loaf2) 锚点上 → 任意组合硬切即连贯;
@@ -626,20 +670,32 @@ const guides = JSON.stringify({
   };
 
   // 意图引导(§23.5):并行请求 /classify,拿到 chip 就在该条回复下方渲染可点引导(版块导航/邮箱)。
-  // 失败/none/超限一律无引导——独立 fetch,与 /chat 解耦,绝不阻塞或影响主回复。
-  const renderGuidanceChip = (chip: string, afterEl: HTMLElement) => {
+  // 深链(07-17):worker 白名单校验过的 target(案例/CV 条目)优先——chip 直达 /work/<slug> 或 /cv#cv-<id>;
+  // id 前端再做一次防御性校验,label 走 textContent(无注入面)。失败/none/超限一律无引导。
+  type GuideTarget = { kind?: string; id?: string; label?: string };
+  const renderGuidanceChip = (chip: string, tgt: GuideTarget | null, afterEl: HTMLElement) => {
     if (!afterEl.isConnected) return; // 切页后旧 DOM 已废(流式消息由 stream.el 兜着,其余场景放弃 chip)
-    let guides: Record<string, { label: string; href: string }>;
+    let guides: Record<string, { label: string; href: string }> & { caseTpl?: string; cvTpl?: string; workBase?: string; cvPath?: string };
     try { guides = JSON.parse(rootData().guides ?? '{}'); } catch { return; }
-    const g = guides[chip];
-    if (!g) return;
+    let href = '', label = '';
+    if (tgt && typeof tgt.id === 'string' && /^[a-z0-9-]{1,60}$/i.test(tgt.id) && typeof tgt.label === 'string') {
+      if (tgt.kind === 'case' && guides.caseTpl && guides.workBase) { href = `${guides.workBase}/${tgt.id}`; label = guides.caseTpl.replace('%s', tgt.label); }
+      else if (tgt.kind === 'cv' && guides.cvTpl && guides.cvPath) { href = `${guides.cvPath}#cv-${tgt.id}`; label = guides.cvTpl.replace('%s', tgt.label); }
+    }
+    if (!href) {
+      const g = guides[chip];
+      if (!g) return;
+      href = g.href; label = g.label;
+    }
     if (guideEl) guideEl.remove(); // 只保留最新一条引导 chip
     const wrap = document.createElement('div');
     wrap.className = 'chat-guide';
     const a = document.createElement('a');
-    a.href = g.href;
+    a.href = href;
     a.className = 'chat-guide-chip';
-    a.textContent = g.label;
+    a.textContent = label;
+    // 点引导 chip=明确的兴趣动作,记入等效秒(email 不属兴趣版块)
+    if ((IT_CATS as readonly string[]).includes(chip)) a.addEventListener('click', () => addInterest(chip as Cat, IT.evChip));
     wrap.appendChild(a);
     afterEl.insertAdjacentElement('afterend', wrap);
     guideEl = wrap;
@@ -655,9 +711,9 @@ const guides = JSON.stringify({
         body: JSON.stringify({ lang, message: text }),
       });
       if (!res.ok) return;
-      const data = (await res.json()) as { chip?: string };
+      const data = (await res.json()) as { chip?: string; target?: GuideTarget };
       const el = target(); // 渲染时才取:切页后 paint() 已把流式气泡换成新元素
-      if (data.chip && data.chip !== 'none' && el) renderGuidanceChip(data.chip, el);
+      if (data.chip && data.chip !== 'none' && el) renderGuidanceChip(data.chip, data.target ?? null, el);
     } catch { /* 引导锦上添花,失败静默 */ }
   };
   // 名字提取(§23.5):送 /classify mode=name;能辨「我叫Alex」整句与拒绝语(拒绝返回空)。
@@ -723,11 +779,13 @@ const guides = JSON.stringify({
     void classifyGuidance(text, () => s.el); // 并行意图分类,非阻塞
     maybeCaptureNameFromChat(text);          // 并行自报名字检测,非阻塞
     aborter = new AbortController();
+    // 兴趣注入(§23.5):只发达标(≥90s)的前二版块枚举——不发自由文本、不发秒数明细,worker 端再白名单校验
+    const interests = topInterests();
     try {
       const res = await fetch(`${api}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang, messages: history }),
+        body: JSON.stringify({ lang, messages: history, ...(interests.length ? { interests } : {}) }),
         signal: aborter.signal,
       });
       if (!res.ok || !res.body) {
@@ -829,6 +887,31 @@ const guides = JSON.stringify({
       Z.lastScroll = Date.now();
       markActivity();
     }, { passive: true });
+
+    // ---- 兴趣追踪接线(与 Zoe 活动计时分离:pointermove 只喂计时门控,不该让猫睡不着) ----
+    const markInput = () => { itState.lastInput = Date.now(); };
+    addEventListener('pointermove', markInput, { passive: true });
+    addEventListener('scroll', markInput, { passive: true });
+    addEventListener('keydown', markInput, { passive: true });
+    // 深度动作事件(捕获期委托,页面无需自己埋点):CV 机构外链 / 摄影灯箱缩略图
+    addEventListener('click', (e) => {
+      markInput();
+      const t = e.target as HTMLElement | null;
+      if (!t?.closest) return;
+      if (t.closest('.org-link')) addInterest('cv', IT.evOrgLink);
+      else if (t.closest('[data-lightbox]') && itState.lightboxGain < IT.lightboxCap) {
+        itState.lightboxGain += IT.evLightbox;
+        addInterest('photography', IT.evLightbox);
+      }
+    }, { capture: true, passive: true });
+    // 门控计时循环:可见 + 60s 内有输入 + 在三版块之一 + 未到单页封顶,才累加
+    setInterval(() => {
+      if (!itState.cat || itState.accrued >= IT.pageCap) return;
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - itState.lastInput > IT.idleAfterMs) return;
+      itState.accrued += IT.tick;
+      addInterest(itState.cat, IT.tick);
+    }, IT.tick * 1000);
   };
 
   pageScript(() => {
@@ -868,6 +951,16 @@ const guides = JSON.stringify({
       scheduleMicro();
     } else {
       pageSwitchReaction(); // persist 跨页不断帧,切页瞬间抽反应(§23.3)
+    }
+
+    // 兴趣追踪:按当前路由归桶,单页计时清零重起;案例详情页记深度事件(每会话每案例一次)
+    itState.cat = pathCat(location.pathname);
+    itState.accrued = 0;
+    itState.lastInput = Date.now();
+    const caseSlug = location.pathname.match(/^(?:\/zh)?\/work\/([a-z0-9-]+)\/?$/i)?.[1];
+    if (caseSlug && !itState.seenCases.has(caseSlug)) {
+      itState.seenCases.add(caseSlug);
+      addInterest('work', IT.evCase);
     }
 
     // ---- 面板接线(每页新 DOM) ----

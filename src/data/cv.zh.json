@@ -1,6 +1,7 @@
 {
   "_note": "Extracted from CV__Sigao_Li.pdf (2025 edition) + current role confirmed by Sigao 2026-06-11. PDF refresh post-launch is a data-only change.",
   "current": {
+    "id": "ebest",
     "title": "AI产品经理",
     "org": "上海意鹰信息技术有限公司",
     "location": "中国上海",
@@ -12,6 +13,7 @@
   },
   "education": [
     {
+      "id": "bristol-msc",
       "title": "商业分析硕士",
       "org": "布里斯托大学",
       "location": "英国布里斯托",
@@ -24,6 +26,7 @@
       "url": "https://www.bristol.ac.uk/"
     },
     {
+      "id": "tmu-msa",
       "title": "空间分析硕士",
       "org": "多伦多都会大学",
       "location": "加拿大多伦多",
@@ -36,6 +39,7 @@
       "url": "https://www.torontomu.ca/"
     },
     {
+      "id": "ryerson-ba",
       "title": "地理分析荣誉学士，辅修经济学",
       "org": "瑞尔森大学",
       "location": "加拿大多伦多",
@@ -50,6 +54,7 @@
   ],
   "experience": [
     {
+      "id": "heywhale",
       "title": "咨询项目经理",
       "org": "上海和今信息科技有限公司",
       "location": "中国上海",
@@ -62,6 +67,7 @@
       "url": "https://www.heywhale.com/"
     },
     {
+      "id": "piinpoint",
       "title": "地理空间数据分析师",
       "org": "PiinPoint",
       "location": "加拿大基奇纳",
@@ -74,6 +80,7 @@
       "url": "https://www.piinpoint.com/"
     },
     {
+      "id": "iqiyi",
       "title": "商业分析师",
       "org": "上海爱奇艺文化传媒有限公司",
       "location": "中国上海",
@@ -86,6 +93,7 @@
       "url": "https://www.iqiyi.com/"
     },
     {
+      "id": "miotech",
       "title": "数据分析师",
       "org": "颖投信息科技 (上海) 有限公司",
       "location": "中国上海",
@@ -97,6 +105,7 @@
       "url": "https://www.miotech.com/zh-CN"
     },
     {
+      "id": "sohu",
       "title": "产品分析师",
       "org": "北京搜狐互联网信息服务有限公司",
       "location": "中国北京",
@@ -110,6 +119,7 @@
   ],
   "research": [
     {
+      "id": "ra-sustain",
       "title": "研究助理 — 可持续发展研究",
       "org": "布里斯托大学",
       "location": "英国布里斯托",
@@ -121,6 +131,7 @@
       "url": "https://www.bristol.ac.uk/"
     },
     {
+      "id": "ra-ai-or",
       "title": "研究助理 — AI与运筹学",
       "org": "布里斯托大学",
       "location": "英国布里斯托",
@@ -132,6 +143,7 @@
       "url": "https://www.bristol.ac.uk/"
     },
     {
+      "id": "ra-transport",
       "title": "研究助理 — 交通大数据",
       "org": "布里斯托大学",
       "location": "英国布里斯托",
@@ -143,6 +155,7 @@
       "url": "https://www.bristol.ac.uk/"
     },
     {
+      "id": "ra-nlp",
       "title": "研究助理 — 自然语言处理",
       "org": "布里斯托大学",
       "location": "英国布里斯托",
@@ -154,6 +167,7 @@
       "url": "https://www.bristol.ac.uk/"
     },
     {
+      "id": "ra-cal",
       "title": "研究助理 - 认知老化",
       "org": "多伦多都会大学认知老化实验室",
       "location": "加拿大多伦多",
@@ -165,6 +179,7 @@
       "url": "https://psychlabs.torontomu.ca/cal/"
     },
     {
+      "id": "ra-health",
       "title": "研究助理 — 健康地理学",
       "org": "瑞尔森大学",
       "location": "加拿大多伦多",
@@ -176,6 +191,7 @@
       "url": "https://www.torontomu.ca/"
     },
     {
+      "id": "ra-gis",
       "title": "研究助理 — GIS",
       "org": "瑞尔森大学",
       "location": "加拿大多伦多",
@@ -189,6 +205,7 @@
   ],
   "volunteering": [
     {
+      "id": "gisphere-cochair",
       "title": "联合主席",
       "org": "GISphere",
       "location": "全球",
@@ -202,6 +219,7 @@
       "url": "https://gisphere.info/"
     },
     {
+      "id": "gisource",
       "title": "部门负责人 - GISource",
       "org": "GISphere",
       "location": "全球",
@@ -215,6 +233,7 @@
       "url": "https://gisphere.info/"
     },
     {
+      "id": "gisphere-campus",
       "title": "校园合伙人",
       "org": "GISphere",
       "location": "全球",
@@ -226,6 +245,7 @@
       "url": "https://gisphere.info/"
     },
     {
+      "id": "cssa",
       "title": "学术助理",
       "org": "布里斯托中国学生学者联谊会",
       "location": "英国布里斯托",
@@ -237,6 +257,7 @@
       "url": "https://www.bristolsu.org.uk/groups/cssa-chinese-students-scholars-association-b151"
     },
     {
+      "id": "geoscene",
       "title": "校园大使",
       "org": "易智瑞信息技术有限公司",
       "location": "中国北京",
