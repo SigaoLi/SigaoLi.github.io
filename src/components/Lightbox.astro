@@ -9,10 +9,10 @@
   aria-label="Photo viewer"
 >
   <div id="lb-counter" class="absolute left-5 top-5 font-mono text-xs tracking-widest text-white/55"></div>
-  <button id="lb-close" class="lb-btn absolute right-5 top-5" aria-label="Close viewer">
+  <button id="lb-close" class="lb-btn absolute right-5 top-5" aria-label="Close viewer" title="Esc">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
   </button>
-  <button id="lb-prev" class="lb-btn absolute left-3 sm:left-6" aria-label="Previous photo">
+  <button id="lb-prev" class="lb-btn absolute left-3 sm:left-6" aria-label="Previous photo" title="←">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
   </button>
   <figure id="lb-figure" class="flex max-h-[92svh] max-w-[92vw] flex-col items-center">
@@ -22,7 +22,7 @@
       <span id="lb-meta" class="mt-2.5 flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-[0.15em] text-white/55"></span>
     </figcaption>
   </figure>
-  <button id="lb-next" class="lb-btn absolute right-3 sm:right-6" aria-label="Next photo">
+  <button id="lb-next" class="lb-btn absolute right-3 sm:right-6" aria-label="Next photo" title="→">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
   </button>
 </div>
@@ -47,11 +47,14 @@
   .lb-btn {
     display: grid; place-items: center; width: 40px; height: 40px; border-radius: 9999px;
     color: rgb(255 255 255 / 0.75); background: rgb(255 255 255 / 0.06);
-    backdrop-filter: blur(4px); cursor: pointer; transition: background 0.2s, color 0.2s;
+    backdrop-filter: blur(4px); cursor: pointer; transition: background 0.2s, color 0.2s, transform 0.1s;
   }
   .lb-btn:hover { color: #fff; background: rgb(255 255 255 / 0.14); }
+  /* 交互打磨(07-19):按下微缩反馈 */
+  .lb-btn:active { transform: scale(0.92); }
   @media (prefers-reduced-motion: reduce) {
     .lb-overlay, #lb-figure { transition: none; }
+    .lb-btn:active { transform: none; }
   }
 </style>
 

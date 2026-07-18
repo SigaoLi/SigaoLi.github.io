@@ -209,8 +209,9 @@ await waitClip(rl, ['idle'], '刷新后·猫仍在(enterIdle 分支)', 15000);
 }
 await rl.screenshot({ path: 'shots/zoe-reload.png' });
 await rl.click('#chat-close');
-if (await rl.$eval('#chat-panel', (el) => !el.hidden)) throw new Error('✗ X 按钮没关掉面板');
-console.log('✓ X 按钮关闭面板');
+// 关闭有 200ms 缩小淡出动画(07-19)。坑:waitForSelector 默认等"可见",hidden 元素永远不可见,须 waitForFunction
+await rl.waitForFunction(() => document.getElementById('chat-panel')?.hidden, { timeout: 4000 });
+console.log('✓ X 按钮关闭面板(含淡出动画)');
 
 // 11) 跨页续流(Bug2):流式中切页,回答不断、完整入 history
 await rl.click('#chat-fab');

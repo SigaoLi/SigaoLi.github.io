@@ -51,6 +51,7 @@ export const ui = {
       nameOk: 'Tell Zoe',
       nameNo: 'No thanks',
       nameDeclined: "Okay meow — I won't ask again.",
+      toLatest: 'Back to latest ↓',
     },
     hero: {
       coords: '31.2304° N, 121.4737° E — AND COUNTING',
@@ -133,6 +134,7 @@ export const ui = {
       nameOk: '告诉驺虞',
       nameNo: '不用啦',
       nameDeclined: '好哒，不问啦喵～',
+      toLatest: '回到最新 ↓',
     },
     hero: {
       coords: '31.2304° N, 121.4737° E — 足迹仍在继续',

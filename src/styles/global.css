@@ -62,6 +62,8 @@ html {
   color: var(--ink);
   font-family: var(--font-body);
   scroll-behavior: smooth;
+  /* 交互打磨(07-19):深浅主题切换时底色/文字色平滑过渡(仅最大可见面,不全局铺开防绘制风暴) */
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 body {

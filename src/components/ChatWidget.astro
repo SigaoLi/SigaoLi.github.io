@@ -60,15 +60,17 @@ const guides = JSON.stringify({
 
   <!-- 对话面板 -->
   <!-- 桌面端面板让位到 Zoe 左侧(Sigao 07-12 定:Zoe 在对话框右侧);移动端仍贴右、盖住 Zoe -->
+  <!-- 方案 C·NPC 名牌(07-18 Sigao 选定):名牌浮在框顶(单语=d.title,当页语言)、accent 描边、
+       流式底部流动线、爪印三点打字。头部只留副标题——身份信息名牌一处呈现,不重复(Sigao 要求)。 -->
   <section id="chat-panel" role="dialog" aria-label={d.title} hidden
-    class="fixed bottom-20 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-xl border shadow-2xl md:bottom-5 md:right-[11.25rem]"
-    style="border-color: var(--line); background: var(--bg-elevated); height: min(540px, calc(100dvh - 8.5rem));">
-    <header class="relative border-b px-4 py-3" style="border-color: var(--line);">
-      <p class="font-mono text-[10px] uppercase tracking-wider" style="color: var(--accent);">{d.title}</p>
-      <p class="mt-0.5 text-xs text-ink-muted">{d.subtitle}</p>
+    class="fixed bottom-20 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col rounded-2xl shadow-2xl md:bottom-5 md:right-[11.25rem]"
+    style="border: 1.5px solid color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--bg-elevated); height: min(540px, calc(100dvh - 8.5rem));">
+    <div class="chat-plate" aria-hidden="true">{d.title}</div>
+    <header class="relative border-b px-4 pt-4 pb-2.5" style="border-color: var(--line);">
+      <p class="pr-7 text-xs text-ink-muted">{d.subtitle}</p>
       <!-- 显式关闭钮:面板的可关闭性不依赖 Zoe 可点(07-16 Bug4 伴生修复) -->
-      <button id="chat-close" type="button" aria-label={d.close}
-        class="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded text-ink-muted transition-colors hover:text-ink">
+      <button id="chat-close" type="button" aria-label={d.close} title={`${d.close} (Esc)`}
+        class="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-ink-muted">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <path d="M18 6 6 18M6 6l12 12"/>
         </svg>
@@ -77,6 +79,11 @@ const guides = JSON.stringify({
 
     <div id="chat-log" role="log" aria-live="polite" class="flex-1 space-y-3 overflow-y-auto px-4 py-4"></div>
 
+    <!-- 智能吸底(07-17 ④):访客上滚离底后流式不再强制跟随,此钮浮现供一键回底 -->
+    <button id="chat-to-latest" type="button" hidden
+      class="absolute bottom-32 left-1/2 z-10 -translate-x-1/2 rounded-full border px-3 py-1 text-xs shadow-md transition-colors"
+      style="border-color: var(--accent); color: var(--accent); background: var(--bg-elevated);">{d.toLatest}</button>
+
     <!-- 常用问题(仅空对话时显示,点击即发送) -->
     <div id="chat-suggest" class="flex flex-wrap gap-1.5 px-4 pb-2">
       {t(lang).chat.suggestions.map((q) => (
@@ -84,8 +91,10 @@ const guides = JSON.stringify({
       ))}
     </div>
 
+    <!-- 流式进行中:底边 accent 细线流动(呼应简历页河流母题),setBusy 开关 -->
+    <div id="chat-flowline" hidden aria-hidden="true"><i></i></div>
     <form id="chat-form" class="border-t px-3 py-3" style="border-color: var(--line);">
-      <div class="flex items-end gap-2">
+      <div class="chat-inputrow flex items-end gap-2">
         <textarea id="chat-input" rows="1" maxlength="2000" placeholder={d.placeholder} autocomplete="off"
           class="max-h-28 w-full resize-none bg-transparent px-1 py-1.5 text-sm outline-none text-ink placeholder:text-ink-muted"></textarea>
         <button id="chat-send" type="submit" aria-label={d.send}
@@ -111,8 +120,59 @@ const guides = JSON.stringify({
 </div>
 
 <style>
-  .chat-chip { border-color: var(--line); color: var(--ink-muted); }
-  .chat-chip:hover { border-color: var(--accent); color: var(--ink); }
+  /* 方案 C·NPC 名牌:浮在面板顶,单语身份唯一呈现处 */
+  .chat-plate {
+    position: absolute; top: -13px; left: 14px; z-index: 1;
+    background: var(--accent); color: var(--bg-elevated);
+    font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 4px 12px; border-radius: 9999px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.18);
+  }
+  /* 流式流动线(河流母题):2px accent 光条循环流过 */
+  #chat-flowline { height: 2px; margin: 0 14px; border-radius: 2px; overflow: hidden;
+    background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  #chat-flowline[hidden] { display: none; }
+  #chat-flowline i { display: block; height: 100%; width: 38%; border-radius: 2px;
+    background: var(--accent); animation: chat-flow 1.8s ease-in-out infinite; }
+  @keyframes chat-flow { 0% { transform: translateX(-100%); } 100% { transform: translateX(280%); } }
+  /* 面板开合动效:右下角为原点缩放淡入(呼应灯箱语言) */
+  #chat-panel:not([hidden]) { transform-origin: 90% 100%; animation: chat-pop 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+  @keyframes chat-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+  /* 面板关闭:缩小淡出 200ms(toggle 里 closing 类 + closeTimer,与开启对称) */
+  #chat-panel.closing { animation: chat-pop-out 0.2s ease-in both; }
+  @keyframes chat-pop-out { to { opacity: 0; transform: scale(0.94); } }
+  @media (prefers-reduced-motion: reduce) {
+    #chat-panel:not([hidden]) { animation: none; }
+    #chat-panel.closing { animation: none; }
+    #chat-flowline i { animation: none; }
+  }
+  /* ---- 交互细节打磨(07-19 批,Sigao 定 1-8+10+11):hover/focus 全走 accent wash 统一语言 ---- */
+  #chat-close { transition: color 0.15s, background-color 0.15s; }
+  #chat-close:hover, #chat-close:focus-visible { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  #chat-send { transition: opacity 0.15s; }
+  #chat-send:hover:not(:disabled) { opacity: 0.85; }
+  #chat-send svg { transition: transform 0.15s; }
+  #chat-send:hover:not(:disabled) svg { transform: translateX(1px); }
+  #chat-send:disabled { cursor: not-allowed; }
+  #chat-to-latest { transition: background-color 0.15s; }
+  #chat-to-latest:hover { background: color-mix(in srgb, var(--accent) 10%, transparent) !important; }
+  #zoe-forget:hover, #chat-reset:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  /* 输入行 focus 态:底部 hairline 转 accent(比一圈 focus 框克制) */
+  .chat-inputrow { border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: border-color 0.2s; }
+  .chat-inputrow:focus-within { border-bottom-color: var(--accent); }
+  /* chat-log 细滚动条(deep/light 随 token) */
+  #chat-log { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--accent) 30%, var(--line)) transparent; }
+  #chat-log::-webkit-scrollbar { width: 6px; }
+  #chat-log::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 30%, var(--line)); border-radius: 3px; }
+  #chat-log::-webkit-scrollbar-track { background: transparent; }
+  .chat-chip { border-color: var(--line); color: var(--ink-muted); transition: border-color 0.15s, color 0.15s, background-color 0.15s, transform 0.1s; }
+  .chat-chip:hover { border-color: var(--accent); color: var(--ink); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  /* 按下微缩反馈(chips/按钮通用,点击"手感") */
+  .chat-chip:active, #chat-send:active:not(:disabled), #chat-to-latest:active, #chat-close:active { transform: scale(0.96); }
+  #chat-send, #chat-to-latest, #chat-close { transition-property: color, background-color, opacity, transform; transition-duration: 0.15s, 0.15s, 0.15s, 0.1s; }
+  @media (prefers-reduced-motion: reduce) {
+    .chat-chip:active, #chat-send:active:not(:disabled), #chat-to-latest:active, #chat-close:active { transform: none; }
+  }
   /* 锚点容器零尺寸,place() 的 transform 落点=脚底中心;按钮/气泡围绕它布局 */
   #zoe-anchor { width: 0; height: 0; will-change: transform; }
   /* 实体碰撞盒 160×180,margin 负偏移使锚点=脚底中心(零尺寸盒会被点击/无障碍工具忽略) */
@@ -166,11 +226,22 @@ const guides = JSON.stringify({
 
 <!-- 气泡由运行时 JS 创建,拿不到 Astro 作用域属性,样式须 is:global -->
 <style is:global>
-  .chat-msg { max-width: 85%; border-radius: 0.75rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; line-height: 1.55; overflow-wrap: anywhere; }
+  .chat-msg { max-width: 85%; border-radius: 0.75rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; line-height: 1.55; overflow-wrap: anywhere;
+    animation: chat-msg-in 0.18s ease-out both; }
+  @keyframes chat-msg-in { from { opacity: 0; transform: translateY(4px); } }
+  @media (prefers-reduced-motion: reduce) { .chat-msg { animation: none; } }
   .chat-msg.user { margin-left: auto; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--ink); }
-  .chat-msg.bot { margin-right: auto; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  /* 方案 C:bot 气泡左侧 accent 竖条(NPC 台词感),背景透明靠边线区分 */
+  .chat-msg.bot { margin-right: auto; border: 1px solid var(--line); background: transparent; color: var(--ink); position: relative; }
+  .chat-msg.bot::before { content: ''; position: absolute; left: -1px; top: 10px; bottom: 10px; width: 2.5px; border-radius: 2px; background: var(--accent); opacity: 0.55; }
   .chat-msg.bot code { font-family: var(--font-mono, monospace); font-size: 0.8em; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; padding: 0 3px; }
-  .chat-msg.pending::after { content: '…'; opacity: 0.5; }
+  /* 等待首 token:三点跳动(替代原静态「…」) */
+  .chat-typing { display: inline-flex; gap: 4px; align-items: center; padding: 3px 0; }
+  .chat-typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-muted); animation: chat-tp 1.2s infinite; }
+  .chat-typing i:nth-child(2) { animation-delay: 0.2s; }
+  .chat-typing i:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes chat-tp { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-3px); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .chat-typing i { animation: none; opacity: 0.6; } }
   /* 意图引导 chip:回复下方可点的版块导航/邮箱(§23.5) */
   .chat-guide { margin-right: auto; }
   .chat-guide-chip {
@@ -181,8 +252,10 @@ const guides = JSON.stringify({
     transition: border-color 0.15s, background-color 0.15s;
   }
   .chat-guide-chip:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .chat-guide-chip:active { transform: scale(0.96); }
   /* 深链 chip 文案可能较长(公司全名/案例标题),超出面板宽度时省略号收尾 */
-  .chat-guide-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .chat-guide-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; transition: border-color 0.15s, background-color 0.15s, transform 0.1s; }
+  @media (prefers-reduced-motion: reduce) { .chat-guide-chip:active { transform: none; } }
 </style>
 
 <script>
@@ -319,6 +392,20 @@ const guides = JSON.stringify({
   };
   let history: Msg[] = [];
   let busy = false;
+  // 智能吸底(07-17 ④):仅当访客本就在底部(距底 <40px)才自动跟随新内容;
+  // 位置判断天然自洽——程序滚到底后位置=底部,pinned 保持;用户上滚即离底,停止跟随。
+  let pinned = true;
+  const atBottom = (log: HTMLElement) => log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  const setPinned = (v: boolean) => {
+    pinned = v;
+    const btn = $('chat-to-latest');
+    if (btn) btn.hidden = v;
+  };
+  const scrollLog = () => {
+    if (!pinned) return;
+    const log = $('chat-log');
+    if (log) log.scrollTop = log.scrollHeight;
+  };
   let aborter: AbortController | null = null;
   let guideEl: HTMLElement | null = null; // 当前引导 chip(只保留最新一条,§23.5)
   // 进行中的流式回复(Bug2 跨页续流):内容累积在模块级,不随页面 DOM 消亡;
@@ -339,6 +426,8 @@ const guides = JSON.stringify({
     (window as unknown as { goatcounter?: { count?: (o: object) => void } }).goatcounter?.count?.({ path: name, event: true });
   };
 
+  // 等待首 token 的三点跳动指示(方案 C;静态内容,无注入面)
+  const TYPING_HTML = '<span class="chat-typing"><i></i><i></i><i></i></span>';
   // 极简安全渲染:先转义 HTML,再恢复 **粗体** / `代码` / 换行
   const render = (text: string): string =>
     text
@@ -630,18 +719,19 @@ const guides = JSON.stringify({
     el.className = `chat-msg ${cls}`;
     el.innerHTML = html;
     log.appendChild(el);
-    log.scrollTop = log.scrollHeight;
+    scrollLog();
     return el;
   };
   const paint = () => {
     const log = $('chat-log'), suggest = $('chat-suggest');
     if (!log || !suggest) return;
+    setPinned(true); // 重绘=回到底部(新面板/重开聊/切页恢复)
     log.innerHTML = '';
     guideEl = null; // 引导 chip 随 log 重绘清空
     bubbleMsg('bot', render(rootData().greeting ?? ''));
     for (const m of history) bubbleMsg(m.role === 'user' ? 'user' : 'bot', render(m.content));
     if (stream) { // 进行中的流式回复(Bug2):重挂到新 DOM,后续 delta 继续写入
-      stream.el = bubbleMsg('bot', render(stream.acc));
+      stream.el = bubbleMsg('bot', stream.acc ? render(stream.acc) : TYPING_HTML);
       if (!stream.acc) stream.el.classList.add('pending');
     }
     suggest.hidden = history.length > 0 || !!stream;
@@ -650,13 +740,26 @@ const guides = JSON.stringify({
     busy = b;
     const btn = $('chat-send') as HTMLButtonElement | null;
     if (btn) btn.disabled = b;
+    const flow = $('chat-flowline');
+    if (flow) flow.hidden = !b; // 流式期间底边流动线亮起(方案 C)
   };
   // 面板开合状态跨页保持(View Transitions 切页后恢复;恢复时不抢焦点)
+  // 关闭走 200ms 缩小淡出(closing 类)再真正 hidden;closeTimer 防抖——动画期间再点开要能立即回来
+  let closeTimer: ReturnType<typeof setTimeout> | 0 = 0;
   const toggle = (open?: boolean, focus = true) => {
     const panel = $('chat-panel');
     if (!panel) return;
-    const show = open ?? panel.hidden;
-    panel.hidden = !show;
+    const show = open ?? (panel.hidden || panel.classList.contains('closing'));
+    clearTimeout(closeTimer);
+    if (show) {
+      panel.classList.remove('closing');
+      panel.hidden = false;
+    } else if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      panel.hidden = true;
+    } else {
+      panel.classList.add('closing');
+      closeTimer = setTimeout(() => { panel.hidden = true; panel.classList.remove('closing'); }, 200);
+    }
     Z.fab?.setAttribute('aria-expanded', String(show));
     sessionStorage.setItem('sigaoli-chat-open', show ? '1' : '0');
     if (show) {
@@ -699,8 +802,7 @@ const guides = JSON.stringify({
     wrap.appendChild(a);
     afterEl.insertAdjacentElement('afterend', wrap);
     guideEl = wrap;
-    const log = $('chat-log');
-    if (log) log.scrollTop = log.scrollHeight;
+    scrollLog();
   };
   const classifyGuidance = async (text: string, target: () => HTMLElement | null) => {
     try {
@@ -760,10 +862,11 @@ const guides = JSON.stringify({
     };
     const suggest = $('chat-suggest');
     if (suggest) suggest.hidden = true;
+    setPinned(true); // 自己发消息=回到底部(标准行为)
     history.push({ role: 'user', content: text });
     store.save(history);
     bubbleMsg('user', render(text));
-    const s: Stream = { acc: '', el: bubbleMsg('bot', '') };
+    const s: Stream = { acc: '', el: bubbleMsg('bot', TYPING_HTML) };
     stream = s;
     s.el!.classList.add('pending');
     // 写回复气泡永远走 s.el:切页后 paint() 已把它换成新面板里的元素(Bug2 跨页续流)
@@ -771,8 +874,7 @@ const guides = JSON.stringify({
       if (!s.el) return;
       s.el.classList.toggle('pending', pending);
       s.el.innerHTML = html;
-      const log = $('chat-log');
-      if (log && s.el.isConnected) log.scrollTop = log.scrollHeight;
+      if (s.el.isConnected) scrollLog(); // 智能吸底:离底的访客不被流式顶回去
     };
     setBusy(true);
     zoeChatStart(text);
@@ -912,6 +1014,42 @@ const guides = JSON.stringify({
       itState.accrued += IT.tick;
       addInterest(itState.cat, IT.tick);
     }, IT.tick * 1000);
+
+    // ---- 看门狗(07-17 ③闪现消失兜底):根因未全明,先做症状级防护 ----
+    // 200ms 巡检:无可见 video 或可见 video 失帧(readyState<2)持续 >400ms → 桥接静态坐姿图
+    // + GoatCounter 记 zoe-blank(生产可观测复发率);>3s 视为卡死,gen 重置回 idle 自愈。
+    // 桥接期间 still 可见不算恢复——只有 video 重新出帧才清零。
+    let blankSince = 0, bridged = false, wdTicks = 0;
+    setInterval(() => {
+      wdTicks++;
+      if (!Z.booted || !Z.interactive) return; // 非交互档(移动/reduced)本就显示静态图
+      const vidOn = Z.vids.find((v) => v.classList.contains('on'));
+      if (vidOn && vidOn.readyState >= 2) { blankSince = 0; bridged = false; return; }
+      const now = Date.now();
+      if (!blankSince) { blankSince = now; return; }
+      const stillOn = Z.still?.classList.contains('on') ?? false;
+      // 静态图不在场才桥接+报警(boot 占位在场=可见性已保住,只是视频未接管,不算异常)
+      if (!stillOn && now - blankSince > 400 && Z.still) {
+        Z.still.hidden = false;
+        showEl(Z.still);
+        if (!bridged) { bridged = true; track('zoe-blank'); }
+      }
+      if (now - blankSince > 3000) { blankSince = now; enterIdle(); } // 硬重置自愈,失败则 3s 后再试
+    }, 200);
+
+    // ?zoe-debug:暴露状态机快照给复现矩阵脚本(verify-zoe-blank.mjs),不进正常访客路径
+    if (new URLSearchParams(location.search).has('zoe-debug')) {
+      (window as unknown as { __zoeState?: () => object }).__zoeState = () => ({
+        state: Z.state,
+        gen: Z.gen,
+        bridged,
+        wd: wdTicks,
+        blankFor: blankSince ? Date.now() - blankSince : 0,
+        interactive: Z.interactive,
+        vids: Z.vids.map((v) => `${v.classList.contains('on') ? 'ON' : 'off'}:${v.src.split('/').pop()}:rs${v.readyState}`),
+        still: Z.still?.classList.contains('on') ?? false,
+      });
+    }
   };
 
   pageScript(() => {
@@ -938,6 +1076,10 @@ const guides = JSON.stringify({
       Z.interactive = !Z.reduced && innerWidth >= 768 && matchMedia('(pointer: fine)').matches;
       bindGlobal();
       place(); // 全部 boot 分支统一定位(07-16 Bug4 根因:刷新走 enterIdle 分支时没人调 place,猫飞到视口外)
+      // 首帧占位(07-17 ③根因之一):boot 到首段视频 canplay 之间是裸空窗,弱网下可达秒级
+      // ——复现矩阵实测整页加载期猫整只不可见。先亮静态坐姿图,首段就绪时 showEl 自然换下
+      // (弱网下会有一次坐→趴的姿势跳,可接受;快网下占位帧几乎不可见)。
+      if (Z.still) { Z.still.hidden = false; showEl(Z.still); }
       const hour = new Date().getHours();
       const shown = !!sessionStorage.getItem('sigaoli-zoe-shown');
       const chatOpen = sessionStorage.getItem('sigaoli-chat-open') === '1';
@@ -986,6 +1128,10 @@ const guides = JSON.stringify({
       history = []; store.clear(); paint(); input.focus();
     };
     form.addEventListener('submit', onSubmit);
+    // 智能吸底接线(位置判断,程序滚动与用户滚动天然区分)
+    const logEl = $('chat-log')!;
+    logEl.addEventListener('scroll', () => setPinned(atBottom(logEl)), { passive: true });
+    $('chat-to-latest')!.addEventListener('click', () => { logEl.scrollTop = logEl.scrollHeight; setPinned(true); });
     $('chat-suggest')!.addEventListener('click', onChip);
     input.addEventListener('keydown', onKeydown);
     input.addEventListener('input', onInput);

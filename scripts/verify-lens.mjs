@@ -25,6 +25,7 @@ console.log('marker scroll to gallery:', nearJapan ? 'PASS' : 'FAIL');
 // Open lightbox on first photo
 await page.click('#gallery-japan figure');
 await page.waitForTimeout(900);
+// 06-19 灯箱重设计后:开合仍是 hidden/flex 类,caption 拆成 #lb-desc/#lb-meta/#lb-counter
 const lbOpen = await page.evaluate(() => !document.getElementById('lightbox').classList.contains('hidden'));
 console.log('lightbox opens:', lbOpen ? 'PASS' : 'FAIL');
 await page.screenshot({ path: 'shots/lens-lightbox.png' });
@@ -32,9 +33,9 @@ await page.screenshot({ path: 'shots/lens-lightbox.png' });
 // Arrow navigation + Esc
 await page.keyboard.press('ArrowRight');
 await page.waitForTimeout(500);
-const counter1 = await page.textContent('#lb-caption');
+const counter1 = await page.textContent('#lb-counter');
 await page.keyboard.press('Escape');
-await page.waitForTimeout(400);
+await page.waitForTimeout(600); // 关闭动画 300ms 后才真正 hidden
 const lbClosed = await page.evaluate(() => document.getElementById('lightbox').classList.contains('hidden'));
 console.log('arrow nav counter:', counter1, '| esc closes:', lbClosed ? 'PASS' : 'FAIL');
 

@@ -40,21 +40,24 @@ function fmtCases(cases: PackLangSlice['cases']): string {
 // 甚至编出集外国家再自圆其说(07-16 实例:虚构柬埔寨洞里萨湖并称"还没上线")。
 // 描述与灯箱 alt 同源=画面内容可谈;拍摄过程/幕后故事知识里没有=不得编。
 export function fmtPhotos(photos: PackLangSlice['photos'], lang: 'en' | 'zh'): string {
+  // 统计数字三处锚定(07-17 问题①:开头的总数只出现一次,模型答数量题时自己重数,数错成 66):
+  // 头部引用规则 + 分国计数相加=总数 + 清单尾再压一行总数——禁止模型自行清点。
   const head =
     lang === 'zh'
-      ? `「镜头之下」共 ${photos.totalPhotos} 张照片,足迹 ${photos.countries.length} 个国家。下面是**全部**照片的完整清单(每行=一张照片的画面描述)。
+      ? `「镜头之下」共 ${photos.totalPhotos} 张照片,足迹 ${photos.countries.length} 个国家。**凡提到照片总数/国家数,必须原样引用 ${photos.totalPhotos} 和 ${photos.countries.length} 这两个数字,禁止自行清点、估算或另报他数**(各国括号里的分国张数相加=总数)。下面是**全部**照片的完整清单(每行=一张照片的画面描述)。
 摄影问题只能依据这份清单回答:清单之外的国家、城市、照片一律不存在——直说主人没拍过/相册里没有,不许脑补"拍了没上线";
 每张照片你知道的只有画面本身,拍摄过程、时间、幕后故事你并不知道,不要编。被问"最喜欢哪张"可以用猫视角挑清单里的真实照片聊画面。`
-      : `"Through My Lens" holds ${photos.totalPhotos} photographs across ${photos.countries.length} countries. Below is the **complete** list (one line = one photo's actual content).
+      : `"Through My Lens" holds ${photos.totalPhotos} photographs across ${photos.countries.length} countries. **Whenever you mention totals, quote exactly ${photos.totalPhotos} photos / ${photos.countries.length} countries — never count, estimate or state any other number** (per-country counts in parentheses sum to the total). Below is the **complete** list (one line = one photo's actual content).
 Answer photography questions strictly from this list: any country, city or photo not listed does not exist — say so plainly instead of inventing "unpublished" shots.
 You only know what each photo shows; you do NOT know when or how it was taken, so never invent backstories. For "which is your favourite", pick real photos from the list and talk about what's in the frame.`;
+  const tail = lang === 'zh' ? `(清单完——共 ${photos.totalPhotos} 张,以此数为准)` : `(End of list — ${photos.totalPhotos} photographs total; use this number.)`;
   return `${head}\n${photos.countries
     .map((c) => {
       const line = `- ${c.name}(${c.photos}): ${c.cities.join(lang === 'zh' ? '、' : ', ')}`;
       const shots = (c.descriptions ?? []).map((d) => `  · ${d}`).join('\n');
       return shots ? `${line}\n${shots}` : line;
     })
-    .join('\n')}`;
+    .join('\n')}\n${tail}`;
 }
 
 function fmtResearch(research: PackLangSlice['research']): string {
@@ -100,6 +103,11 @@ export function buildSystemPrompt(pack: KnowledgePack, lang: 'en' | 'zh', intere
 - 你无权替主人做任何承诺(报价、答应合作、约定时间),此类请求一律引导访客发邮件:${p.email}(${lang === 'zh' ? '"这个得找主人本人喵"' : `"that's above my paw grade — email my human"`})。
 - ${langLine}
 - 只依据下方知识回答;知识之外的信息直说不知道(${lang === 'zh' ? '"这个本猫没听主人提过喵"' : `"my human never mentioned that within earshot of my ears, meow"`}),不编造、不推测主人的观点。
+- ${
+    lang === 'zh'
+      ? '**不得虚构信息出处**:除非知识里明确标注某句话出自哪里(简历/页脚/某页面),否则不要断言"他在简历里写过/他亲口说过"这类来源——不确定就说"网站上写着"。'
+      : '**Never invent where information comes from**: unless the knowledge explicitly says a statement is from his CV, the footer or a specific page, do not claim "it\'s in his resume" or "he said so" — when unsure, say "the site says".'
+  }
 - ${
     lang === 'zh'
       ? '网站本身可以逛:简历页时间轴上的机构名可以点击直达对方官网,作品页每个案例都有独立页面,照片都在「镜头之下」。聊到某家公司、某段经历或某个案例时,顺口提醒访客"简历页/作品页可以点进去看"(你的回复下方也可能出现对应的引导按钮);但别每条回复都提。**不要在回复里写 URL 或 markdown 链接**(聊天窗不渲染链接,路径也容易写错),说页面名称就够了。'
