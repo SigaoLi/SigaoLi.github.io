@@ -3,17 +3,42 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="404 — Off the map">
-  <main class="mx-auto flex max-w-3xl flex-col items-center justify-center px-6 py-40 text-center">
+  <main id="nf" class="mx-auto flex max-w-3xl flex-col items-center justify-center px-6 py-40 text-center">
     <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true" class="animate-pulse">
       <circle cx="32" cy="32" r="26" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="5 7"/>
       <circle cx="48" cy="14" r="7" fill="var(--accent)"/>
     </svg>
     <h1 class="mt-8 font-display text-6xl">404</h1>
-    <p class="mt-3 font-mono text-sm text-ink-muted tracking-wider">OFF THE MAP — NO COORDINATES FOUND</p>
-    <p class="mt-1 font-mono text-xs text-ink-muted">已离开地图 — 未找到坐标</p>
-    <div class="mt-8 flex gap-6">
+    <p id="nf-en" class="mt-3 font-mono text-sm text-ink-muted tracking-wider">OFF THE MAP — NO COORDINATES FOUND</p>
+    <p id="nf-zh" class="mt-1 font-mono text-xs text-ink-muted">已离开地图 — 未找到坐标</p>
+    <div id="nf-links" class="mt-8 flex gap-6">
       <a href="/" class="link-underline text-sm">← Back to known territory</a>
       <a href="/zh/" class="link-underline text-sm">← 返回已知疆域</a>
     </div>
   </main>
+  <script is:inline>
+    // GitHub Pages 全站只能有一个 404.html,故这页中英访客共用。
+    // 中文路径(/zh/…)进来时把中文升为主行、英文降为副行,返回链接也让中文在前——
+    // 内容一字不改,只换主次。data-swapped 守卫:View Transitions 下重复触发不会交换回去。
+    (function () {
+      const swap = () => {
+        const main = document.getElementById('nf');
+        if (!main || main.dataset.swapped) return;
+        if (!location.pathname.startsWith('/zh/')) return;
+        main.dataset.swapped = '1';
+        const en = document.getElementById('nf-en');
+        const zh = document.getElementById('nf-zh');
+        const cls = en.className;
+        en.className = zh.className; // 主副样式互换(字号/字距/间距全在 class 里)
+        zh.className = cls;
+        en.parentNode.insertBefore(zh, en);
+        const links = document.getElementById('nf-links');
+        links.insertBefore(links.lastElementChild, links.firstElementChild);
+        document.title = '404 — 已离开地图';
+        document.documentElement.lang = 'zh';
+      };
+      swap();
+      document.addEventListener('astro:page-load', swap);
+    })();
+  </script>
 </Base>

@@ -408,6 +408,11 @@ const guides = JSON.stringify({
   };
   let aborter: AbortController | null = null;
   let guideEl: HTMLElement | null = null; // 当前引导 chip(只保留最新一条,§23.5)
+  // 打字动作语义路由(§23.5,2026-08-03 方案 A):复用 /classify 本就返回的 chip,不额外请求、worker 零改动。
+  // none(打招呼/问猫自己/跑题)→傲娇昂首「哼,问我?」;正事(work/cv/photography/email)→敲地板认真打字。
+  // 每条消息发出时置 null=分类未回,打字阶段维持原随机(EU 走 nano 更慢时即此情形)。
+  // 铁律:只在进入打字那一刻读一次,本轮不再改——中途换片段=锚点硬切姿势跳变,比路由错更伤。
+  let chipForZoe: string | null = null;
   // 进行中的流式回复(Bug2 跨页续流):内容累积在模块级,不随页面 DOM 消亡;
   // 切页后 paint() 把 el 重挂到新面板继续打字。中断它的只有「重新开聊」(reset 时 stream 置 null 废弃)。
   type Stream = { acc: string; el: HTMLElement | null };
@@ -696,9 +701,11 @@ const guides = JSON.stringify({
     if (!Z.interactive || Z.state !== 'think') return;
     const g = ++Z.gen;
     Z.state = 'type';
-    // 打字阶段随机轮换:敲地面(type) / 傲娇昂首(proud),循环播——傲娇只在此处激活(07-15 Sigao 定)
-    // 积压(PRD §23.5,Sigao 07-15):将来引入语义路由——简单问题→傲娇,复杂问题→敲地板
-    void playZ(Math.random() < 0.5 ? 'type' : 'proud', g, true);
+    // 打字阶段:敲地面(type) / 傲娇昂首(proud),循环播——傲娇只在此处激活(07-15 Sigao 定)。
+    // 语义路由(08-03 方案 A):分类已回则按 chip 选,未回则维持原随机;判据与取舍见 chipForZoe。
+    const clip =
+      chipForZoe === null ? (Math.random() < 0.5 ? 'type' : 'proud') : chipForZoe === 'none' ? 'proud' : 'type';
+    void playZ(clip, g, true);
   };
   const zoeChatDone = () => {
     if (!Z.interactive) return;
@@ -766,7 +773,7 @@ const guides = JSON.stringify({
       hideBubble(); // 问名气泡也收:访客转向对话框即本次作罢(askCount 已记)
       paint();
       if (focus) { ($('chat-input') as HTMLTextAreaElement | null)?.focus(); track('chat-open'); }
-      warm(['listen', 'think', 'type']); // 聊天四件套预热
+      warm(['listen', 'think', 'type', 'proud']); // 聊天片段预热:打字阶段 type/proud 各半,两个都要预热
       markActivity(); scheduleSleep();
       if (Z.state === 'sleep') void wake();
     }
@@ -814,6 +821,7 @@ const guides = JSON.stringify({
       });
       if (!res.ok) return;
       const data = (await res.json()) as { chip?: string; target?: GuideTarget };
+      if (data.chip) chipForZoe = data.chip; // 同一结果顺带驱动打字动作(见 chipForZoe);none 也要记
       const el = target(); // 渲染时才取:切页后 paint() 已把流式气泡换成新元素
       if (data.chip && data.chip !== 'none' && el) renderGuidanceChip(data.chip, data.target ?? null, el);
     } catch { /* 引导锦上添花,失败静默 */ }
@@ -878,6 +886,7 @@ const guides = JSON.stringify({
     };
     setBusy(true);
     zoeChatStart(text);
+    chipForZoe = null;                       // 本轮分类尚未回:打字阶段先按随机(见 chipForZoe)
     void classifyGuidance(text, () => s.el); // 并行意图分类,非阻塞
     maybeCaptureNameFromChat(text);          // 并行自报名字检测,非阻塞
     aborter = new AbortController();
