@@ -21,8 +21,8 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: npm audit (fail on high+)
@@ -32,16 +32,21 @@ jobs:
     needs: audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache Astro image pipeline
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: node_modules/.astro
           key: astro-assets-${{ hashFiles('src/assets/**') }}
           restore-keys: astro-assets-
-      - uses: withastro/action@v3
+      # v6 起内置 Astro 缓存(滚动 key,每次提交存一份)——.astro 有 194MB,会压 10GB 配额,
+      # 故关掉内置的、沿用上面按 assets hash 的自管缓存(两套同路径会互相覆盖,只能二选一)。
+      # 必须 v6+:v5 内部的 upload-pages-artifact 会剥掉 dotfiles,dist/.well-known/mcp.json 会丢;
+      # v6 硬编码 include-hidden-files: true。
+      - uses: withastro/action@v6
         with:
           node-version: 22
+          cache: "false"
 
   deploy:
     if: github.ref == 'refs/heads/master'
@@ -53,4 +58,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

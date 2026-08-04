@@ -7,6 +7,10 @@ export default defineConfig({
   site: 'https://sigaoli.com',
   output: 'static',
   trailingSlash: 'ignore',
+  // Astro 7 把默认值从 true 改成 'jsx',后者会吃掉内联元素之间的空格
+  // (实测:隐私页「please contact <a>邮箱</a>」渲染成 "contactsigao.li@…")。
+  // 显式锁回 v6 行为,避免全站排版回归。
+  compressHTML: true,
   devToolbar: { enabled: false },
   i18n: {
     defaultLocale: 'en',

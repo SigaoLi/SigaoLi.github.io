@@ -15,8 +15,13 @@ await page.screenshot({ path: 'shots/cv-top.png' });
 await page.mouse.wheel(0, 1500);
 await page.waitForTimeout(1100);
 await page.screenshot({ path: 'shots/cv-timeline.png' });
+// 阈值 15 而非早期的 19:2026-06-16 时间轴改版为「领英式机构合并嵌套」后,
+// 同一机构的多段任职合并成一个 .tl-entry 机构块(块内仍是 20+ 个带 id 的角色条目),
+// 条目数因此从 19+ 降到 15——旧阈值自那以后一直误报 FAIL(与 Astro 版本无关,已用 v6 产物核对)。
+// 同时校验角色级锚点数,确保"合并"没有真的丢内容。
 const entries = await page.evaluate(() => document.querySelectorAll('.tl-entry').length);
-console.log('timeline entries:', entries, entries >= 19 ? 'PASS' : 'FAIL');
+const roles = await page.evaluate(() => document.querySelectorAll('.timeline li[id^="cv-"]').length);
+console.log('timeline entries:', entries, `(roles: ${roles})`, entries >= 15 && roles >= 19 ? 'PASS' : 'FAIL');
 
 // ⌘K open, filter, navigate
 await page.keyboard.press('Control+k');

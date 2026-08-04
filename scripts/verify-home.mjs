@@ -56,12 +56,17 @@ await page.waitForTimeout(800);
 await page.screenshot({ path: 'shots/home-reduced.png' });
 await page.close();
 
-// 404
+// 404 —— 这一段故意请求不存在的路径,浏览器必然记一条 "status of 404" console error。
+// 那是本测试自己造成的预期噪音,不是站点缺陷:先记下位置,事后只剔除这一条,
+// 其余 404(如真丢了某个图片/字体)照常报出来。
+const errMark = errors.length;
 page = await newPage();
 const resp = await page.goto(`${base}/no-such-page`, { waitUntil: 'networkidle' });
 console.log('404 status:', resp.status());
 await page.screenshot({ path: 'shots/404.png' });
 await page.close();
+const expected = errors.findIndex((e, i) => i >= errMark && /status of 404/.test(e));
+if (expected !== -1) errors.splice(expected, 1);
 
 await browser.close();
 console.log(errors.length ? `ERRORS:\n${errors.join('\n')}` : 'No console/page errors.');
