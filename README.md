@@ -21,7 +21,7 @@ Jekyll (academicpages) site.
 
 | Command | Action |
 | --- | --- |
-| `npm run dev` | Dev server at `localhost:4321` |
+| `npm run dev` | Dev server at `localhost:4321` (Astro 7 runs it as a daemon — stop with `npx astro dev stop`) |
 | `npm run build` | Production build to `dist/` |
 | `npm run preview` | Serve the production build locally |
 | `node scripts/translate.mjs` | Re-translate changed en content → zh (needs `.env`, see `.env.example`; manually edited zh files are never overwritten) |
@@ -30,6 +30,17 @@ Jekyll (academicpages) site.
 | `npm run dev` (in `worker/`) | Chat + MCP Worker at `localhost:8787` (wrangler; secrets in `worker/.dev.vars`, never committed) |
 | `node scripts/verify-chat.mjs` | E2E chat-widget test (needs both dev servers running) |
 | `node scripts/verify-zoe.mjs` | E2E for Zoe's action state machine (append `?zoe-fast` locally to compress minute-scale timers) |
+| `node scripts/verify-typeroute.mjs` | E2E for the intent-driven typing clip and the bilingual 404 page |
+
+> Any Playwright suite that waits on Zoe's state must pin the clock
+> (`Date.prototype.getHours = () => 14`): between 23:00 and 06:00 she starts the
+> session asleep, so `state` never reaches `idle` and the run just times out.
+
+> When adding a Zoe clip, decide **who prewarms it and when** at the same time.
+> A clip that is only fetched at playback stalls on a slow connection, and the
+> stage shows nothing until it decodes. Prewarming has been missed three times
+> already. Note `warm()` takes the *file* name (`sit-to-loaf`), not the `ZOE`
+> key (`sitToLoaf`).
 
 ## Structure
 

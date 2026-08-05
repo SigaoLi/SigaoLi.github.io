@@ -105,9 +105,12 @@ const runChat = async (classifyPayload, { classifyDelay = 0, chatDelay = 700 } =
       body: 'data: {"delta":"好的喵"}\n\ndata: [DONE]\n\n',
     });
   });
+  // 钉白天:真实深夜(23-6 点)跑时 nightInit 会接管,Zoe 一进站就睡、state 永远等不到 idle
+  // ——只覆写 getHours,不碰计时器(沿用 verify-zoe 的做法)。
+  await page.addInitScript(() => { Date.prototype.getHours = () => 14; });
   await page.goto(`${BASE}/zh/?zoe-fast&zoe-debug`, { waitUntil: 'load' });
   // 等进场秀演完落到 idle,否则「演出中不打断」会跳过思考/打字
-  await page.waitForFunction(() => window.__zoeState?.().state === 'idle', null, { timeout: 15000 });
+  await page.waitForFunction(() => window.__zoeState?.().state === 'idle', null, { timeout: 20000 });
   await page.click('#chat-fab');
   await page.fill('#chat-input', '测试消息');
   await page.press('#chat-input', 'Enter');

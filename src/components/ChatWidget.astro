@@ -181,10 +181,15 @@ const guides = JSON.stringify({
   .zoe-stage video, .zoe-stage img {
     position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
     max-width: none; /* 默认 video max-width:100% 会把宽画幅片段压进 160px 碰撞盒 → 猫缩小(07-12 尺寸 bug 根因) */
-    display: none;
+    /* 隐藏用 opacity 而非 display:none(修 2026-08-04「切页时 Zoe 消失半秒」):
+       display:none 的 video 不会被解码,直到切成 block 才开始解首帧——带 alpha 的 VP9 在
+       弱网/低性能下要几百毫秒才出画面(实测 600-1700ms,期间 readyState=4、播放中但 currentTime 卡在 0)。
+       留在渲染树里则可提前解码,切换只剩一次合成属性变化。visibility 一并关掉,免得隐藏帧
+       仍被当作可见内容参与无障碍/命中测试。 */
+    opacity: 0; pointer-events: none;
     filter: drop-shadow(0 5px 12px rgb(0 0 0 / 0.16));
   }
-  .zoe-stage .on { display: block; }
+  .zoe-stage .on { opacity: 1; }
   .zoe-stage:focus-visible video, .zoe-stage:focus-visible img { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
   /* 问候/喵~ 气泡:锚在猫头上方,尾巴指向她;普通气泡点击开聊(JS 绑定,问名表单显示时除外)。
      定位相对零尺寸锚点换算:原 button 盒(160×180)的 right:4px/bottom:calc(100%+12px) → -76px/192px */
@@ -469,11 +474,31 @@ const guides = JSON.stringify({
   };
   // 播放一段;非 loop 段 resolve 于 ended;gen 变化(被新动作打断)即中止
   // loopOverride: 首尾=锚点的片段都可无缝循环,按场景临时开(如傲娇在打字阶段循环、彩蛋时单次)
+  // 等到解码器真正吐出一帧再切过去(修 2026-08-04「切页时 Zoe 消失半秒」):
+  // canplay / readyState>=3 只说明"数据够起播",实测弱网下 readyState 报 4、已 play(),
+  // 但 currentTime 长期卡在 0、画面全空(600-1700ms)——切过去就是空窗。
+  // rVFC 在首帧真正上屏时回调;超时兜底防止个别环境不回调而卡住整条动作链。
+  // 超时 2.5s:兜底只为防"个别环境不回调 rVFC 导致动作链卡死",不该在片段还没下载完时提前放行
+  // ——700ms 太短,未预热的大片段(如 490KB 的 sit-to-loaf)在弱网下会被强行切过去,空窗最长实测 4.6s。
+  // 宁可动作晚一点开演,也不要露出空白。
+  const firstFrame = (v: HTMLVideoElement, ms = 2500) =>
+    new Promise<void>((res) => {
+      const rvfc = (v as unknown as { requestVideoFrameCallback?: (cb: () => void) => number }).requestVideoFrameCallback;
+      if (!rvfc) { res(); return; }
+      let done = false;
+      const finish = () => { if (!done) { done = true; res(); } };
+      rvfc.call(v, finish);
+      setTimeout(finish, ms);
+    });
   const playZ = async (name: string, g: number, loopOverride?: boolean) => {
     const v = await prep(name);
     if (g !== Z.gen) return;
     v.loop = loopOverride ?? !!ZOE[name].loop;
-    void v.play(); showEl(v);
+    // 先播(此时仍是 opacity:0,但已在渲染树中故会解码)→ 等首帧 → 再显示,交接期旧片段一直留在屏上
+    void v.play();
+    await firstFrame(v);
+    if (g !== Z.gen) return;
+    showEl(v);
     if (v.loop) return;
     await new Promise((r) => v.addEventListener('ended', r, { once: true }));
   };
@@ -636,6 +661,8 @@ const guides = JSON.stringify({
     if (now - (Z.hovers[Z.hovers.length - 1] ?? 0) < 1000) return; // 边缘抖动去重
     Z.hovers = Z.hovers.filter((t) => now - t < T.ballWindow);
     Z.hovers.push(now);
+    // 逗到第 2 下就预取玩球(817KB):第 3 下才触发,留出一次 hover 的时间下载
+    if (Z.hovers.length === 2 && !eggUsed('ball')) warm(['ball']);
     if (Z.hovers.length >= 3 && !eggUsed('ball')) { useEgg('ball'); Z.hovers = []; void act('ball'); }
   };
   // 进场秀:趴→起身坐好→(回头客加挥手)→idle+问候气泡;每会话一次,期间即可点击开聊
@@ -644,7 +671,8 @@ const guides = JSON.stringify({
     Z.state = 'show';
     sessionStorage.setItem('sigaoli-zoe-shown', '1'); // 开演即记名,切页不复演
     place();
-    warm(['loaf-to-sit', 'idle']);
+    // 回头客进场秀末尾要挥手,趁趴姿那 2s 一并预取(否则 342KB 现下载,挥手前会空一下)
+    warm(returning && !eggUsed('wave') ? ['loaf-to-sit', 'idle', 'wave'] : ['loaf-to-sit', 'idle']);
     await playZ('loaf', g);
     await new Promise((r) => setTimeout(r, T.loafDwell)); if (g !== Z.gen) return;
     await playZ('loafToSit', g); if (g !== Z.gen) return;
@@ -690,7 +718,8 @@ const guides = JSON.stringify({
   const zoeChatStart = (text: string) => {
     markActivity(); scheduleSleep();
     if (!Z.interactive) return;
-    if (!eggUsed('bow') && (THANKS_RE.test(text) || BYE_RE.test(text))) Z.pendingEgg = 'bow';
+    // 道谢/道别 → 回答说完才作揖,趁流式那十几秒预取(466KB),免得彩蛋开演前空一下
+    if (!eggUsed('bow') && (THANKS_RE.test(text) || BYE_RE.test(text))) { Z.pendingEgg = 'bow'; warm(['bow']); }
     clearTimeout(Z.listenTimer);
     const start = () => { const g = ++Z.gen; Z.state = 'think'; void playZ('think', g); };
     if (Z.state === 'sleep') void wake(start);
@@ -1100,6 +1129,11 @@ const guides = JSON.stringify({
       else if (!shown && !chatOpen) void entryShow(returning);
       else enterIdle();
       scheduleMicro();
+      // 切页反应池与微动此前从未预热(和 proud 同类疏漏):访客一跨页就现下载,
+      // 弱网下片段没到就切过去 → 画面空窗。进场演完后趁空闲预取,避开与首屏抢带宽。
+      // sit-to-loaf 必然用到(每会话静置即入睡),此前从未预热——实测它是空窗最大来源(最长 4.6s)
+      setTimeout(() => warm(['glance', 'earflick', 'attend', 'startle', 'sit-to-loaf']), 6000);
+      setTimeout(() => warm(['yawn', 'groom']), 20000); // 微动稍后:2-3 分钟才轮到,不与首屏抢带宽
     } else {
       pageSwitchReaction(); // persist 跨页不断帧,切页瞬间抽反应(§23.3)
     }
