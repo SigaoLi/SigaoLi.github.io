@@ -61,14 +61,7 @@ export const ui = {
       lensLink: 'Through My Lens →',
       scroll: 'SCROLL',
     },
-    arc: [
-      { label: 'ACT I — GEOGRAPHY', coords: '43.6532° N, 79.3832° W', place: 'Toronto, 2018–2023', title: 'Points on a map', body: 'Six years of geographic analysis — mapping retail networks, public health and crime across the Toronto CMA, and learning that every location is a decision.' },
-      { label: 'ACT II — BUSINESS', coords: '51.4545° N, 2.5879° W', place: 'Bristol, 2024–2025', title: 'Points on a chart', body: 'An MSc in Business Analytics, consulting with IBM on AI-driven financial analysis, and a growing pull toward quantitative finance.' },
-      { label: 'ACT III — AI', coords: '31.2304° N, 121.4737° E', place: 'Shanghai, 2026—', title: 'Points in a network', body: 'Building AI products at Ebest Mobile — agents, LLM pipelines, and the systems that ship them. Three disciplines, one through-line: points, and the patterns between them.' },
-    ],
-    featured: { coords: 'Selected work', title: 'The products in between', all: 'All work →' },
     about: {
-      coords: 'About', title: 'A geographer who ships',
       p1: "I'm an AI product manager with geospatial roots. My path runs from six years of geographic analysis in Toronto, through business analytics in Bristol — including consulting with IBM on AI-driven financial analysis — to building AI products at Ebest Mobile in Shanghai today. I serve as Director of GISource at",
       p1b: ', advancing GIS education worldwide, and I keep one foot in quantitative finance.',
       p2a: "I hold an MSc in Business Analytics from the University of Bristol, a Master's in Spatial Analysis and a BA in Geographic Analysis from Toronto Metropolitan University, with professional certifications in AI (University of Toronto) and Data Science (University of Waterloo). When I'm not building, I'm usually behind a camera somewhere new — see",
@@ -144,14 +137,7 @@ export const ui = {
       lensLink: '镜头之下 →',
       scroll: '向下滚动',
     },
-    arc: [
-      { label: '第一幕 — 地理', coords: '43.6532° N, 79.3832° W', place: '多伦多，2018–2023', title: '地图上的点', body: '六年地理分析——为大多伦多地区绘制零售网络、公共健康与犯罪地图，并由此懂得：每一个位置，都是一个决策。' },
-      { label: '第二幕 — 商业', coords: '51.4545° N, 2.5879° W', place: '布里斯托，2024–2025', title: '图表上的点', body: '布里斯托大学商业分析硕士，与 IBM 合作 AI 驱动的财务分析，并日益被量化金融吸引。' },
-      { label: '第三幕 — AI', coords: '31.2304° N, 121.4737° E', place: '上海，2026—', title: '网络中的点', body: '在意鹰科技（Ebest Mobile）打造 AI 产品——智能体、LLM 管线，以及让它们落地的系统。三种学科，一条暗线：散落的点，和点与点之间的秩序。' },
-    ],
-    featured: { coords: '精选作品', title: '生于其间的产品', all: '全部作品 →' },
     about: {
-      coords: '关于', title: '一个会交付的地理人',
       p1: '我是一名有地理空间背景的 AI 产品经理。我的路径从多伦多六年的地理分析出发，经过布里斯托的商业分析（包括与 IBM 合作的 AI 财务分析项目），走到今天在上海意鹰科技打造 AI 产品。我担任',
       p1b: ' GISource 总监，推动 GIS 教育在全球的发展，同时保持着对量化金融的探索。',
       p2a: '我拥有布里斯托大学商业分析硕士学位、多伦多都会大学空间分析硕士与地理分析学士学位，并持有多伦多大学人工智能、滑铁卢大学数据科学专业证书。不写代码不画原型的时候，我多半正背着相机在某个陌生的地方——欢迎来',
