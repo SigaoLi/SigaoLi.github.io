@@ -8,6 +8,52 @@ const fmtEntry = (e: PackCvEntry): string =>
     e.bullets.length ? '\n' + e.bullets.map((b) => `  · ${b}`).join('\n') : ''
   }`;
 
+/**
+ * 按开始时间正序的合并时间线,并给每段非学业经历标注同期在读学位。
+ *
+ * 2026-08-05:Sigao 发现叙述类问题("把每一段经历都讲一遍")会把本科期间的实习说成"硕士毕业后",
+ * 顺序整个颠倒。根因=简历各分节内部是倒序(最新在前)、工作与学业还分在不同分节,模型叙述时
+ * 顺着列表往下写,再套上"之后/毕业后"这类连接词就错了。
+ * 实测三轮:现状 1/3 出错;只在提示词里讲"注意日期、列表是倒序"仍 1/3 出错(讲道理没用);
+ * 补上这张算好的正序表则 0/3,且推理量从 226 降到 80(模型不必再自己推算先后)。
+ * 与照片幻觉那次同一条经验:给模型能答对的素材,比堆禁令有效。
+ */
+function fmtTimeline(cv: PackLangSlice['cv'], lang: 'en' | 'zh'): string {
+  type Row = PackCvEntry & { kind: string };
+  const rows: Row[] = [
+    ...(cv.current ? [{ ...cv.current, kind: lang === 'zh' ? '工作' : 'work' }] : []),
+    ...cv.experience.map((e) => ({ ...e, kind: lang === 'zh' ? '工作' : 'work' })),
+    ...cv.research.map((e) => ({ ...e, kind: lang === 'zh' ? '研究' : 'research' })),
+    ...cv.education.map((e) => ({ ...e, kind: lang === 'zh' ? '学业' : 'study' })),
+    ...cv.volunteering.map((e) => ({ ...e, kind: lang === 'zh' ? '志愿' : 'volunteering' })),
+  ].filter((e) => e.start);
+  rows.sort((a, b) => String(a.start).localeCompare(String(b.start)));
+
+  const edu = cv.education.filter((e) => e.start).sort((a, b) => String(a.start).localeCompare(String(b.start)));
+  const openEnd = (v: string) => (v && v !== 'present' ? v : '9999-99');
+  const concurrent = (start: string) => {
+    const hit = edu.find((e) => String(start) >= String(e.start) && String(start) <= openEnd(String(e.end)));
+    if (!hit) return '';
+    // 说"开始时"而非"整段":像 GISphere 志愿那种跨两年的条目会横跨多个学位,只按起始月份归属
+    return lang === 'zh' ? `(开始时在读:${hit.title} — ${hit.org})` : ` (when it started he was studying: ${hit.title} — ${hit.org})`;
+  };
+  const isStudy = (k: string) => k === '学业' || k === 'study';
+
+  const list = rows
+    .map((e) => `- ${e.start} ~ ${e.end} [${e.kind}] ${e.title} — ${e.org}${isStudy(e.kind) ? '' : concurrent(String(e.start))}`)
+    .join('\n');
+
+  return lang === 'zh'
+    ? `# 时间线(按开始时间正序,已标注同期在读——判断先后与阶段归属以此为准)
+${list}
+
+**时间线纪律**:下方「简历」各分节内部是简历式**倒序**(最新在前),**列表顺序不等于时间先后**。凡涉及先后、阶段归属、"之后/之前/期间"的表述,一律以上表为准。实习与研究**常与学业并行**(不是毕业之后);拿不准归属时只说年份,不要下"某某毕业后"这类断言。`
+    : `# Timeline (ascending by start date, with concurrent studies marked — use this for order and life stage)
+${list}
+
+**Timeline discipline**: the sections under "CV" below are in résumé order (**newest first**), so **list order is not chronological order**. Any claim about sequence, life stage, or "after/before/during" must follow the table above. Internships and research often run **alongside** studies rather than after graduation; when unsure, give the year rather than asserting "after finishing his master's".`;
+}
+
 export function fmtCv(cv: PackLangSlice['cv']): string {
   const sec = (title: string, items: PackCvEntry[]) =>
     items.length ? `### ${title}\n${items.map(fmtEntry).join('\n')}` : '';
@@ -142,6 +188,8 @@ ${pack.persona.boundaries}
 
 # 补充信息
 ${pack.persona.extra}
+
+${fmtTimeline(slice.cv, lang)}
 
 # 简历
 ${fmtCv(slice.cv)}
