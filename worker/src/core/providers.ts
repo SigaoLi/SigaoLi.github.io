@@ -31,6 +31,12 @@ export function providerChain(secrets: ProviderSecrets, euLike = false): Provide
         baseUrl: 'https://api.deepseek.com/v1',
         apiKey: secrets.deepseekApiKey,
         model: 'deepseek-v4-pro',
+        // ⚠️ 不要关 thinking(DeepSeek 默认 enabled/effort=high)。2026-08-05 A/B 实测:关掉后
+        // 问「他最喜欢哪张照片」会凭空编出「挪威的雪山、冷得爪爪要冻掉」——即 07-16 修过的照片幻觉,
+        // 提示词里的「不得编造」挡不住;回答也从 139 tok 掉到 28 tok,猫设人味明显变干。
+        // 只省约 1.3s 首 token,而 Zoe 歪头思考的动画本就在掩盖这段等待,不划算。
+        // 另注:v4-pro 的 reasoning_effort=low 会被内部映射回 high,没有"调低"这一档,只有开/关。
+        // 分类器 /classify 情况相反(机械任务,输出逐字相同),已在 classify.ts 关闭。
       }]
     : [];
   const newapi: Provider[] =

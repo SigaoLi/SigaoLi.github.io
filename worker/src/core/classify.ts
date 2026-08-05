@@ -59,12 +59,26 @@ interface ClassifierProvider {
   baseUrl: string;
   apiKey: string;
   model: string;
+  /** 附加到请求体的提供商专属参数(如 DeepSeek 的 thinking 开关);OpenAI 兼容端点不认识,故按 provider 分别给 */
+  extra?: Record<string, unknown>;
 }
 
 // 分类器回退链:非 EU = deepseek-v4-flash → newapi/nano;EU = 仅 newapi/nano(不发中国)。
 export function classifierChain(secrets: ProviderSecrets, euLike: boolean): ClassifierProvider[] {
   const flash: ClassifierProvider[] = secrets.deepseekApiKey
-    ? [{ name: 'deepseek/v4-flash', baseUrl: 'https://api.deepseek.com/v1', apiKey: secrets.deepseekApiKey, model: 'deepseek-v4-flash' }]
+    ? [{
+        name: 'deepseek/v4-flash',
+        baseUrl: 'https://api.deepseek.com/v1',
+        apiKey: secrets.deepseekApiKey,
+        model: 'deepseek-v4-flash',
+        // DeepSeek 默认开 thinking(effort=high)。分类是「五选一 + 白名单目标」的机械任务,
+        // 2026-08-05 三档对照实测(真实 prompt+知识包目录,8 用例 ×3 轮,脚本 _site-explore/test-classify-effort.mjs):
+        //   default(high) 24/24 2213ms 92 tok/次 | effort=low 24/24 1625ms 43 tok | thinking=off 24/24 1134ms 0 tok
+        // 准确率完全相同(含公司名→CV 深链、案例名→案例深链、泛问不给 target 这些易错项),故直接关掉:
+        // 快 49%、零 reasoning 计费。分类越早回来,引导 chip 与打字语义路由越容易赶在首 token 前命中。
+        // ⚠️ 主回复 /chat 相反,必须保留 thinking——关掉会开始编造,见 providers.ts 注释。
+        extra: { thinking: { type: 'disabled' } },
+      }]
     : [];
   const nano: ClassifierProvider[] =
     secrets.newapiApiKey && secrets.newapiBaseUrl
@@ -138,8 +152,9 @@ async function callJson(p: ClassifierProvider, system: string, message: string):
           { role: 'user', content: message },
         ],
         temperature: 0,
-        max_tokens: 1000, // v4 系带 reasoning_tokens 须给足(实测坑);json 产物本身很短
+        max_tokens: 1000, // 关掉 thinking 后 json 产物只需几十 token,但回退链里的 nano 仍是推理模型,保持 1000 兜底
         response_format: { type: 'json_object' },
+        ...(p.extra ?? {}),
       }),
       signal: ctrl.signal,
     });
