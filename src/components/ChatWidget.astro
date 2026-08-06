@@ -463,7 +463,13 @@ const guides = JSON.stringify({
   const place = () => { if (Z.anchor) Z.anchor.style.transform = `translate3d(${innerWidth - 94}px, ${innerHeight - 28}px, 0)`; };
   const showEl = (el: HTMLElement) => {
     el.classList.add('on');
-    for (const e of [...Z.vids, Z.still!]) if (e && e !== el) e.classList.remove('on');
+    for (const e of [...Z.vids, Z.still!]) {
+      if (!e || e === el) continue;
+      e.classList.remove('on');
+      // 换下的片段要喊停:非循环的播完自停,但 listen/think/type 是开 loop 播的,
+      // 不暂停就在隐藏状态一直解码(实测与可见那路同为 24fps,聊天期间等于白烧一路 720p)。
+      if (e instanceof HTMLVideoElement && !e.paused) e.pause();
+    }
   };
   const prepOn = (v: HTMLVideoElement, name: string): Promise<HTMLVideoElement> => {
     const url = `/zoe/${ZOE[name].src}.webm`;
@@ -837,15 +843,20 @@ const guides = JSON.stringify({
   // 意图引导(§23.5):并行请求 /classify,拿到 chip 就在该条回复下方渲染可点引导(版块导航/邮箱)。
   // 深链(07-17):worker 白名单校验过的 target(案例/CV 条目)优先——chip 直达 /work/<slug> 或 /cv#cv-<id>;
   // id 前端再做一次防御性校验,label 走 textContent(无注入面)。失败/none/超限一律无引导。
-  type GuideTarget = { kind?: string; id?: string; label?: string };
+  // labels={zh,en}:chip 跨页存活后访客可能中途切语言,按当前页面语言取名,避免
+  // 「Find 上海和今信息科技有限公司 on his CV」这种夹生句(id/slug 中英共用故对得上)。
+  // 老会话里存的 guidance 可能没有 labels,回落到 label。
+  type GuideTarget = { kind?: string; id?: string; label?: string; labels?: Record<string, string> };
   const renderGuidanceChip = (chip: string, tgt: GuideTarget | null, afterEl: HTMLElement) => {
     if (!afterEl.isConnected) return; // 切页后旧 DOM 已废(流式消息由 stream.el 兜着,其余场景放弃 chip)
     let guides: Record<string, { label: string; href: string }> & { caseTpl?: string; cvTpl?: string; workBase?: string; cvPath?: string };
     try { guides = JSON.parse(rootData().guides ?? '{}'); } catch { return; }
     let href = '', label = '';
     if (tgt && typeof tgt.id === 'string' && /^[a-z0-9-]{1,60}$/i.test(tgt.id) && typeof tgt.label === 'string') {
-      if (tgt.kind === 'case' && guides.caseTpl && guides.workBase) { href = `${guides.workBase}/${tgt.id}`; label = guides.caseTpl.replace('%s', tgt.label); }
-      else if (tgt.kind === 'cv' && guides.cvTpl && guides.cvPath) { href = `${guides.cvPath}#cv-${tgt.id}`; label = guides.cvTpl.replace('%s', tgt.label); }
+      const cur = rootData().lang === 'en' ? 'en' : 'zh';
+      const name = (typeof tgt.labels?.[cur] === 'string' && tgt.labels[cur]) || tgt.label; // 按当前页面语言取名
+      if (tgt.kind === 'case' && guides.caseTpl && guides.workBase) { href = `${guides.workBase}/${tgt.id}`; label = guides.caseTpl.replace('%s', name); }
+      else if (tgt.kind === 'cv' && guides.cvTpl && guides.cvPath) { href = `${guides.cvPath}#cv-${tgt.id}`; label = guides.cvTpl.replace('%s', name); }
     }
     if (!href) {
       const g = guides[chip];

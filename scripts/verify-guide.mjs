@@ -189,6 +189,42 @@ const interestsOf = (page) =>
   await ctx.close();
 }
 
+// ---- ⑪ 切语言后 chip 用对应语言的名称(08-06:chip 跨页存活后暴露的夹生句) ----
+// 用爱奇艺而非和鲸:后者英文 CV 尚未同步(英文包无此条),会走"对侧缺失→回落本侧名"的兜底分支。
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await mkPage(ctx);
+  await page.route('**/classify', (r) =>
+    r.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        chip: 'cv',
+        target: { kind: 'cv', id: 'iqiyi', label: '上海爱奇艺文化传媒有限公司', labels: { zh: '上海爱奇艺文化传媒有限公司', en: 'iQIYI, Inc.' } },
+      }),
+    })
+  );
+  await page.route('**/chat', (r) =>
+    r.fulfill({ contentType: 'text/event-stream; charset=utf-8', body: 'data: {"delta":"好的喵"}\n\ndata: [DONE]\n\n' })
+  );
+  await page.goto('http://localhost:4321/zh/?zoe-fast', { waitUntil: 'load' });
+  await page.click('#chat-fab');
+  await page.fill('#chat-input', '他在爱奇艺做了什么?');
+  await page.press('#chat-input', 'Enter');
+  await page.locator('.chat-guide-chip').waitFor({ timeout: 10000 });
+  const zhLabel = (await page.locator('.chat-guide-chip').textContent()).trim();
+  if (!zhLabel.includes('上海爱奇艺文化传媒有限公司')) fail(`中文页 chip 名称不对: ${zhLabel}`);
+
+  await page.evaluate(() => { const a = document.createElement('a'); a.href = '/'; document.body.appendChild(a); a.click(); });
+  await page.waitForURL((u) => !u.pathname.startsWith('/zh'), { timeout: 10000 });
+  await page.waitForTimeout(1200);
+  const enLabel = (await page.locator('.chat-guide-chip').textContent()).trim();
+  if (/[一-龥]/.test(enLabel)) fail(`切英文后 chip 仍含中文名: ${enLabel}`);
+  if (!enLabel.includes('iQIYI')) fail(`切英文后 chip 名称不对: ${enLabel}`);
+  if ((await page.locator('.chat-guide-chip').getAttribute('href')) !== '/cv#cv-iqiyi') fail('切语言后链接未跟随');
+  ok(`切语言后 chip 换用对应语言名称: ${enLabel}`);
+  await ctx.close();
+}
+
 await browser.close();
 if (errors.length) { console.error('页面报错:\n' + errors.join('\n')); process.exit(1); }
 console.log(`\n全部 ${n} 项通过,0 页面报错`);

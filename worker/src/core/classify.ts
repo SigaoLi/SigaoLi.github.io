@@ -20,6 +20,12 @@ export interface GuideTarget {
   kind: 'case' | 'cv';
   id: string;
   label: string;
+  /**
+   * 两种语言的名称。chip 会跨页存活(前端 08-06 改),访客中途切语言时若只有分类那一刻的
+   * 语言,就会拼出「Find 上海和今信息科技有限公司 on his CV」这种夹生句。
+   * id 与案例 slug 中英共用(深链设计时即如此),故对侧名称可直接查表得到。
+   */
+  labels?: Record<string, string>;
 }
 export interface Catalog {
   cases: { id: string; label: string }[];
@@ -45,13 +51,27 @@ export function buildCatalog(slice: PackLangSlice): Catalog {
 }
 
 // 模型输出的 target 过白名单:不命中=丢弃(只留版块级 chip);命中=chip 与 kind 对齐。
-export function resolveTarget(raw: unknown, catalog: Catalog | null): GuideTarget | null {
+// altCatalog=另一语言的同一份清单(按共享 id 对齐),用于给 chip 备好双语名称。
+export function resolveTarget(raw: unknown, catalog: Catalog | null, alt?: AltLabels): GuideTarget | null {
   if (!catalog || typeof raw !== 'object' || raw === null) return null;
   const t = raw as { kind?: unknown; id?: unknown };
   if (t.kind !== 'case' && t.kind !== 'cv') return null;
   if (typeof t.id !== 'string') return null;
   const hit = (t.kind === 'case' ? catalog.cases : catalog.cv).find((x) => x.id === t.id);
-  return hit ? { kind: t.kind, id: hit.id, label: hit.label } : null;
+  if (!hit) return null;
+  const target: GuideTarget = { kind: t.kind, id: hit.id, label: hit.label };
+  if (alt) {
+    const other = (t.kind === 'case' ? alt.catalog.cases : alt.catalog.cv).find((x) => x.id === hit.id);
+    // 对侧缺条目时回落到本侧名称(英文 CV 尚未同步的条目会走到这里),宁可夹生不要空白
+    target.labels = { [alt.lang]: other?.label ?? hit.label, [alt.self]: hit.label };
+  }
+  return target;
+}
+/** 另一语言的清单 + 语言标记(self=当前请求语言,lang=对侧) */
+export interface AltLabels {
+  self: 'en' | 'zh';
+  lang: 'en' | 'zh';
+  catalog: Catalog;
 }
 
 interface ClassifierProvider {
@@ -204,14 +224,15 @@ export async function classifyIntent(
   message: string,
   lang: 'en' | 'zh',
   euLike: boolean,
-  catalog: Catalog | null
+  catalog: Catalog | null,
+  alt?: AltLabels
 ): Promise<{ chip: Chip; target: GuideTarget | null; via: string }> {
   const sys = intentSystem(lang, catalog);
   for (const p of classifierChain(secrets, euLike)) {
     const parsed = await callJson(p, sys, message);
     const chip = parsed?.chip;
     if (typeof chip === 'string' && CHIPS.includes(chip as Chip)) {
-      const target = resolveTarget(parsed?.target, catalog);
+      const target = resolveTarget(parsed?.target, catalog, alt);
       // 白名单命中即采信 target,chip 与 kind 对齐(模型偶尔 chip/target 不一致时以 target 为准)
       return { chip: target ? (target.kind === 'case' ? 'work' : 'cv') : (chip as Chip), target, via: p.name };
     }
@@ -253,13 +274,18 @@ export async function handleClassify(request: Request, rt: Runtime): Promise<Res
     return json({ name });
   }
 
-  // 深链候选目录:知识包拉取失败不致命(catalog=null → 仅版块级),分类照常
+  // 深链候选目录:知识包拉取失败不致命(catalog=null → 仅版块级),分类照常。
+  // 同时备一份对侧语言清单:chip 现在跨页存活,访客中途切语言时用它换名称(见 GuideTarget.labels)。
   let catalog: Catalog | null = null;
+  let alt: AltLabels | undefined;
   try {
-    catalog = buildCatalog((await getKnowledge(rt.knowledgeUrl))[lang]);
+    const pack = await getKnowledge(rt.knowledgeUrl);
+    catalog = buildCatalog(pack[lang]);
+    const other = lang === 'zh' ? 'en' : 'zh';
+    alt = { self: lang, lang: other, catalog: buildCatalog(pack[other]) };
   } catch { /* 知识包抖动时静默降级 */ }
 
-  const { chip, target, via } = await classifyIntent(rt.secrets, message, lang, euLike, catalog);
+  const { chip, target, via } = await classifyIntent(rt.secrets, message, lang, euLike, catalog, alt);
   console.log(`[classify] lang=${lang} eu=${euLike} chip=${chip} target=${target ? `${target.kind}:${target.id}` : '-'} via=${via}`);
   return json(target ? { chip, target } : { chip });
 }
