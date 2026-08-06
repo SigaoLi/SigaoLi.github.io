@@ -272,7 +272,11 @@ const guides = JSON.stringify({
   const store = {
     load: (): Msg[] => { try { return JSON.parse(sessionStorage.getItem('sigaoli-chat') ?? '[]'); } catch { return []; } },
     save: (h: Msg[]) => sessionStorage.setItem('sigaoli-chat', JSON.stringify(h)),
-    clear: () => sessionStorage.removeItem('sigaoli-chat'),
+    clear: () => { sessionStorage.removeItem('sigaoli-chat'); sessionStorage.removeItem('sigaoli-chat-guide'); },
+    // 引导 chip 与它所属的回复同寿:history 刷新后会回来,chip 也该回来(否则又是"切页/刷新就没了")
+    loadGuide: () => { try { return JSON.parse(sessionStorage.getItem('sigaoli-chat-guide') ?? 'null'); } catch { return null; } },
+    saveGuide: (g: unknown) =>
+      g ? sessionStorage.setItem('sigaoli-chat-guide', JSON.stringify(g)) : sessionStorage.removeItem('sigaoli-chat-guide'),
   };
 
   // 回头客画像(§23.5 记忆):只存访客本地设备(localStorage),你不持有;可一键「忘记我」清 sigaoli-zoe-*。
@@ -412,7 +416,11 @@ const guides = JSON.stringify({
     if (log) log.scrollTop = log.scrollHeight;
   };
   let aborter: AbortController | null = null;
-  let guideEl: HTMLElement | null = null; // 当前引导 chip(只保留最新一条,§23.5)
+  let guideEl: HTMLElement | null = null; // 当前引导 chip 的 DOM(只保留最新一条,§23.5;随面板重建失效)
+  // 引导数据留在模块级(与 stream 同策略):面板 DOM 每页重建,chip 若只活在 DOM 里,
+  // 一切页就没了——包括"点 chip 自己跳过去"这种最常见的场景(2026-08-06 Sigao 报)。
+  // 存着数据,paint() 就能在新面板里把它重新挂到最后一条回复下方。
+  let guidance: { chip: string; target: GuideTarget | null } | null = null;
   // 打字动作语义路由(§23.5,2026-08-03 方案 A):复用 /classify 本就返回的 chip,不额外请求、worker 零改动。
   // none(打招呼/问猫自己/跑题)→傲娇昂首「哼,问我?」;正事(work/cv/photography/email)→敲地板认真打字。
   // 每条消息发出时置 null=分类未回,打字阶段维持原随机(EU 走 nano 更慢时即此情形)。
@@ -763,12 +771,17 @@ const guides = JSON.stringify({
     if (!log || !suggest) return;
     setPinned(true); // 重绘=回到底部(新面板/重开聊/切页恢复)
     log.innerHTML = '';
-    guideEl = null; // 引导 chip 随 log 重绘清空
+    guideEl = null; // 旧 DOM 已随 innerHTML 清掉,引用作废(数据在 guidance 里,下面重挂)
     bubbleMsg('bot', render(rootData().greeting ?? ''));
     for (const m of history) bubbleMsg(m.role === 'user' ? 'user' : 'bot', render(m.content));
     if (stream) { // 进行中的流式回复(Bug2):重挂到新 DOM,后续 delta 继续写入
       stream.el = bubbleMsg('bot', stream.acc ? render(stream.acc) : TYPING_HTML);
       if (!stream.acc) stream.el.classList.add('pending');
+    }
+    // 引导 chip 跨页重挂:它属于最新一条回复(流式进行中就是那条,否则是最后一条 bot 气泡)
+    if (guidance) {
+      const host = stream?.el ?? [...log.querySelectorAll<HTMLElement>('.chat-msg.bot')].pop();
+      if (host) renderGuidanceChip(guidance.chip, guidance.target, host);
     }
     suggest.hidden = history.length > 0 || !!stream;
   };
@@ -851,8 +864,11 @@ const guides = JSON.stringify({
       if (!res.ok) return;
       const data = (await res.json()) as { chip?: string; target?: GuideTarget };
       if (data.chip) chipForZoe = data.chip; // 同一结果顺带驱动打字动作(见 chipForZoe);none 也要记
+      if (!data.chip || data.chip === 'none') return;
+      guidance = { chip: data.chip, target: data.target ?? null }; // 先存后渲染:即使此刻正在切页,新面板也能补上
+      store.saveGuide(guidance);
       const el = target(); // 渲染时才取:切页后 paint() 已把流式气泡换成新元素
-      if (data.chip && data.chip !== 'none' && el) renderGuidanceChip(data.chip, data.target ?? null, el);
+      if (el) renderGuidanceChip(data.chip, data.target ?? null, el);
     } catch { /* 引导锦上添花,失败静默 */ }
   };
   // 名字提取(§23.5):送 /classify mode=name;能辨「我叫Alex」整句与拒绝语(拒绝返回空)。
@@ -888,7 +904,9 @@ const guides = JSON.stringify({
   };
 
   const send = async (text: string) => {
-    if (guideEl) { guideEl.remove(); guideEl = null; } // 新消息=清掉上一条回复的引导 chip
+    // 新消息=上一条回复的引导作废(DOM 与数据都清,否则切页时 paint() 会把旧 chip 挂到新回复下)
+    if (guideEl) { guideEl.remove(); guideEl = null; }
+    guidance = null; store.saveGuide(null);
     track('chat-send');
     const { lang, api } = rootData();
     const errText: Record<string, string> = {
@@ -1106,6 +1124,7 @@ const guides = JSON.stringify({
     if (!Z.booted) {
       Z.booted = true;
       history = store.load();
+      guidance = store.loadGuide(); // 刷新后与 history 一起恢复,paint() 会把 chip 重新挂上
       profile.load();
       profile.data.visits += 1;
       profile.data.lastVisit = new Date().toISOString().slice(0, 10);
@@ -1168,6 +1187,7 @@ const guides = JSON.stringify({
     const onReset = () => {
       aborter?.abort(); // abort 只属于「重新开聊」(Bug2:切页不再中断流式)
       stream = null;    // 废弃进行中的流:其半截内容不得写进新对话
+      guidance = null;  // 引导随对话一起清空,否则 paint() 会把它挂到问候语下面
       history = []; store.clear(); paint(); input.focus();
     };
     form.addEventListener('submit', onSubmit);

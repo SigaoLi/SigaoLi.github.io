@@ -123,6 +123,44 @@ const interestsOf = (page) =>
   await ctx.close();
 }
 
+// ---- ⑦⑧ 引导 chip 跨页存活(08-06:chip 曾只活在 DOM 里,一切页就没了,连点它自己跳转都会丢) ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await mkPage(ctx);
+  await page.route('**/classify', (r) =>
+    r.fulfill({ contentType: 'application/json', body: JSON.stringify({ chip: 'cv', target: { kind: 'cv', id: 'heywhale', label: '上海和今信息科技有限公司' } }) })
+  );
+  // /chat 拖住不回:复刻「chip 已出、首 token 未到」那个窗口——用户正是在这时点走的
+  await page.route('**/chat', async (r) => {
+    await new Promise((x) => setTimeout(x, 20000));
+    r.fulfill({ contentType: 'text/event-stream; charset=utf-8', body: 'data: {"delta":"好的喵"}\n\ndata: [DONE]\n\n' });
+  });
+  await page.goto('http://localhost:4321/zh/?zoe-fast', { waitUntil: 'load' });
+  await page.click('#chat-fab');
+  await page.fill('#chat-input', '他在和今做了什么?');
+  await page.press('#chat-input', 'Enter');
+  const chip = page.locator('.chat-guide-chip');
+  await chip.waitFor({ timeout: 15000 });
+  const href = await chip.getAttribute('href');
+  if (!(await page.locator('.chat-msg.bot.pending').count())) fail('前置不成立:首 token 已到,测不到目标窗口');
+
+  await chip.click();
+  await page.waitForURL('**/zh/cv**', { timeout: 10000 });
+  await page.waitForTimeout(1200);
+  const kept = await page.locator('.chat-guide-chip');
+  if ((await kept.count()) !== 1) fail(`点 chip 跳转后应仍有 1 个 chip,实得 ${await kept.count()}`);
+  if ((await kept.getAttribute('href')) !== href) fail('跳转后 chip 指向变了');
+  ok(`chip 跨页存活: 点它跳到 ${href} 后仍在(不重复)`);
+
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForTimeout(1000);
+  if (await page.locator('#chat-panel[hidden]').count()) await page.click('#chat-fab');
+  await page.waitForTimeout(600);
+  if ((await page.locator('.chat-guide-chip').count()) !== 1) fail('刷新后 chip 未随对话恢复');
+  ok('chip 随 history 一起熬过刷新');
+  await ctx.close();
+}
+
 await browser.close();
 if (errors.length) { console.error('页面报错:\n' + errors.join('\n')); process.exit(1); }
 console.log(`\n全部 ${n} 项通过,0 页面报错`);
