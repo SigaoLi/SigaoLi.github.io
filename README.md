@@ -42,6 +42,16 @@ Jekyll (academicpages) site.
 > already. Note `warm()` takes the *file* name (`sit-to-loaf`), not the `ZOE`
 > key (`sitToLoaf`).
 
+> The chat panel is rebuilt on every navigation — `transition:persist` keeps
+> Zoe's stage, not the panel. **Anything that lives only in panel DOM is gone
+> the moment a visitor clicks a link.** The streaming reply, the guidance chip
+> and the unsent draft each had to be given module state plus a path back
+> through `paint()`; the chip was lost for weeks before anyone noticed. So when
+> adding persistent UI here, answer two questions up front: how does `paint()`
+> rebuild it, and should it ride along in `sessionStorage` with the history?
+> Measure geometry only once the panel is visible — `scrollHeight` is 0 while
+> it is hidden, which silently writes `height: 0px`.
+
 ## Structure
 
 ```
