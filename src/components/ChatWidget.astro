@@ -277,6 +277,11 @@ const guides = JSON.stringify({
     loadGuide: () => { try { return JSON.parse(sessionStorage.getItem('sigaoli-chat-guide') ?? 'null'); } catch { return null; } },
     saveGuide: (g: unknown) =>
       g ? sessionStorage.setItem('sigaoli-chat-guide', JSON.stringify(g)) : sessionStorage.removeItem('sigaoli-chat-guide'),
+    // 未发出的草稿:面板 DOM 每页重建,输入框里打了一半的问题会随之消失——
+    // 访客打字打到一半点个链接去确认什么,回来就得重打(2026-08-06 审计发现,与引导 chip 同一类)。
+    loadDraft: () => sessionStorage.getItem('sigaoli-chat-draft') ?? '',
+    saveDraft: (v: string) =>
+      v ? sessionStorage.setItem('sigaoli-chat-draft', v) : sessionStorage.removeItem('sigaoli-chat-draft'),
   };
 
   // 回头客画像(§23.5 记忆):只存访客本地设备(localStorage),你不持有;可一键「忘记我」清 sigaoli-zoe-*。
@@ -792,6 +797,13 @@ const guides = JSON.stringify({
     const flow = $('chat-flowline');
     if (flow) flow.hidden = !b; // 流式期间底边流动线亮起(方案 C)
   };
+  // 输入框自适应高度。**必须在面板可见时调用**——隐藏元素 scrollHeight 为 0,会把高度写成 0px。
+  const fitInput = () => {
+    const input = $('chat-input') as HTMLTextAreaElement | null;
+    if (!input) return;
+    input.style.height = '';
+    if (input.value) input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+  };
   // 面板开合状态跨页保持(View Transitions 切页后恢复;恢复时不抢焦点)
   // 关闭走 200ms 缩小淡出(closing 类)再真正 hidden;closeTimer 防抖——动画期间再点开要能立即回来
   let closeTimer: ReturnType<typeof setTimeout> | 0 = 0;
@@ -814,6 +826,7 @@ const guides = JSON.stringify({
     if (show) {
       hideBubble(); // 问名气泡也收:访客转向对话框即本次作罢(askCount 已记)
       paint();
+      fitInput(); // 面板此刻才可见:恢复的草稿在这里才量得到高度(接线时量会得到 0)
       if (focus) { ($('chat-input') as HTMLTextAreaElement | null)?.focus(); track('chat-open'); }
       warm(['listen', 'think', 'type', 'proud']); // 聊天片段预热:打字阶段 type/proud 各半,两个都要预热
       markActivity(); scheduleSleep();
@@ -997,6 +1010,7 @@ const guides = JSON.stringify({
       return;
     }
     if (input) { input.value = ''; input.style.height = ''; }
+    store.saveDraft(''); // 已发出,草稿作废
     void send(text);
   };
 
@@ -1180,8 +1194,8 @@ const guides = JSON.stringify({
       if (e.key === 'Escape') toggle(false);
     };
     const onInput = () => {
-      input.style.height = '';
-      input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+      fitInput();
+      store.saveDraft(input.value); // 每次输入落盘:切页/刷新后能原样回来
       zoeTyping();
     };
     const onReset = () => {
@@ -1201,6 +1215,10 @@ const guides = JSON.stringify({
     $('chat-reset')!.addEventListener('click', onReset);
     $('chat-close')!.addEventListener('click', () => toggle(false));
     $('zoe-forget')?.addEventListener('click', forgetVisitor);
+    // 恢复未发出的草稿(新面板的输入框是空的)。**只填值不量高度**——此刻面板可能还 hidden,
+    // 隐藏元素的 scrollHeight 为 0,量了会把内联高度写成 0px 把输入框压扁;高度交给 toggle 展开后再算。
+    const draft = store.loadDraft();
+    if (draft) input.value = draft;
     if (sessionStorage.getItem('sigaoli-chat-open') === '1') toggle(true, false);
     setBusy(busy); // 新面板的发送按钮恢复繁忙态(流式正跨页进行时)
 

@@ -63,7 +63,15 @@ export async function handleChat(request: Request, rt: Runtime): Promise<Respons
 
   const lang = body.lang === 'en' ? 'en' : 'zh';
   const interests = sanitizeInterests(body.interests);
-  const pack = await getKnowledge(rt.knowledgeUrl);
+  // 知识包拉取失败(冷 isolate 无缓存 + 源站抖动)按上游不可用处理,走我们自己的错误码;
+  // 否则异常抛到顶层 → 500 纯文本 + 无 CORS 头,前端只能靠兜底文案(classify.ts 早已这么防,此处对齐)。
+  let pack;
+  try {
+    pack = await getKnowledge(rt.knowledgeUrl);
+  } catch (err) {
+    console.error('[chat] knowledge unavailable:', err);
+    return json({ error: 'upstream_unavailable' }, 503);
+  }
   const upstreamMessages: UpstreamMessage[] = [
     { role: 'system', content: buildSystemPrompt(pack, lang, interests) },
     ...trimHistory(checked.messages, LIMITS.maxHistoryChars),

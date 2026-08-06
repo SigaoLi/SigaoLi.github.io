@@ -161,6 +161,34 @@ const interestsOf = (page) =>
   await ctx.close();
 }
 
+// ---- ⑨ 未发出的草稿跨页保留(08-06 审计:与 chip 同类,面板 DOM 每页重建会清空输入框) ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await mkPage(ctx);
+  await stubApis(page, { chip: 'none' });
+  await page.goto('http://localhost:4321/zh/?zoe-fast', { waitUntil: 'load' });
+  await page.click('#chat-fab');
+  const draft = '我想问一个还没打完的问题';
+  await page.fill('#chat-input', draft);
+  await page.dispatchEvent('#chat-input', 'input');
+  await page.evaluate(() => { const a = document.createElement('a'); a.href = '/zh/cv'; document.body.appendChild(a); a.click(); });
+  await page.waitForURL('**/zh/cv**', { timeout: 10000 });
+  await page.waitForTimeout(1200);
+  if ((await page.inputValue('#chat-input')) !== draft) fail('切页后草稿丢失');
+  // 高度要量渲染后的真实盒子:隐藏元素 scrollHeight=0,曾把内联高度写成 0px 而 style.height 非空"看着像对"
+  const box = await page.evaluate(() => {
+    const e = document.getElementById('chat-input');
+    return { h: Math.round(e.getBoundingClientRect().height), vis: e.offsetParent !== null };
+  });
+  if (!box.vis || box.h < 20) fail(`草稿恢复后输入框异常: 高 ${box.h}px 可见=${box.vis}`);
+  ok(`草稿跨页保留且输入框高度正常(${box.h}px)`);
+  await page.press('#chat-input', 'Enter');
+  await page.waitForTimeout(1500);
+  if ((await page.inputValue('#chat-input')) !== '') fail('发送后输入框未清空');
+  ok('发送后草稿清除');
+  await ctx.close();
+}
+
 await browser.close();
 if (errors.length) { console.error('页面报错:\n' + errors.join('\n')); process.exit(1); }
 console.log(`\n全部 ${n} 项通过,0 页面报错`);
