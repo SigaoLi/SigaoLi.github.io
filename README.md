@@ -52,7 +52,21 @@ Jekyll (academicpages) site.
 > Measure geometry only once the panel is visible — `scrollHeight` is 0 while
 > it is hidden, which silently writes `height: 0px`.
 
-## Structure
+> **Turnstile guards `/chat` and `/classify`. It must never guard `/mcp`.**
+> That endpoint exists so machines can read Sigao's profile — it is in the
+> official registry — and Turnstile exists to stop machines. It also costs
+> nothing to serve: the tools read the knowledge pack and never call a model.
+> The static outlets (`llms.txt`, `knowledge.json`, `.well-known/mcp.json`) are
+> served by Pages and never reach the Worker at all.
+
+> **Locally, Turnstile uses Cloudflare's always-pass test keys** — sitekey in
+> `site.ts` behind `import.meta.env.DEV`, secret in `worker/.dev.vars`. The real
+> key rejects headless browsers, which is exactly its job, so every suite that
+> drives a real Worker would fail against it. The real secret exists only in
+> production, set with `wrangler secret put`. A corollary worth remembering:
+> **the production happy path cannot be verified from a script** — reaching it
+> needs a human in a real browser. Automation can still prove the gate is up
+> (a request with no credential must return 403).
 
 ```
 src/
@@ -116,6 +130,14 @@ The Worker deploys separately: `cd worker && npx wrangler deploy` (secrets via
 `wrangler secret put`; custom domain `api.sigaoli.com` bound in the Cloudflare dashboard).
 When a batch changes both, deploy the Worker **first** — the chat UI calls its endpoints, so a
 site push ahead of the Worker leaves a brief window where those calls 404.
+
+A deploy takes up to a minute to reach every edge location. Checking immediately reads the
+previous version, which has twice looked like a broken deploy when nothing was wrong — wait,
+then check.
+
+Daily chat usage is at `https://api.sigaoli.com/usage` (last seven days, plus whether today has
+hit the cap). The cap itself is `DAILY_CAP` in `worker/src/core/quota.ts`; when it trips it emails
+once via Cloudflare Email Routing.
 
 > ⚠️ **Never click "Sync fork".** This repository began as an academicpages fork; syncing
 > would reset `master` to the upstream template. If that ever happens again:
