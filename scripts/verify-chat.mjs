@@ -21,7 +21,9 @@ await page.screenshot({ path: `shots/chat-${lang}-open.png` });
 await page.fill('#chat-input', question);
 await page.press('#chat-input', 'Enter');
 // 等待流式回答完成:.pending 消失且送出按钮恢复可用
-await page.waitForSelector('#chat-send:not([disabled])', { timeout: 120000 });
+// 等停止图标收起=流式结束(发送钮 08-07 起流式期间转任停止、恒可点,不能拿 disabled 判忙碌)。
+// 必须 waitForFunction:waitForSelector 默认等「可见」,而 hidden 元素永远不可见(老坑,别改回去)。
+await page.waitForFunction(() => document.getElementById('chat-stop-icon')?.hidden === true, null, { timeout: 120000 });
 await page.waitForTimeout(300);
 await page.screenshot({ path: `shots/chat-${lang}-answer.png` });
 

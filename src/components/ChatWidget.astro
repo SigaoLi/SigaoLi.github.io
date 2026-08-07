@@ -35,7 +35,8 @@ const guides = JSON.stringify({
   data-bubble={d.bubble} data-meow={d.meow} data-open={d.open} data-forgotten={d.forgotten}
   data-welcome-back={d.welcomeBack} data-ask-name={d.askName} data-name-ack={d.nameAck}
   data-name-placeholder={d.namePlaceholder} data-name-ok={d.nameOk} data-name-no={d.nameNo} data-name-declined={d.nameDeclined}
-  data-err-rate={d.errRate} data-err-turns={d.errTurns} data-err-upstream={d.errUpstream} data-err-network={d.errNetwork}>
+  data-err-rate={d.errRate} data-err-turns={d.errTurns} data-err-upstream={d.errUpstream} data-err-network={d.errNetwork}
+  data-send={d.send} data-stop={d.stop}>
   <!-- Zoe 锚点:零尺寸定位容器(place() 设 transform 到右下角),舞台按钮与气泡都是它的子元素。
        气泡不能放 <button> 里——问名表单的 input 在按钮内非法且无法聚焦(07-16 Bug1 重构)。
        transition:persist=跨页保留 DOM,视频不断帧(语言切换时面板重建、锚点沿用,文案由 JS 同步) -->
@@ -97,11 +98,16 @@ const guides = JSON.stringify({
       <div class="chat-inputrow flex items-end gap-2">
         <textarea id="chat-input" rows="1" maxlength="2000" placeholder={d.placeholder} autocomplete="off"
           class="max-h-28 w-full resize-none bg-transparent px-1 py-1.5 text-sm outline-none text-ink placeholder:text-ink-muted"></textarea>
-        <button id="chat-send" type="submit" aria-label={d.send}
+        <!-- 发送/停止共用一个圆钮:流式期间发送本就是禁用态,那一刻它闲着,正好承担「停止」,
+             不额外占面板空间(380px 宽已挤满)。图标与 aria-label 由 setBusy 切换。 -->
+        <button id="chat-send" type="submit" aria-label={d.send} title={d.send}
           class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
           style="background: var(--accent);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg id="chat-send-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m5 12 14 0M13 6l6 6-6 6"/>
+          </svg>
+          <svg id="chat-stop-icon" hidden width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="5" y="5" width="14" height="14" rx="2.5"/>
           </svg>
         </button>
       </div>
@@ -798,10 +804,26 @@ const guides = JSON.stringify({
   };
   const setBusy = (b: boolean) => {
     busy = b;
+    // 流式期间不再是"禁用的发送钮",而是可点的「停止」——同一位置换图标,零新增占地。
+    // 保持 enabled(要能点),靠 onSubmit 里的 busy 分支区分两种行为。
     const btn = $('chat-send') as HTMLButtonElement | null;
-    if (btn) btn.disabled = b;
+    if (btn) {
+      btn.disabled = false;
+      const label = (b ? rootData().stop : rootData().send) ?? '';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    }
+    const sendIcon = $('chat-send-icon'), stopIcon = $('chat-stop-icon');
+    if (sendIcon) sendIcon.hidden = b;
+    if (stopIcon) stopIcon.hidden = !b;
     const flow = $('chat-flowline');
     if (flow) flow.hidden = !b; // 流式期间底边流动线亮起(方案 C)
+  };
+  // 停止生成:复用「重新开聊」那条 abort 通路,但只掐当前这一轮——
+  // 半截回答已在 send() 的 catch 分支写进 history(不丢),对话继续可用。
+  const stopStreaming = () => {
+    if (!busy) return;
+    aborter?.abort();
   };
   // 输入框自适应高度。**必须在面板可见时调用**——隐藏元素 scrollHeight 为 0,会把高度写成 0px。
   const fitInput = () => {
@@ -1195,14 +1217,19 @@ const guides = JSON.stringify({
     // ---- 面板接线(每页新 DOM) ----
     const form = $('chat-form') as HTMLFormElement;
     const input = $('chat-input') as HTMLTextAreaElement;
-    const onSubmit = (e: Event) => { e.preventDefault(); trySend(input.value.trim()); };
+    const onSubmit = (e: Event) => {
+      e.preventDefault();
+      if (busy) { stopStreaming(); return; } // 流式期间同一个钮=停止
+      trySend(input.value.trim());
+    };
     const onChip = (e: Event) => {
       const chip = (e.target as HTMLElement).closest<HTMLElement>('.chat-chip');
       if (chip) trySend(chip.textContent!.trim());
     };
     const onKeydown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
-      if (e.key === 'Escape') toggle(false);
+      // Enter 只负责发送:流式期间按 Enter 什么也不做(与改动前一致),停止只走点按钮,免得误触掐断回答
+      // Esc 不在这里处理——它绑在面板层,焦点在任何控件上都要能关(见下方 panelEl 监听)
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!busy) form.requestSubmit(); }
     };
     const onInput = () => {
       fitInput();
@@ -1224,7 +1251,26 @@ const guides = JSON.stringify({
     input.addEventListener('keydown', onKeydown);
     input.addEventListener('input', onInput);
     $('chat-reset')!.addEventListener('click', onReset);
-    $('chat-close')!.addEventListener('click', () => toggle(false));
+    // 显式关闭把焦点交还给 Zoe(键盘用户否则会掉回页面顶部);状态恢复那条路径不抢焦点
+    $('chat-close')!.addEventListener('click', () => { toggle(false); Z.fab?.focus(); });
+
+    // 焦点陷阱(WCAG 2.4.3/2.1.2):对话框打开时 Tab 应在面板内循环,不该跑到背后的页面上。
+    // 每次按 Tab 现算可聚焦项——面板内容是动态的(建议 chips 答完即隐、「回到最新」按需浮现)。
+    const panelEl = $('chat-panel')!;
+    panelEl.addEventListener('keydown', (e) => {
+      const key = (e as KeyboardEvent).key;
+      if (panelEl.hidden) return;
+      // Esc 绑在面板层而非输入框:焦点被 Tab 移到别的控件后也要能关(原先只绑 input,那时按 Esc 无反应)
+      if (key === 'Escape') { toggle(false); Z.fab?.focus(); return; }
+      if (key !== 'Tab') return;
+      const items = [...panelEl.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), textarea, input, [tabindex]:not([tabindex="-1"])')]
+        .filter((el) => !el.hasAttribute('hidden') && el.offsetParent !== null);
+      if (!items.length) return;
+      const first = items[0], last = items[items.length - 1];
+      const ke = e as KeyboardEvent;
+      if (ke.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!ke.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
     $('zoe-forget')?.addEventListener('click', forgetVisitor);
     // 恢复未发出的草稿(新面板的输入框是空的)。**只填值不量高度**——此刻面板可能还 hidden,
     // 隐藏元素的 scrollHeight 为 0,量了会把内联高度写成 0px 把输入框压扁;高度交给 toggle 展开后再算。

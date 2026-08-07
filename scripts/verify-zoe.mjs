@@ -235,7 +235,9 @@ await rl.press('#chat-input', 'Enter');
     if (Date.now() - t1 > 25000) throw new Error(`✗ 切页后回答停在 ${l}`);
     await rl.waitForTimeout(250);
   }
-  await rl.waitForFunction(() => !document.getElementById('chat-send')?.disabled, { timeout: 60000 });
+  // 「流式结束」看停止图标是否收起,**不能再看发送钮 disabled**——08-07 起该钮流式期间
+  // 转任「停止」,必须保持可点,disabled 恒为 false,拿它判忙碌会立刻放行(本行曾因此误报)。
+  await rl.waitForFunction(() => document.getElementById('chat-stop-icon')?.hidden === true, { timeout: 60000 });
   const finalLen = await lastBotLen();
   const saved = await rl.evaluate(() => JSON.parse(sessionStorage.getItem('sigaoli-chat') ?? '[]'));
   const lastSaved = saved.at(-1);

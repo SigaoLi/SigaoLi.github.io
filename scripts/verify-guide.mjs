@@ -1,4 +1,6 @@
-// 深链 chip + 兴趣追踪 前端 E2E(07-18,§23.5):
+// 聊天面板前端 E2E(07-18 起,§23.5)——已从"深链 chip"扩到整个面板行为:
+//   深链 chip / 兴趣追踪 / chip 与草稿跨页存活 / 切语言 / 停止生成 / 焦点陷阱。
+// 共同点:全部 stub 掉 /classify 与 /chat,不耗模型、不受限流影响,只需 astro dev(4321)。
 //   ① stub /classify(target=cv:heywhale)→ 回复下方渲染深链 chip(href=/zh/cv#cv-heywhale)
 //   ② 点 chip 切页 → 锚点存在、落点在视口内、:target 命中(高亮由 CSS 负责)
 //   ③ 兴趣注入:画像 work=120/cv=30 → /chat 请求体只带 ['work'](90s 门槛)
@@ -222,6 +224,63 @@ const interestsOf = (page) =>
   if (!enLabel.includes('iQIYI')) fail(`切英文后 chip 名称不对: ${enLabel}`);
   if ((await page.locator('.chat-guide-chip').getAttribute('href')) !== '/cv#cv-iqiyi') fail('切语言后链接未跟随');
   ok(`切语言后 chip 换用对应语言名称: ${enLabel}`);
+  await ctx.close();
+}
+
+// ---- ⑫⑬ 停止生成 + 焦点陷阱(08-07) ----
+// 停止钮不新增占地:流式期间发送钮本就禁用闲着,那一刻改任「停止」。
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await mkPage(ctx);
+  await page.route('**/classify', (r) => r.fulfill({ contentType: 'application/json', body: '{"chip":"none"}' }));
+  await page.route('**/chat', async (r) => {
+    await new Promise((x) => setTimeout(x, 20000)); // 拖住,维持流式态
+    r.fulfill({ contentType: 'text/event-stream; charset=utf-8', body: 'data: {"delta":"好的喵"}\n\ndata: [DONE]\n\n' });
+  });
+  await page.goto('http://localhost:4321/zh/?zoe-fast', { waitUntil: 'load' });
+  await page.click('#chat-fab');
+  const iconState = () =>
+    page.evaluate(() => ({
+      label: document.getElementById('chat-send').getAttribute('aria-label'),
+      send: !document.getElementById('chat-send-icon').hidden,
+      stop: !document.getElementById('chat-stop-icon').hidden,
+      disabled: document.getElementById('chat-send').disabled,
+    }));
+  const idle = await iconState();
+  if (!idle.send || idle.stop) fail(`空闲态应是发送图标,实得 ${JSON.stringify(idle)}`);
+
+  await page.fill('#chat-input', '讲讲他的经历');
+  await page.press('#chat-input', 'Enter');
+  await page.waitForTimeout(1500);
+  const busy = await iconState();
+  if (!busy.stop || busy.send || busy.disabled) fail(`流式态应是可点的停止钮,实得 ${JSON.stringify(busy)}`);
+
+  // Enter 不该中断(误触保护):停止只走点按钮
+  await page.fill('#chat-input', '误触');
+  await page.press('#chat-input', 'Enter');
+  await page.waitForTimeout(700);
+  if (await page.evaluate(() => document.getElementById('chat-stop-icon').hidden)) fail('流式期间按 Enter 把回答掐断了');
+
+  await page.click('#chat-send');
+  await page.waitForTimeout(1200);
+  if (!(await page.evaluate(() => document.getElementById('chat-stop-icon').hidden))) fail('点停止后未回到发送态');
+  ok('停止生成: 流式期间发送钮转为停止(Enter 不误触),点击后回到发送态');
+
+  // 焦点陷阱:Tab 应在面板内循环;Esc 在任何控件上都要能关(原先只绑 input)
+  await page.click('#chat-input');
+  for (let i = 0; i < 14; i++) await page.keyboard.press('Tab');
+  if (await page.evaluate(() => !document.getElementById('chat-panel').contains(document.activeElement)))
+    fail('连按 14 次 Tab 后焦点逃出了面板');
+  const focusedOn = await page.evaluate(() => document.activeElement?.id || document.activeElement?.className);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  const panelClosed = await page.evaluate(() => {
+    const el = document.getElementById('chat-panel');
+    return el.hidden || el.classList.contains('closing');
+  });
+  if (!panelClosed) fail(`焦点在 ${focusedOn} 时按 Esc 未关闭面板`);
+  if ((await page.evaluate(() => document.activeElement?.id)) !== 'chat-fab') fail('Esc 关闭后焦点未交还 Zoe');
+  ok(`焦点陷阱: Tab 在面板内循环, Esc 在「${focusedOn}」上也能关且焦点交还 Zoe`);
   await ctx.close();
 }
 
