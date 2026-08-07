@@ -20,6 +20,11 @@ const mkPage = async (ctx) => {
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
+  // 人机验证换凭证的端点在这里统一 stub:每个用例都要用,放 mkPage 才不会漏
+  // (真去 Cloudflare 既慢又依赖外网,而 headless 本来就拿不到真 token)
+  await page.route('**/session', (route) =>
+    route.fulfill({ contentType: 'application/json', body: JSON.stringify({ session: 'v1.9999999999999.stub' }) })
+  );
   return page;
 };
 const stubApis = async (page, classifyPayload, onChatBody) => {
@@ -79,10 +84,13 @@ const interestsOf = (page) =>
   await page.reload({ waitUntil: 'load' }); // 重载让模块级画像重新 load
   // 面板开合跨页保持:上一步开过,重载后自动恢复为开——只有关着才点 fab
   if (await page.locator('#chat-panel').isHidden()) await page.click('#chat-fab');
+  chatBody = null; // 只认这一次的请求体,别把上一条的当成结果
   await page.fill('#chat-input', '推荐我看点什么?');
   await page.press('#chat-input', 'Enter');
-  await page.waitForTimeout(1500);
-  if (!chatBody) fail('/chat 未捕获请求体');
+  // 等请求真的发出,而不是固定睡一段:人机验证在发送前多了一步异步取 token,
+  // 固定 1500ms 会在没有会话凭证时踩空(改动前是这么写的,加 Turnstile 后就挂了)。
+  for (let i = 0; i < 60 && !chatBody; i++) await page.waitForTimeout(250);
+  if (!chatBody) fail('/chat 未捕获请求体(15s 内未发出)');
   if (JSON.stringify(chatBody.interests) !== '["work"]') fail(`interests 应为 ["work"](cv=30 未达 90s 门槛),实得 ${JSON.stringify(chatBody.interests)}`);
   ok('兴趣注入: /chat 请求体只带达标枚举 ["work"],cv 未达门槛不发');
   await ctx.close();

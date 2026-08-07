@@ -36,7 +36,7 @@ const guides = JSON.stringify({
   data-welcome-back={d.welcomeBack} data-ask-name={d.askName} data-name-ack={d.nameAck}
   data-name-placeholder={d.namePlaceholder} data-name-ok={d.nameOk} data-name-no={d.nameNo} data-name-declined={d.nameDeclined}
   data-err-rate={d.errRate} data-err-turns={d.errTurns} data-err-upstream={d.errUpstream} data-err-network={d.errNetwork}
-  data-send={d.send} data-stop={d.stop}>
+  data-send={d.send} data-stop={d.stop} data-sitekey={site.turnstileSitekey} data-err-human={d.errHuman}>
   <!-- Zoe 锚点:零尺寸定位容器(place() 设 transform 到右下角),舞台按钮与气泡都是它的子元素。
        气泡不能放 <button> 里——问名表单的 input 在按钮内非法且无法聚焦(07-16 Bug1 重构)。
        transition:persist=跨页保留 DOM,视频不断帧(语言切换时面板重建、锚点沿用,文案由 JS 同步) -->
@@ -441,6 +441,83 @@ const guides = JSON.stringify({
   // 切页后 paint() 把 el 重挂到新面板继续打字。中断它的只有「重新开聊」(reset 时 stream 置 null 废弃)。
   type Stream = { acc: string; el: HTMLElement | null };
   let stream: Stream | null = null;
+
+  // ================= 人机验证(§22.7) =================
+  // 只保护 /chat 与 /classify(花钱的两个)。**脚本只在访客点开聊天窗时才加载**——
+  // 绝大多数只是来看网页的访客(以及读 llms.txt / 用 /mcp 的 agent)完全不会碰到 Cloudflare。
+  // 拿到 token 后由 worker 换一张 30 分钟会话凭证,之后的消息只带凭证,不再往 Cloudflare 跑。
+  let tsReady: Promise<void> | null = null;
+  let session = sessionStorage.getItem('sigaoli-chat-session') ?? '';
+  const setSession = (v: string) => { session = v; sessionStorage.setItem('sigaoli-chat-session', v); };
+
+  const loadTurnstile = (): Promise<void> => {
+    if (tsReady) return tsReady;
+    tsReady = new Promise<void>((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async = true; s.defer = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('turnstile script blocked'));
+      document.head.appendChild(s);
+    });
+    return tsReady;
+  };
+
+  /** 确保有会话凭证:没有就取一枚 Turnstile token 去 /session 换。返回是否可用。 */
+  let sessionPending: Promise<boolean> | null = null;
+  const ensureSession = (): Promise<boolean> => {
+    if (session) return Promise.resolve(true);
+    if (!rootData().sitekey) return Promise.resolve(true); // 未配置=验证关闭
+    // 并发去重:一条消息会同时触发 /chat 与 /classify,不能各换一次(token 一次性且浪费)
+    sessionPending ??= (async () => {
+      try {
+        const tok = await getTurnstileToken();
+        if (!tok) return false;
+        const r = await fetch(`${rootData().api}/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ turnstileToken: tok }),
+        });
+        if (!r.ok) return false;
+        const { session: s } = (await r.json()) as { session?: string };
+        if (s) setSession(s);
+        return true; // 空串=worker 侧未启用,照常放行
+      } catch { return false; }
+      finally { sessionPending = null; }
+    })();
+    return sessionPending;
+  };
+
+  /** 取一枚一次性 token;取不到返回 ''(交给 worker 决定放不放行,不在前端擅自拦人) */
+  const getTurnstileToken = async (): Promise<string> => {
+    const sitekey = rootData().sitekey;
+    if (!sitekey) return ''; // 未配置=功能关闭
+    try {
+      await loadTurnstile();
+      const ts = (window as unknown as { turnstile?: { render(el: HTMLElement, o: object): void } }).turnstile;
+      if (!ts) return '';
+      let host = $('zoe-ts-host');
+      if (!host) {
+        host = document.createElement('div');
+        host.id = 'zoe-ts-host';
+        host.style.cssText = 'position:fixed;width:0;height:0;overflow:hidden'; // invisible 模式无 UI,但需要一个挂载点
+        document.body.appendChild(host);
+      }
+      host.innerHTML = ''; // 每次重新 render:token 一次性,不能复用上一枚
+      return await new Promise<string>((resolve) => {
+        const done = (v: string) => resolve(v);
+        ts.render(host!, {
+          sitekey,
+          callback: (tok: string) => done(tok),
+          'error-callback': () => done(''),
+          'timeout-callback': () => done(''),
+        });
+        setTimeout(() => done(''), 8000); // 卡住不能拖着访客,交给 worker 判
+      });
+    } catch {
+      return ''; // 脚本被拦(广告拦截器/网络)不该让访客彻底用不了,由 worker 侧决定
+    }
+  };
 
   const $ = (id: string) => document.getElementById(id);
   const rootData = () => ($('chat-root')?.dataset ?? {}) as Record<string, string>;
@@ -857,6 +934,9 @@ const guides = JSON.stringify({
       fitInput(); // 面板此刻才可见:恢复的草稿在这里才量得到高度(接线时量会得到 0)
       if (focus) { ($('chat-input') as HTMLTextAreaElement | null)?.focus(); track('chat-open'); }
       warm(['listen', 'think', 'type', 'proud']); // 聊天片段预热:打字阶段 type/proud 各半,两个都要预热
+      // 人机验证脚本也在此刻预热(只在开面板时才加载,纯浏览网页的访客与 agent 永远不会碰到)。
+      // 只预下载脚本、不提前取 token——token 只活 300 秒,访客可能打字打很久。
+      if (!session && rootData().sitekey) void loadTurnstile().catch(() => {});
       markActivity(); scheduleSleep();
       if (Z.state === 'sleep') void wake();
     }
@@ -905,7 +985,7 @@ const guides = JSON.stringify({
       const res = await fetch(`${api}/classify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang, message: text }),
+        body: JSON.stringify({ lang, message: text, ...(session ? { session } : {}) }),
       });
       if (!res.ok) return;
       const data = (await res.json()) as { chip?: string; target?: GuideTarget };
@@ -920,11 +1000,14 @@ const guides = JSON.stringify({
   // 名字提取(§23.5):送 /classify mode=name;能辨「我叫Alex」整句与拒绝语(拒绝返回空)。
   const captureName = async (text: string): Promise<string> => {
     try {
+      // 问名气泡可能在访客还没聊过天时就出现(回头客一进站就问),那时还没有会话凭证——
+      // 不先换一张,/classify 会被闸口静默拒绝,名字就永远记不住(verify-zoe 抓到过)。
+      await ensureSession();
       const { lang, api } = rootData();
       const res = await fetch(`${api}/classify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang, message: text, mode: 'name' }),
+        body: JSON.stringify({ lang, message: text, mode: 'name', ...(session ? { session } : {}) }),
       });
       if (!res.ok) return '';
       const data = (await res.json()) as { name?: string };
@@ -960,6 +1043,9 @@ const guides = JSON.stringify({
       turn_limit: rootData().errTurns!,
       upstream_unavailable: rootData().errUpstream!,
       network: rootData().errNetwork!,
+      daily_cap: rootData().errRate!, // 全站额度封顶:对访客而言就是"歇会儿再来",复用限流文案
+      human_check_required: rootData().errHuman!,
+      human_check_failed: rootData().errHuman!,
     };
     const suggest = $('chat-suggest');
     if (suggest) suggest.hidden = true;
@@ -980,20 +1066,34 @@ const guides = JSON.stringify({
     setBusy(true);
     zoeChatStart(text);
     chipForZoe = null;                       // 本轮分类尚未回:打字阶段先按随机(见 chipForZoe)
-    void classifyGuidance(text, () => s.el); // 并行意图分类,非阻塞
-    maybeCaptureNameFromChat(text);          // 并行自报名字检测,非阻塞
-    aborter = new AbortController();
-    // 兴趣注入(§23.5):只发达标(≥90s)的前二版块枚举——不发自由文本、不发秒数明细,worker 端再白名单校验
-    const interests = topInterests();
+    // **必须在 await 之前建好**:界面此刻已显示「停止」,而换凭证要去一趟 Cloudflare(1-3 秒),
+    // 若等到 fetch 前才建,这段窗口里按停止就是空操作(实测过,按下去毫无反应)。
+    const ac = new AbortController();
+    aborter = ac;
     try {
+      // 换凭证也放进 try:早退也要走 finally 的清理,否则界面永远卡在「停止」态
+      // (第一版把 return 写在 try 外面,结果按下停止后按钮再也变不回去)。
+      // 之后 /chat 与 /classify 照旧完全并行——引导 chip 仍在首 token 之前出现。
+      await ensureSession();
+      if (ac.signal.aborted) return;           // 访客在验证阶段就点了停止:别再发请求
+      void classifyGuidance(text, () => s.el); // 并行意图分类,非阻塞
+      maybeCaptureNameFromChat(text);          // 并行自报名字检测,非阻塞
+      // 兴趣注入(§23.5):只发达标(≥90s)的前二版块枚举——不发自由文本,worker 端再白名单校验
+      const interests = topInterests();
       const res = await fetch(`${api}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang, messages: history, ...(interests.length ? { interests } : {}) }),
-        signal: aborter.signal,
+        body: JSON.stringify({
+          lang, messages: history,
+          ...(interests.length ? { interests } : {}),
+          ...(session ? { session } : {}),
+        }),
+        signal: ac.signal, // 用本轮那个(aborter 可能已被下一条消息换掉)
       });
       if (!res.ok || !res.body) {
         const code = (await res.json().catch(() => ({ error: '' }))).error as string;
+        // 凭证被拒(过期/换了网络):清掉,下一条消息会自动重新验一次,访客无感
+        if (code === 'human_check_required' || code === 'human_check_failed') setSession('');
         put(render(errText[code] ?? errText.upstream_unavailable), false);
         return;
       }

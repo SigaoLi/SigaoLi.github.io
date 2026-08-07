@@ -9,6 +9,7 @@ import { LIMITS } from './config';
 import { json } from './http';
 import { getKnowledge } from './knowledge';
 import { isEuLike } from './providers';
+import { gate } from './turnstile';
 import type { PackCvEntry, PackLangSlice, ProviderSecrets, Runtime } from './types';
 
 export type Chip = 'work' | 'cv' | 'photography' | 'email' | 'none';
@@ -256,13 +257,17 @@ export async function extractName(
 
 export async function handleClassify(request: Request, rt: Runtime): Promise<Response> {
   // 独立限流桶('c:'+ip):与 /chat 分开;超限静默返回空结果(引导/问名都是可选,不报错)
-  if (!(await rt.rateLimit(`c:${rt.clientIp(request)}`))) return json({ chip: 'none', name: '' });
-  let body: { lang?: string; message?: string; mode?: string };
+  const ip = rt.clientIp(request);
+  if (!(await rt.rateLimit(`c:${ip}`))) return json({ chip: 'none', name: '' });
+  let body: { lang?: string; message?: string; mode?: string; session?: string; turnstileToken?: string };
   try {
-    body = (await request.json()) as { lang?: string; message?: string; mode?: string };
+    body = (await request.json()) as typeof body;
   } catch {
     return json({ chip: 'none', name: '' });
   }
+  // 同样要过人机验证(它也花钱,只是便宜)。但引导是锦上添花:不通过就静默返回空结果,
+  // 绝不把错误抛给访客——/chat 那边会给出明确提示,这里再报一次只会重复打扰。
+  if (!(await gate(rt, ip, body.session, body.turnstileToken)).ok) return json({ chip: 'none', name: '' });
   const lang = body.lang === 'en' ? 'en' : 'zh';
   const message = (body.message ?? '').slice(0, LIMITS.maxUserChars).trim();
   if (!message) return json({ chip: 'none', name: '' });

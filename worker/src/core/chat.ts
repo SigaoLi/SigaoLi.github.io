@@ -5,7 +5,9 @@ import { json } from './http';
 import { getKnowledge } from './knowledge';
 import { buildSystemPrompt } from './prompt';
 import { isEuLike, openCompletionStream, providerChain, type UpstreamMessage } from './providers';
+import { bumpQuota, checkQuota } from './quota';
 import { relayStream } from './sse';
+import { gate } from './turnstile';
 import type { ChatMessage, ChatRequestBody, Runtime } from './types';
 
 // 兴趣注入的白名单(§23.5):只接受这三个枚举值,其余一律丢弃。
@@ -50,7 +52,8 @@ function validate(body: ChatRequestBody): { ok: true; messages: ChatMessage[] } 
 }
 
 export async function handleChat(request: Request, rt: Runtime): Promise<Response> {
-  if (!(await rt.rateLimit(rt.clientIp(request)))) return json({ error: 'rate_limited' }, 429);
+  const ip = rt.clientIp(request);
+  if (!(await rt.rateLimit(ip))) return json({ error: 'rate_limited' }, 429);
 
   let body: ChatRequestBody;
   try {
@@ -60,6 +63,17 @@ export async function handleChat(request: Request, rt: Runtime): Promise<Respons
   }
   const checked = validate(body);
   if (!checked.ok) return json({ error: checked.error }, checked.status);
+
+  // 人机验证:只认会话凭证(凭证由 /session 端点签发,详见 turnstile.ts)
+  const pass = await gate(rt, ip, body.session, body.turnstileToken);
+  if (!pass.ok) return json({ error: pass.error }, 403);
+
+  // 全站日额度:Turnstile 挡机器,这里兜底(对 IP 轮换免疫,详见 quota.ts)
+  const quota = await checkQuota(rt);
+  if (!quota.ok) {
+    console.log(`[chat] daily cap hit used=${quota.used}/${quota.cap}`);
+    return json({ error: 'daily_cap' }, 429);
+  }
 
   const lang = body.lang === 'en' ? 'en' : 'zh';
   const interests = sanitizeInterests(body.interests);
@@ -83,13 +97,12 @@ export async function handleChat(request: Request, rt: Runtime): Promise<Respons
   const chain = providerChain(rt.secrets, euLike);
   try {
     const { upstream, provider } = await openCompletionStream(chain, upstreamMessages, LIMITS.maxTokens);
+    // 只在上游真的开流后才计数:被回退链全灭挡掉的请求不该占额度
+    const used = await bumpQuota(rt);
     // 使用量日志(wrangler tail 可查):只记元数据,不含对话内容
-    console.log(`[chat] lang=${lang} country=${country || '??'} eu=${euLike} turns=${checked.messages.filter((m) => m.role === 'user').length} provider=${provider.name}`);
+    console.log(`[chat] lang=${lang} country=${country || '??'} eu=${euLike} turns=${checked.messages.filter((m) => m.role === 'user').length} provider=${provider.name} quota=${used}/${quota.cap}`);
     return new Response(relayStream(upstream.body!, provider.name), {
-      headers: {
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-store',
-      },
+      headers: { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-store' },
     });
   } catch (err) {
     console.error('[chat] all providers failed:', err);

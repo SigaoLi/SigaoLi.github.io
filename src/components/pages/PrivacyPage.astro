@@ -28,6 +28,10 @@ const copy = {
         p: 'When you interact with Zoe, the site’s assistant, the messages you send are transmitted to third-party AI services that generate her replies and, in a separate lightweight request, suggest a page that may help you or recognise a name you offer. A chat request may also carry the coarse section-interest note described above (at most the names of two sections, e.g. “work”) so Zoe can tailor her suggestions — never your browsing history itself. Conversations are not stored on the site’s servers; they remain only within the current browser session and are discarded when the tab is closed. Please do not enter sensitive personal information into the chat.',
       },
       {
+        h: 'The bot check before a conversation',
+        p: 'So that automated scripts cannot burn through the site’s AI budget, your browser completes a Cloudflare Turnstile check in the background the first time you write to Zoe — there is nothing to click, and you will usually not notice it. That step lets Cloudflare see technical signals such as your IP address and browser identifier, used only to judge whether a request comes from a bot, never for advertising or cross-site tracking; Cloudflare’s Turnstile Privacy Addendum has the detail. It happens only when you actually use the chat: browsing the site, or reading its public data programmatically (llms.txt, the MCP endpoint), never triggers it.',
+      },
+      {
         h: 'Analytics',
         p: 'The site uses a privacy-focused analytics tool (GoatCounter) that records aggregate page views without cookies and without identifying individual visitors. It does not record the content of your conversations with Zoe.',
       },
@@ -59,6 +63,10 @@ const copy = {
       {
         h: '与驺虞的对话',
         p: '当你与本站助手驺虞交流时，你发送的消息会传输至第三方 AI 服务，用于生成她的回复，以及在一个单独的轻量请求中判断可为你推荐的页面、或识别你告知的称呼。聊天请求还可能附带上文所述的粗略版块偏好（至多两个版块的名称，如「作品」），以便驺虞的推荐更贴近你的兴趣——不会附带你的浏览记录本身。对话不会存储在本站服务器上，仅保留于当前浏览器会话中，关闭标签页后即被丢弃。请勿在对话中输入敏感的个人信息。',
+      },
+      {
+        h: '对话前的机器人核验',
+        p: '为避免自动化脚本消耗本站的 AI 用量，在你第一次向驺虞发消息时，浏览器会在后台完成一次 Cloudflare Turnstile 核验——你无需点击任何东西，通常也察觉不到。这一步会让 Cloudflare 收到你的 IP 地址、浏览器标识等技术信号，仅用于判断请求是否来自机器人，不用于广告或跨站追踪；详见 Cloudflare 的 Turnstile 隐私附录。核验只在你实际使用对话功能时发生：只浏览网页、或以程序读取本站公开数据（llms.txt、MCP 接口等）都不会触发。',
       },
       {
         h: '访问统计',

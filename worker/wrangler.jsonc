@@ -14,8 +14,18 @@
   "vars": {
     // 生产从线上站点拉知识包;本地开发在 .dev.vars 覆写为 localhost
     "KNOWLEDGE_URL": "https://sigaoli.com/knowledge.json",
-    "ALLOWED_ORIGINS": "https://sigaoli.com,https://www.sigaoli.com"
+    "ALLOWED_ORIGINS": "https://sigaoli.com,https://www.sigaoli.com",
+    // 额度封顶提醒的收发地址;ALERT_TO 须在 Cloudflare Email Routing 里验证过
+    "ALERT_FROM": "alerts@sigaoli.com",
+    "ALERT_TO": "sigao.li@outlook.com"
   },
+  // 全站每日额度计数器(§22.7 兜底):日期做 key,顺带留 40 天历史供 /usage 查看。
+  // 建 namespace:npx wrangler kv namespace create CHAT_QUOTA,把返回的 id 填到下面。
+  "kv_namespaces": [{ "binding": "CHAT_QUOTA", "id": "7e70221cf8504826b005acf52b1fc3cd" }],
+  // 额度封顶时发一封提醒信。发往"已验证目的地址"永久免费、不占配额。
+  // 前置:Cloudflare 面板 → sigaoli.com → Email Routing 启用 + 验证 ALERT_TO。
+  // 未配置时 sendAlert 为 undefined,只记日志,主流程不受影响。
+  "send_email": [{ "name": "ALERT_EMAIL", "destination_address": "sigao.li@outlook.com" }],
   // Workers 原生 Rate Limiting(免费档可用;宽松过滤器,精确额度靠各 API 侧硬顶兜底)
   "unsafe": {
     "bindings": [

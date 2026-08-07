@@ -4,6 +4,8 @@ import { makeRuntime, type Env } from './adapter/cloudflare';
 import { handleChat } from './core/chat';
 import { handleClassify } from './core/classify';
 import { corsHeaders, json } from './core/http';
+import { checkQuota, dayKey, recentUsage } from './core/quota';
+import { handleSession } from './core/turnstile';
 import { makeMcpHandler } from './mcp';
 
 export default {
@@ -19,7 +21,9 @@ export default {
     } else if (pathname === '/classify' && request.method === 'POST') {
       res = await handleClassify(request, rt); // 意图引导 chip;失败静默返回 none,不影响 /chat
     } else if (pathname === '/mcp') {
-      // MCP 与 chat 共用同一 IP 限流(调用方是脚本,不放宽)
+      // MCP 与 chat 共用同一 IP 限流(调用方是脚本,不放宽)。
+      // ⚠️ **这里永远不要加人机验证**:MCP 就是给机器用的(已登记官方 registry),
+      //    而 Turnstile 的职责是拦机器;且工具只读知识包、零模型调用,刷它不花钱。
       if (!(await rt.rateLimit(rt.clientIp(request)))) {
         res = json({ error: 'rate_limited' }, 429);
       } else {
@@ -27,6 +31,13 @@ export default {
         // 无状态模式要求每请求新建 McpServer 实例(实测踩坑:复用实例会 "already connected")
         res = await makeMcpHandler(rt)(request, env, ctx);
       }
+    } else if (pathname === '/session' && request.method === 'POST') {
+      res = await handleSession(request, rt); // Turnstile token → 30 分钟会话凭证(见 turnstile.ts)
+    } else if (pathname === '/usage' && request.method === 'GET') {
+      // 用量自查(§22.7):最近 7 天每天答了多少 + 今天是否封顶。
+      // 只是聚合计数,不含任何对话内容,故公开可读——Sigao 判断"要不要调高上限"的依据。
+      const [today, recent] = await Promise.all([checkQuota(rt), recentUsage(rt, 7)]);
+      res = json({ today: { day: dayKey(), used: today.used, cap: today.cap, capped: !today.ok }, recent });
     } else if (pathname === '/healthz') {
       res = json({ ok: true, service: 'sigaoli-api' });
     } else {
