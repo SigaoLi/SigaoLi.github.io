@@ -36,6 +36,7 @@ export const ui = {
       errTurns: 'This chat hit its limit — I need a nap. Start a fresh one below, meow.',
       errUpstream: 'My brain is napping (service unavailable) — try again later, meow.',
       errHuman: "Meow — I could not tell you apart from a bot just now. Refresh the page and try again?",
+      errDailyCap: "Meow… the day's ration of treats is gone — I have answered all I can today. Come back tomorrow, or email my human if it cannot wait.",
       errNetwork: 'The network yarn snapped — please retry, meow.',
       reset: 'New chat',
       suggestions: [
@@ -118,6 +119,7 @@ export const ui = {
       errTurns: '聊得太久本猫要去打盹了——点下方重新开聊喵。',
       errUpstream: '本猫暂时联系不上大脑（服务不可用），稍后再试喵。',
       errHuman: '喵…本猫一时没认出你是真人。刷新一下再试试？',
+      errDailyCap: '喵…今天的小鱼干配额用完了，本猫今日份的回答已经说满啦。明天再来找我，急的话直接给主人发邮件喵。',
       errNetwork: '网络毛线团断了喵，请重试。',
       reset: '重新开聊',
       suggestions: ['你家主人现在做什么工作喵？', '他最拿得出手的项目是什么？', '他的技术栈是什么？', '怎么联系他？'],
