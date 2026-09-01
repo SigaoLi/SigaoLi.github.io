@@ -211,7 +211,27 @@ s    = catH / 180
 
 ## 6. 单独立项（不在本次范围）
 
-1. **虚拟键盘埋掉输入框**。`Base.astro:51` 的 viewport meta 未声明 `interactive-widget`，走默认 `resizes-visual`：键盘弹出时布局视口与 `dvh` 均不变、`position:fixed` 不动，面板底部被覆盖。模拟显示 375×667 上被埋 248px（输入框、常用问题、免责声明全部沉入键盘下），且**猫完全退场也不解决**——这是面板自身的缺陷。修法方向：`interactive-widget=resizes-content`（Chrome 108+/Firefox 132+；WebKit 未支持，iOS 需 `visualViewport` 兜底）。**尚需真机验证**，模拟未考虑浏览器可能的 scroll-into-view 补偿。
+1. **虚拟键盘埋掉输入框** —— 安卓侧已修（2026-09-01），iOS 侧待做。
+
+   `Base.astro` 原本未声明 `interactive-widget`，走默认 `resizes-visual`：键盘弹出时布局视口与 `dvh` 均不变、`position:fixed` 不动，面板底部（输入框、常用问题、免责声明）被覆盖。**猫完全退场也不解决**——这是面板自身的缺陷，与 Zoe 无关。
+
+   **已做**：viewport meta 加 `interactive-widget=resizes-content`，布局视口随键盘缩，面板与 `dvh` 跟着让开。
+
+   **关于"原本有多严重"**：早期文档写的"375×667 被埋 248px"来自一个画灰块假装键盘的模拟，它假设浏览器不做任何 scroll-into-view 补偿——该假设未经验证，那个数字应视为上界而非实测。无头浏览器召不出真键盘（CDP `Emulation.setVisibleSize` 对 `visualViewport` 无效），故未能实测。修复的有效性则可验证（`resizes-content` 语义 = 布局视口变矮，可用真实的矮视口精确复刻）：
+
+   | 机型 | 键盘 216 | 260 | 291 | 336（带联想栏） |
+   |---|---|---|---|---|
+   | iPhone 14 390×844 | 好 | 好 | 好 | 好 |
+   | iPhone SE 375×667 | 好 | 好 | 好 | 挤（对话区 57px） |
+   | 320×568 | 挤 | 挤（32px） | 挤 | 输入框仍被埋 |
+
+   12 组里 11 组输入框可见；唯一失守的 320×568 + 336px 键盘时可用高仅 232px，面板本身就装不下，属视口过矮而非键盘方案问题。
+
+   **副作用已测**：`resizes-content` 会让整页在键盘弹出时重排。实测三个页面（含 `Hero` 的 `100svh`、CV 的 `35vh` scroll-margin）：面板高度不变、输入框可见、**滚动位置不跳、收键盘后原样回位**。`Hero` 高度由内容决定，未受影响。
+
+   **覆盖范围**：21 个走 `Base.astro` 的页面全部生效；另 18 个 v1 遗留页（`/about`、`/research/*`、`/talks` 等）不走该布局，但它们也没有对话框，无关。
+
+   **待做（iOS）**：WebKit 至今不支持 `interactive-widget`，故 iOS Safari 上此修复不生效，仍需监听 `window.visualViewport` 的 `resize` 手动定位面板（用 `top` + `translateY(-100%)` 而非 `bottom`）。有状态、需处理键盘收起/转屏/地址栏收放，风险与工作量都大一档，单独评估。
 
 2. **`ball` / `stretch` 画幅溢出被裁**。逐帧 alpha 实测：`ball`（1067×600）不透明内容跨 380–1066，按 180px 渲染时半宽 160px，溢出 160 碰撞盒 80px；按锚点 `innerWidth-94` 计算，右缘落在 `innerWidth+66`，**被视口裁掉 66px，桌面端同样如此**。`stretch` 溢出 30px、裁掉 16px。手机端缩到 108px 后溢出降至 48/18px，右缘落在 `innerWidth+2`，基本不裁——**本次改动顺带缓解，但桌面端问题仍在**。
 
@@ -232,3 +252,4 @@ s    = catH / 180
 9. 手机端静置 5 分钟不入睡（睡眠层未启用）
 10. DevTools Network 确认手机端不再下载 glance / earflick / attend / startle / sit-to-loaf / stretch
 11. 桌面端（≥768）行为与改动前逐项一致，问名仍走气泡
+12. 安卓 Chrome 真机：点输入框弹出键盘，输入框与发送钮仍可见；收起键盘后页面滚动位置不变

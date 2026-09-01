@@ -48,7 +48,12 @@ const zhHref = locale === 'zh' ? path : alternate;
 <html lang={locale === 'zh' ? 'zh-CN' : 'en'} data-theme-default={darkDefault ? 'dark' : undefined}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- interactive-widget=resizes-content:键盘弹出时让布局视口跟着缩,fixed 元素与 dvh 才会让开。
+         默认的 resizes-visual 只缩视觉视口,布局视口与 dvh 纹丝不动 → 对话面板底部(输入框、
+         常用问题、免责声明)被键盘盖住,而访客正在那个框里打字。见 docs/zoe-mobile-layout-design.md §6。
+         代价:键盘弹出时整页重排(Hero 的 100svh 等会一起变),但面板此时几乎占满屏,身后重排看不见。
+         仅 Chrome 108+/Firefox 132+ 生效;WebKit 尚未支持,iOS 仍需 visualViewport 方案(未做)。 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
     <meta name="description" content={description} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
