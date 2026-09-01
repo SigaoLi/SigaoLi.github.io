@@ -60,15 +60,20 @@ const guides = JSON.stringify({
   </div>
 
   <!-- 对话面板 -->
-  <!-- 桌面端面板让位到 Zoe 左侧(Sigao 07-12 定:Zoe 在对话框右侧);移动端仍贴右、盖住 Zoe -->
+  <!-- 桌面端面板让位到 Zoe 左侧(Sigao 07-12 定:Zoe 在对话框右侧)。
+       移动端 C 方案(2026-08-31 定):角落猫让位淡出,面板拿满高度、底边收到 12px,
+       形象由头部头像承接。见 docs/zoe-mobile-layout-design.md -->
   <!-- 方案 C·NPC 名牌(07-18 Sigao 选定):名牌浮在框顶(单语=d.title,当页语言)、accent 描边、
        流式底部流动线、爪印三点打字。头部只留副标题——身份信息名牌一处呈现,不重复(Sigao 要求)。 -->
   <section id="chat-panel" role="dialog" aria-label={d.title} hidden
-    class="fixed bottom-20 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col rounded-2xl shadow-2xl md:bottom-5 md:right-[11.25rem]"
-    style="border: 1.5px solid color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--bg-elevated); height: min(540px, calc(100dvh - 8.5rem));">
+    class="fixed bottom-3 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col rounded-2xl shadow-2xl md:bottom-5 md:right-[11.25rem]"
+    style="border: 1.5px solid color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--bg-elevated);">
     <div class="chat-plate" aria-hidden="true">{d.title}</div>
-    <header class="relative border-b px-4 pt-4 pb-2.5" style="border-color: var(--line);">
-      <p class="pr-7 text-xs text-ink-muted">{d.subtitle}</p>
+    <!-- 头部头像(手机端 C 方案):角落猫让位后由它承接形象。纯装饰——身份由名牌承担,
+         关闭有独立 ✕ 钮,故 aria-hidden 且不可点。尺寸 40px 见 docs/zoe-mobile-layout-design.md §3.2 -->
+    <header class="relative flex items-end gap-2.5 border-b px-4 pt-4 pb-2.5" style="border-color: var(--line);">
+      <img id="chat-avatar" src="/zoe/zoe-sit.webp" alt="" aria-hidden="true" />
+      <p class="flex-1 pr-7 text-xs text-ink-muted">{d.subtitle}</p>
       <!-- 显式关闭钮:面板的可关闭性不依赖 Zoe 可点(07-16 Bug4 伴生修复) -->
       <button id="chat-close" type="button" aria-label={d.close} title={`${d.close} (Esc)`}
         class="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-ink-muted">
@@ -84,6 +89,26 @@ const guides = JSON.stringify({
     <button id="chat-to-latest" type="button" hidden
       class="absolute bottom-32 left-1/2 z-10 -translate-x-1/2 rounded-full border px-3 py-1 text-xs shadow-md transition-colors"
       style="border-color: var(--accent); color: var(--accent); background: var(--bg-elevated);">{d.toLatest}</button>
+
+    <!-- 回头客问名·面板内卡片(手机端):C 方案下面板一开角落猫就消失,气泡无处依附,故搬进面板。
+         铁律不变(07-16 Sigao 定):问名不进对话流,就地填完即可,拒绝=永不再问。桌面端仍走气泡。 -->
+    <div id="chat-namecard" hidden class="mx-4 mb-2 rounded-xl border p-3" style="border-color: var(--line); background: color-mix(in srgb, var(--accent) 5%, transparent);">
+      <p id="chat-namecard-ask" class="text-xs leading-relaxed text-ink">{d.askName}</p>
+      <form id="chat-namecard-form" class="mt-2 flex flex-col gap-2" data-nc-form>
+        <input id="chat-namecard-input" type="text" maxlength="30" autocomplete="off"
+          placeholder={d.namePlaceholder} aria-label={d.askName}
+          class="w-full rounded-lg border px-2.5 py-1.5 text-sm outline-none text-ink"
+          style="border-color: var(--line); background: var(--bg);" />
+        <div class="flex justify-end gap-2">
+          <button id="chat-namecard-no" type="button"
+            class="rounded-full border px-3 py-1 text-xs text-ink-muted transition-colors"
+            style="border-color: var(--line);">{d.nameNo}</button>
+          <button id="chat-namecard-ok" type="submit"
+            class="rounded-full px-3 py-1 text-xs text-white transition-opacity disabled:opacity-50"
+            style="background: var(--accent);">{d.nameOk}</button>
+        </div>
+      </form>
+    </div>
 
     <!-- 常用问题(仅空对话时显示,点击即发送) -->
     <div id="chat-suggest" class="flex flex-wrap gap-1.5 px-4 pb-2">
@@ -141,6 +166,10 @@ const guides = JSON.stringify({
   #chat-flowline i { display: block; height: 100%; width: 38%; border-radius: 2px;
     background: var(--accent); animation: chat-flow 1.8s ease-in-out infinite; }
   @keyframes chat-flow { 0% { transform: translateX(-100%); } 100% { transform: translateX(280%); } }
+  /* 面板高度:手机端底边只留 12px(角落猫已让位,不必给她留地方),桌面维持原值 8.5rem。
+     写在这里而非 style 属性里——内联样式会盖掉媒体查询,桌面端就跟着变了。 */
+  #chat-panel { height: min(540px, calc(100dvh - 1.5rem)); }
+  @media (min-width: 768px) { #chat-panel { height: min(540px, calc(100dvh - 8.5rem)); } }
   /* 面板开合动效:右下角为原点缩放淡入(呼应灯箱语言) */
   #chat-panel:not([hidden]) { transform-origin: 90% 100%; animation: chat-pop 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
   @keyframes chat-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
@@ -179,11 +208,22 @@ const guides = JSON.stringify({
   @media (prefers-reduced-motion: reduce) {
     .chat-chip:active, #chat-send:active:not(:disabled), #chat-to-latest:active, #chat-close:active { transform: none; }
   }
-  /* 锚点容器零尺寸,place() 的 transform 落点=脚底中心;按钮/气泡围绕它布局 */
-  #zoe-anchor { width: 0; height: 0; will-change: transform; }
-  /* 实体碰撞盒 160×180,margin 负偏移使锚点=脚底中心(零尺寸盒会被点击/无障碍工具忽略) */
+  /* 头部头像:仅手机端。align-self:flex-end + 负 margin 让她「坐」在头部下沿,与副标题基线呼应。
+     40px 的由来见 docs/zoe-mobile-layout-design.md §3.2(惯例 1.67× 行高 × 墨量补正 1.40) */
+  #chat-avatar { height: 40px; width: auto; flex: none; align-self: flex-end; margin-bottom: -10px; }
+  @media (min-width: 768px) { #chat-avatar { display: none; } }
+
+  /* 锚点容器零尺寸,place() 的 transform 落点=脚底中心;按钮/气泡围绕它布局。
+     --zs=尺寸系数(JS 按视口写入,手机端 108/180=0.6,桌面 1),下面所有几何随它缩放。 */
+  #zoe-anchor { width: 0; height: 0; will-change: transform; --zs: 1; }
+  /* 面板打开时角落猫让位(C 方案):淡出而非 display:none,免得视频被迫停止解码 */
+  #zoe-anchor.zoe-yield { opacity: 0; pointer-events: none; }
+  #zoe-anchor { transition: opacity 0.2s ease; }
+  @media (prefers-reduced-motion: reduce) { #zoe-anchor { transition: none; } }
+  /* 实体碰撞盒 160×180 × --zs,margin 负偏移使锚点=脚底中心(零尺寸盒会被点击/无障碍工具忽略) */
   .zoe-stage { position: relative; background: none; border: none; padding: 0; cursor: pointer; pointer-events: auto;
-    width: 160px; height: 180px; margin-left: -80px; margin-top: -180px; display: block; }
+    width: calc(160px * var(--zs)); height: calc(180px * var(--zs));
+    margin-left: calc(-80px * var(--zs)); margin-top: calc(-180px * var(--zs)); display: block; }
   .zoe-stage video, .zoe-stage img {
     position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
     max-width: none; /* 默认 video max-width:100% 会把宽画幅片段压进 160px 碰撞盒 → 猫缩小(07-12 尺寸 bug 根因) */
@@ -200,7 +240,8 @@ const guides = JSON.stringify({
   /* 问候/喵~ 气泡:锚在猫头上方,尾巴指向她;普通气泡点击开聊(JS 绑定,问名表单显示时除外)。
      定位相对零尺寸锚点换算:原 button 盒(160×180)的 right:4px/bottom:calc(100%+12px) → -76px/192px */
   #zoe-bubble {
-    position: absolute; right: -76px; bottom: 192px; cursor: pointer;
+    /* 随 --zs 联动:原式 right:-76 = -(80-4)、bottom:192 = 165+27,s=1 时还原为现值 */
+    position: absolute; right: calc(-80px * var(--zs) + 4px); bottom: calc(165px * var(--zs) + 27px); cursor: pointer;
     max-width: 180px; width: max-content; text-align: left; /* 230→180:配合头像左移/Zoe 右移,紧凑视口不遮社交图标 */
     padding: 0.5rem 0.75rem; border-radius: 0.75rem; border-bottom-right-radius: 2px;
     border: 1px solid var(--line); background: var(--bg-elevated); color: var(--ink);
@@ -388,6 +429,12 @@ const guides = JSON.stringify({
   const Z = {
     booted: false,
     interactive: false, // 桌面+精细指针+非 reduced;false 时只有 idle,一律不加戏(§23 移动端/无障碍)
+    // 手机端选择性开演(2026-08-31 Sigao 定):只开进场秀与微动层,不碰 interactive
+    // ——后者还管着睡眠/切页反应/hover 唤醒/聊天联动/彩蛋,那五项手机端明确不做。
+    mobileAnim: false,
+    // 回头客判定必须留住 boot 那一刻的值:boot 紧接着就会写 sigaoli-zoe-seen='1',
+    // 之后再读 localStorage 会把首次访客也认成回头客(问名卡片当场就错问)。
+    returning: false,
     reduced: false,
     vids: [] as HTMLVideoElement[],
     still: null as HTMLImageElement | null,
@@ -553,7 +600,36 @@ const guides = JSON.stringify({
       .replace(/\n/g, '<br>');
 
   // ================= Zoe 播放引擎 =================
-  const place = () => { if (Z.anchor) Z.anchor.style.transform = `translate3d(${innerWidth - 94}px, ${innerHeight - 28}px, 0)`; };
+  // ---- 手机端尺寸系数(2026-08-31,docs/zoe-mobile-layout-design.md)----
+  // 桌面 180px 不变;手机端 108px,且随页面缩放「不跟随放大」——改用视口相对尺寸,
+  // 页面放大时有效视口的 CSS px 变少 → 算出的 CSS 尺寸同比缩小 → 乘回缩放倍数后物理尺寸恒定。
+  // 0.277=108/390(按宽), 0.20=108/540(按高), 取小以兼顾横屏与矮视口。
+  const MOBILE_MAX = 108;
+  const zScale = () => {
+    if (innerWidth >= 768) return 1;
+    return Math.min(MOBILE_MAX, 0.277 * innerWidth, 0.2 * innerHeight) / 180;
+  };
+  // 锚点=脚底中心,盒子由它向左右各长出 80s、向下溢出 15s。
+  // 偏移量必须跟着半宽同步减,否则边距走样:锚点不动会飘到 46px、等比缩放会贴到 8px
+  // (见设计文档 §4.1 配图)。故 R = 右边距常数 + 80s、B = 13 + 15s。
+  //
+  // 右边距常数:桌面 14(维持现状 94);手机端 0——量过坐姿系(idle/listen/think/groom/yawn)
+  // 的实际轮廓,画幅两侧各有约 20s px 透明留白,K=14 时「看得见的猫」距右缘 35.7px、
+  // 距底缘 22.2px,右边是底边的 1.6 倍,读起来就是没坐进角里。K=0 时两者 21.7/22.2 基本相等,
+  // 且碰撞盒右缘正好与视口齐平(画幅宽 96=盒宽 96,不越界、不裁切、可点区完整)。
+  const GUTTER_R = () => (innerWidth < 768 ? 0 : 14);
+  const place = () => {
+    if (!Z.anchor) return;
+    const s = zScale();
+    Z.anchor.style.setProperty('--zs', String(s)); // 碰撞盒与气泡偏移都读它
+    Z.anchor.style.transform = `translate3d(${innerWidth - (GUTTER_R() + 80 * s)}px, ${innerHeight - (13 + 15 * s)}px, 0)`;
+    const h = 180 * s;
+    // 只改已装过片段的 video:未加载的那个没有 height,提前写会在它首次显示时错位
+    for (const v of Z.vids) if (v.style.height) { v.style.height = `${h}px`; v.style.bottom = `${-15 * s}px`; }
+    if (Z.still) Z.still.style.height = `${150 * s}px`;
+    // 让位状态随视口同步:转屏/改窗宽跨过 768 时,该现身的要现身、该让位的要让位
+    Z.anchor.classList.toggle('zoe-yield', panelOpen() && innerWidth < 768);
+  };
   const showEl = (el: HTMLElement) => {
     el.classList.add('on');
     for (const e of [...Z.vids, Z.still!]) {
@@ -568,7 +644,8 @@ const guides = JSON.stringify({
     const url = `/zoe/${ZOE[name].src}.webm`;
     if (v.src.endsWith(url)) v.currentTime = 0;
     else v.src = url;
-    v.style.height = '180px'; v.style.bottom = '-15px'; // 幅底距脚底 1/12
+    const s = zScale(); // 手机端 0.6:片段换装时也得按当前系数,否则一切片段就跳回 180
+    v.style.height = `${180 * s}px`; v.style.bottom = `${-15 * s}px`; // 幅底距脚底 1/12
     return new Promise((res) => {
       if (v.readyState >= 3) res(v);
       else v.addEventListener('canplay', () => res(v), { once: true });
@@ -656,6 +733,43 @@ const guides = JSON.stringify({
     };
     tick();
   };
+  // ---- 回头客问名·面板内卡片(手机端,2026-08-31)----
+  // C 方案下角落猫在面板打开时让位,气泡无处依附,故手机端改由面板承接。
+  // 铁律不变(07-16 Sigao 定):不进对话流——卡片停在输入行上方,填完即收,不产生任何 chat-msg。
+  // 门槛与桌面气泡一致:回头客 + 未拒绝 + 跨会话最多问 2 次;每会话至多出现一次。
+  let nameAskedThisSession = false;
+  const maybeAskName = () => {
+    const card = $('chat-namecard');
+    if (!card || innerWidth >= 768 || nameAskedThisSession) return;
+    const p = profile.data;
+    if (p.name || p.declined || !Z.returning || (p.askCount ?? 0) >= 2) return;
+    nameAskedThisSession = true;
+    card.hidden = false;
+    p.askCount = (p.askCount ?? 0) + 1;
+    profile.save();
+  };
+  const closeNameCard = () => { const c = $('chat-namecard'); if (c) c.hidden = true; };
+
+  // 面板内提示条(手机端):气泡是 #zoe-anchor 的子元素,面板一开锚点淡出、气泡跟着看不见,
+  // 而「记住名字了」「已忘记你」这两句恰恰都在面板开着时发生(忘记我的按钮就在面板里)。
+  // 故手机端把这类确认改在面板内说——复用问名卡片的位置,收起表单只留一句话。
+  let noticeTimer = 0;
+  const panelNotice = (text: string, ms = 3600) => {
+    const card = $('chat-namecard'), ask = $('chat-namecard-ask'), form = $('chat-namecard-form');
+    if (!card || !ask || !form) return false;
+    ask.textContent = text;
+    form.hidden = true;
+    card.hidden = false;
+    clearTimeout(noticeTimer);
+    noticeTimer = window.setTimeout(() => { card.hidden = true; form.hidden = false; }, ms);
+    return true;
+  };
+  // 手机端 + 面板开着 → 走面板提示条;否则照旧走气泡
+  const say = (text: string, ms: number) => {
+    if (innerWidth < 768 && panelOpen() && panelNotice(text, ms)) return;
+    showBubble(text, ms);
+  };
+
   // 「忘记我」(隐私):清掉本站在你设备上留的 Zoe 记忆——现仅回头客标记 sigaoli-zoe-seen,
   // Stage 3 的画像 sigaoli-zoe-profile 同前缀一并清。只动 localStorage,不碰当前对话(那是「重新开聊」)。
   const forgetVisitor = () => {
@@ -665,7 +779,8 @@ const guides = JSON.stringify({
       }
     } catch { /* 隐私模式可拒 */ }
     profile.data = { visits: 0 }; // 同步清内存态,否则本会话 Zoe 还记得名字
-    showBubble(rootData().forgotten ?? '', 3200);
+    nameAskedThisSession = false; // 忘干净了:本会话可以重新问一次
+    say(rootData().forgotten ?? '', 3200); // 「忘记我」按钮就在面板里,手机端必须在面板内回话
   };
 
   // ================= 状态编排(触发矩阵 PRD §23.2) =================
@@ -738,7 +853,7 @@ const guides = JSON.stringify({
   // 微动调度:2-3 分钟一次,仅 idle+滚动停止+页面可见;舔爪/哈欠交替不连播
   const scheduleMicro = () => {
     clearTimeout(Z.microTimer);
-    if (!Z.interactive) return;
+    if (!Z.interactive && !Z.mobileAnim) return; // 手机端也开微动(舔爪/打哈欠)
     Z.microTimer = setTimeout(() => {
       const quiet = Date.now() - Z.lastScroll > T.scrollQuiet;
       const spaced = Date.now() - Z.lastAuto > T.microMin; // 全局自发频率闸
@@ -796,7 +911,10 @@ const guides = JSON.stringify({
       const p = profile.data;
       if (p.name) {
         showBubble((rootData().welcomeBack ?? '').replace('%s', p.name), 8000);
-      } else if (returning && !p.declined && (p.askCount ?? 0) < 2) {
+      } else if (returning && !p.declined && (p.askCount ?? 0) < 2 && innerWidth >= 768) {
+        // 走宽度而非 Z.interactive:后者还要求 pointer:fine,触屏笔记本会两条路都落空
+        // (气泡要 interactive、卡片要窄视口)。问名用哪套 UI 是布局问题,只该看视口宽。
+        // 手机端面板一开角落猫就让位,气泡无处依附,改由面板内卡片承接(见 maybeAskName)。
         showNameBubble();
         p.askCount = (p.askCount ?? 0) + 1;
         profile.save();
@@ -938,9 +1056,13 @@ const guides = JSON.stringify({
     }
     Z.fab?.setAttribute('aria-expanded', String(show));
     sessionStorage.setItem('sigaoli-chat-open', show ? '1' : '0');
+    // C 方案(手机端):面板开则角落猫让位淡出,形象交给头部头像;关则淡回。
+    // 用 class 而非 hidden——保持视频留在渲染树里持续解码,免得关面板时又要等首帧(07-17 空窗教训)。
+    Z.anchor?.classList.toggle('zoe-yield', show && innerWidth < 768);
     if (show) {
       hideBubble(); // 问名气泡也收:访客转向对话框即本次作罢(askCount 已记)
       paint();
+      maybeAskName(); // 手机端问名:paint 之后,免得被它清掉
       fitInput(); // 面板此刻才可见:恢复的草稿在这里才量得到高度(接线时量会得到 0)
       if (focus) { ($('chat-input') as HTMLTextAreaElement | null)?.focus(); track('chat-open'); }
       warm(['listen', 'think', 'type', 'proud']); // 聊天片段预热:打字阶段 type/proud 各半,两个都要预热
@@ -1039,7 +1161,7 @@ const guides = JSON.stringify({
       if (!name) return;
       profile.data.name = name;
       profile.save();
-      showBubble((rootData().nameAck ?? '').replace('%s', name), 8000);
+      say((rootData().nameAck ?? '').replace('%s', name), 8000); // 自报名字必在对话中,手机端走面板提示条
     });
   };
 
@@ -1291,6 +1413,7 @@ const guides = JSON.stringify({
       profile.save();
       Z.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       Z.interactive = !Z.reduced && innerWidth >= 768 && matchMedia('(pointer: fine)').matches;
+      Z.mobileAnim = !Z.reduced && !Z.interactive; // 手机/粗指针:只开进场秀与微动
       bindGlobal();
       place(); // 全部 boot 分支统一定位(07-16 Bug4 根因:刷新走 enterIdle 分支时没人调 place,猫飞到视口外)
       // 首帧占位(07-17 ③根因之一):boot 到首段视频 canplay 之间是裸空窗,弱网下可达秒级
@@ -1302,17 +1425,24 @@ const guides = JSON.stringify({
       const chatOpen = sessionStorage.getItem('sigaoli-chat-open') === '1';
       // 回头客=上个会话来过(localStorage 跨会话,sessionStorage 界定本会话)
       const returning = localStorage.getItem('sigaoli-zoe-seen') === '1' && !shown && !chatOpen;
+      Z.returning = returning; // 存下来给问名卡片用(下一行就把 seen 写成 '1',之后读不出来了)
       try { localStorage.setItem('sigaoli-zoe-seen', '1'); } catch { /* 隐私模式可拒 */ }
-      if (!Z.interactive) sitAtCorner();
-      else if (!shown && !chatOpen && (hour >= 23 || hour < 6)) nightInit();
+      // 手机端也演进场秀(2026-08-31),但深夜分支跳过:nightInit 让她进站即睡,
+      // 而 wake() 只被 hover 与聊天联动调用,手机端两者皆无、睡眠层也不开 → 一睡本会话叫不醒。
+      const canShow = Z.interactive || Z.mobileAnim;
+      if (!canShow) sitAtCorner();
+      else if (!shown && !chatOpen && Z.interactive && (hour >= 23 || hour < 6)) nightInit();
       else if (!shown && !chatOpen) void entryShow(returning);
       else enterIdle();
       scheduleMicro();
-      // 切页反应池与微动此前从未预热(和 proud 同类疏漏):访客一跨页就现下载,
-      // 弱网下片段没到就切过去 → 画面空窗。进场演完后趁空闲预取,避开与首屏抢带宽。
-      // sit-to-loaf 必然用到(每会话静置即入睡),此前从未预热——实测它是空窗最大来源(最长 4.6s)
-      setTimeout(() => warm(['glance', 'earflick', 'attend', 'startle', 'sit-to-loaf']), 6000);
-      setTimeout(() => warm(['yawn', 'groom']), 20000); // 微动稍后:2-3 分钟才轮到,不与首屏抢带宽
+      // 预热按「本档真会播的片段」裁剪(2026-08-31 修既存浪费):此前这两行没有 interactive 守卫,
+      // 手机端把切页反应池与 sit-to-loaf 共 1.5MB 全下了,而消费它们的函数在 !interactive 时全部提前 return。
+      // 桌面维持原样;手机端只留微动要用的那批(进场秀所需由 entryShow 自己 warm)。
+      if (Z.interactive) {
+        // sit-to-loaf 必然用到(每会话静置即入睡),实测它是空窗最大来源(最长 4.6s)
+        setTimeout(() => warm(['glance', 'earflick', 'attend', 'startle', 'sit-to-loaf']), 6000);
+      }
+      if (canShow) setTimeout(() => warm(['yawn', 'groom']), 20000); // 微动稍后:2-3 分钟才轮到,不与首屏抢带宽
     } else {
       pageSwitchReaction(); // persist 跨页不断帧,切页瞬间抽反应(§23.3)
     }
@@ -1366,6 +1496,33 @@ const guides = JSON.stringify({
     $('chat-reset')!.addEventListener('click', onReset);
     // 显式关闭把焦点交还给 Zoe(键盘用户否则会掉回页面顶部);状态恢复那条路径不抢焦点
     $('chat-close')!.addEventListener('click', () => { toggle(false); Z.fab?.focus(); });
+
+    // 问名卡片(手机端):面板每页重建,故在此接线。提交仍走 captureName——
+    // 兜住「我叫Alex」整句与打进来的拒绝语,与桌面气泡同一套语义。
+    const ncForm = $('chat-namecard-form') as HTMLFormElement | null;
+    const ncInput = $('chat-namecard-input') as HTMLInputElement | null;
+    if (ncForm && ncInput) {
+      ncForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const raw = ncInput.value.trim();
+        if (!raw || ncInput.disabled) return;
+        const okBtn = $('chat-namecard-ok') as HTMLButtonElement | null;
+        ncInput.disabled = true; if (okBtn) okBtn.disabled = true;
+        const name = await captureName(raw);
+        ncInput.disabled = false; if (okBtn) okBtn.disabled = false;
+        if (name) {
+          profile.data.name = name;
+          profile.save();
+          say((rootData().nameAck ?? '').replace('%s', name), 4000); // 就地把卡片换成确认句
+        } else closeNameCard(); // 提取不出(拒绝语/乱码):温和作罢,askCount 已记
+      });
+      ncInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeNameCard(); });
+      $('chat-namecard-no')!.addEventListener('click', () => {
+        profile.data.declined = true; // 永不再问,与桌面气泡同一语义
+        profile.save();
+        say(rootData().nameDeclined ?? '', 2600);
+      });
+    }
 
     // 焦点陷阱(WCAG 2.4.3/2.1.2):对话框打开时 Tab 应在面板内循环,不该跑到背后的页面上。
     // 每次按 Tab 现算可聚焦项——面板内容是动态的(建议 chips 答完即隐、「回到最新」按需浮现)。
