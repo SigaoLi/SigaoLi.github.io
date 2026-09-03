@@ -71,9 +71,9 @@ const guides = JSON.stringify({
     <div class="chat-plate" aria-hidden="true">{d.title}</div>
     <!-- 头部头像(手机端 C 方案):角落猫让位后由它承接形象。纯装饰——身份由名牌承担,
          关闭有独立 ✕ 钮,故 aria-hidden 且不可点。尺寸 40px 见 docs/zoe-mobile-layout-design.md §3.2 -->
-    <header class="relative flex items-end gap-2.5 border-b px-4 pt-4 pb-2.5" style="border-color: var(--line);">
+    <header id="chat-head" class="relative flex items-end gap-2.5 border-b px-4 pt-4 pb-2.5" style="border-color: var(--line);">
       <img id="chat-avatar" src="/zoe/zoe-sit.webp" alt="" aria-hidden="true" />
-      <p class="flex-1 pr-7 text-xs text-ink-muted">{d.subtitle}</p>
+      <p id="chat-subtitle" class="flex-1 pr-7 text-xs text-ink-muted">{d.subtitle}</p>
       <!-- 显式关闭钮:面板的可关闭性不依赖 Zoe 可点(07-16 Bug4 伴生修复) -->
       <button id="chat-close" type="button" aria-label={d.close} title={`${d.close} (Esc)`}
         class="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-ink-muted">
@@ -170,6 +170,16 @@ const guides = JSON.stringify({
      写在这里而非 style 属性里——内联样式会盖掉媒体查询,桌面端就跟着变了。 */
   #chat-panel { height: min(540px, calc(100dvh - 1.5rem)); }
   @media (min-width: 768px) { #chat-panel { height: min(540px, calc(100dvh - 8.5rem)); } }
+
+  /* ---- 键盘态(手机端,2026-09-03):输入框获得焦点=键盘即将顶上来,把「此刻用不上的」收起来 ----
+     垂直空间要不回来(键盘高度不归我们管),能做的是别把剩下的花在装饰上。
+     实测空对话时:建议 chips 98px + 头部 57px 就吃掉面板的 29%,而访客正准备打字。
+     收起的都是「给你点的」而非「给你读的」;免责声明留着(AI 披露,不该在打字时消失)。 */
+  #chat-panel.kbd #chat-suggest { display: none; }
+  #chat-panel.kbd #chat-avatar { display: none; }
+  #chat-panel.kbd #chat-subtitle { display: none; }
+  /* 头部收窄后仍要容得下 ✕ 钮(absolute right-3 top-3,24px 高 → 需 36px) */
+  #chat-panel.kbd #chat-head { min-height: 40px; padding-top: 8px; padding-bottom: 8px; }
   /* 面板开合动效:右下角为原点缩放淡入(呼应灯箱语言) */
   #chat-panel:not([hidden]) { transform-origin: 90% 100%; animation: chat-pop 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
   @keyframes chat-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
@@ -472,6 +482,15 @@ const guides = JSON.stringify({
     if (!pinned) return;
     const log = $('chat-log');
     if (log) log.scrollTop = log.scrollHeight;
+  };
+  // 键盘态(手机端):聚焦输入框 → 收起建议 chips 与头部装饰,把空间让给对话。
+  // 用 focus/blur 而非 visualViewport:后者在 iOS 上也能用,但地址栏收放同样会触发,
+  // 分不清是不是键盘;而「聚焦输入框」本身就是我们要响应的意图,更直接也更跨浏览器。
+  const setKbd = (on: boolean) => {
+    const panel = $('chat-panel');
+    if (!panel) return;
+    panel.classList.toggle('kbd', on && innerWidth < 768);
+    scrollLog(); // 收起 chips 后对话区变高,吸底的要重新贴底
   };
   let aborter: AbortController | null = null;
   let guideEl: HTMLElement | null = null; // 当前引导 chip 的 DOM(只保留最新一条,§23.5;随面板重建失效)
@@ -1064,7 +1083,13 @@ const guides = JSON.stringify({
       paint();
       maybeAskName(); // 手机端问名:paint 之后,免得被它清掉
       fitInput(); // 面板此刻才可见:恢复的草稿在这里才量得到高度(接线时量会得到 0)
-      if (focus) { ($('chat-input') as HTMLTextAreaElement | null)?.focus(); track('chat-open'); }
+      // 手机端不自动聚焦:一聚焦键盘就顶上来,访客还没读完问候语、常用问题就先被吃掉半屏,
+      // 而那些 chips 正是首次访客的主要入口(自动聚焦会让键盘态把它们当场收起,等于永不可见)。
+      // 想打字时点一下输入框即可。桌面端没有这个代价,维持原样自动聚焦。
+      if (focus) {
+        if (innerWidth >= 768) ($('chat-input') as HTMLTextAreaElement | null)?.focus();
+        track('chat-open');
+      }
       warm(['listen', 'think', 'type', 'proud']); // 聊天片段预热:打字阶段 type/proud 各半,两个都要预热
       // 人机验证在开面板时就整套做完(脚本只在这一刻才加载,纯浏览网页的访客与 agent 永远不会碰到)。
       // 一次做到底而不是只预热脚本:token 虽只活 300 秒,但它当场就换成我们自己的 30 分钟凭证,
@@ -1489,6 +1514,20 @@ const guides = JSON.stringify({
     // 智能吸底接线(位置判断,程序滚动与用户滚动天然区分)
     const logEl = $('chat-log')!;
     logEl.addEventListener('scroll', () => setPinned(atBottom(logEl)), { passive: true });
+    // 容器变矮(键盘弹出/转屏)时重新贴底:scrollLog 只在追加内容时被调用,
+    // 而这里没有新内容——clientHeight 一小,可滚上限就变大,scrollTop 原地不动即离底。
+    // 实测偏 11px:小于 atBottom 的 40px 判据,所以 pinned 仍为 true、「回到最新」也不浮现,
+    // 状态自认在底部而实际不在,长回复的末尾会被切掉且无提示。
+    if ('ResizeObserver' in window) {
+      let firstObserve = true;
+      new ResizeObserver(() => {
+        if (firstObserve) { firstObserve = false; return; } // 首次回调是初始观测,不是变化
+        scrollLog();
+      }).observe(logEl);
+    }
+    // 键盘态接线:聚焦=收起装饰,失焦=恢复
+    input.addEventListener('focus', () => setKbd(true));
+    input.addEventListener('blur', () => setKbd(false));
     $('chat-to-latest')!.addEventListener('click', () => { logEl.scrollTop = logEl.scrollHeight; setPinned(true); });
     $('chat-suggest')!.addEventListener('click', onChip);
     input.addEventListener('keydown', onKeydown);
