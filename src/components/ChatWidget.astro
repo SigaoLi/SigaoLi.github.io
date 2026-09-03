@@ -66,7 +66,7 @@ const guides = JSON.stringify({
   <!-- 方案 C·NPC 名牌(07-18 Sigao 选定):名牌浮在框顶(单语=d.title,当页语言)、accent 描边、
        流式底部流动线、爪印三点打字。头部只留副标题——身份信息名牌一处呈现,不重复(Sigao 要求)。 -->
   <section id="chat-panel" role="dialog" aria-label={d.title} hidden
-    class="fixed bottom-3 right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col rounded-2xl shadow-2xl md:bottom-5 md:right-[11.25rem]"
+    class="fixed right-5 z-[60] flex w-[min(380px,calc(100vw-2.5rem))] flex-col rounded-2xl shadow-2xl md:right-[11.25rem]"
     style="border: 1.5px solid color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--bg-elevated);">
     <div class="chat-plate" aria-hidden="true">{d.title}</div>
     <!-- 头部头像(手机端 C 方案):角落猫让位后由它承接形象。纯装饰——身份由名牌承担,
@@ -168,8 +168,23 @@ const guides = JSON.stringify({
   @keyframes chat-flow { 0% { transform: translateX(-100%); } 100% { transform: translateX(280%); } }
   /* 面板高度:手机端底边只留 12px(角落猫已让位,不必给她留地方),桌面维持原值 8.5rem。
      写在这里而非 style 属性里——内联样式会盖掉媒体查询,桌面端就跟着变了。 */
-  #chat-panel { height: min(540px, calc(100dvh - 1.5rem)); }
-  @media (min-width: 768px) { #chat-panel { height: min(540px, calc(100dvh - 8.5rem)); } }
+  /* --kb = 键盘把面板顶起来的量(见下方 iOS 垫片);不支持/无键盘时为 0,一切照旧。
+     bottom 写在这里而非 Tailwind 类里:两处都设会靠特异性打架,来源也不明显。 */
+  #chat-panel {
+    bottom: calc(0.75rem + var(--kb, 0px));
+    height: min(540px, calc(100dvh - 1.5rem - var(--kb, 0px)));
+  }
+  @media (min-width: 768px) {
+    #chat-panel { bottom: 1.25rem; height: min(540px, calc(100dvh - 8.5rem)); }
+  }
+  /* 极窄高:可用高不足时面板铺满(200% 缩放、小屏配大键盘都会落到这里)。
+     省下的是四边留白与圆角——不多,但那种时候每一像素都在争。 */
+  #chat-panel.tight {
+    left: 6px; right: 6px; width: auto;
+    bottom: calc(6px + var(--kb, 0px));
+    height: calc(100dvh - 12px - var(--kb, 0px));
+    border-radius: 12px;
+  }
 
   /* ---- 键盘态(手机端,2026-09-03):输入框获得焦点=键盘即将顶上来,把「此刻用不上的」收起来 ----
      垂直空间要不回来(键盘高度不归我们管),能做的是别把剩下的花在装饰上。
@@ -491,6 +506,54 @@ const guides = JSON.stringify({
     if (!panel) return;
     panel.classList.toggle('kbd', on && innerWidth < 768);
     scrollLog(); // 收起 chips 后对话区变高,吸底的要重新贴底
+  };
+
+  // ---- iOS 键盘垫片(2026-09-03)----
+  // WebKit 不支持 interactive-widget,键盘弹出时布局视口与 dvh 纹丝不动,fixed 面板被盖住。
+  //
+  // 自失效设计(关键):算的是「视觉视口底边与布局视口底边之间还剩多少」——
+  //   Chrome/Firefox 上 resizes-content 已生效,innerHeight 跟着键盘一起缩,这个差恒为 ~0 → 不动手;
+  //   iOS 上 innerHeight 不变,这个差就等于键盘高 → 把面板顶上去。
+  // 同一段代码在两边都正确,不需要嗅探浏览器,也不会和已经生效的原生行为叠加。
+  //
+  // 兜底(我没有 iOS 设备,无法实测,故处处留退路):
+  //   · 无 visualViewport → 整段不装,--kb 不存在,CSS 回落到 0
+  //   · 阈值 130px:地址栏收放通常 50-90px,键盘 200px 起,不会误判(判错也只是面板上移一点,不会坏)
+  //   · 上限 60% 视口高,并保证面板顶边不会被顶出屏幕
+  //   · ?no-kb-shim 可当场关掉,用于排查时不必发版
+  const KB_MIN = 130;
+  let kbShim: (() => void) | null = null;
+  const clearKb = () => document.documentElement.style.removeProperty('--kb');
+  const initKbShim = () => {
+    const vv = window.visualViewport;
+    if (!vv || kbShim || new URLSearchParams(location.search).has('no-kb-shim')) return;
+    const sync = () => {
+      try {
+        if (innerWidth >= 768 || !panelOpen()) { clearKb(); return; }
+        // 视觉视口底边在布局坐标里的位置;它与 innerHeight 的差=被键盘占掉且布局视口没让出的部分
+        const gap = innerHeight - vv.height - vv.offsetTop;
+        const usable = innerHeight - Math.max(0, gap);
+        // 面板最矮也要放得下(头 40 + 输入区 93 + 上下留白),否则顶上去只会更糟,不如不动
+        const shift = gap >= KB_MIN && usable >= 180 ? Math.min(gap, innerHeight * 0.6) : 0;
+        if (shift > 0) document.documentElement.style.setProperty('--kb', `${Math.round(shift)}px`);
+        else clearKb();
+        syncTight();  // 键盘顶起来后可用高变了,铺满与否要重算
+        scrollLog();  // 面板变矮 → 重新贴底
+      } catch { clearKb(); }
+    };
+    vv.addEventListener('resize', sync);
+    vv.addEventListener('scroll', sync);
+    kbShim = sync;
+  };
+
+  // 极窄高 → 面板铺满(§5:200% 缩放、小屏配大键盘都会落到这里)。
+  // 判据用「扣掉键盘后的可用高」,而不是媒体查询——iOS 上 dvh 不随键盘变,媒体查询不会触发。
+  const TIGHT_H = 420;
+  const syncTight = () => {
+    const panel = $('chat-panel');
+    if (!panel) return;
+    const kb = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kb')) || 0;
+    panel.classList.toggle('tight', innerWidth < 768 && innerHeight - kb < TIGHT_H);
   };
   let aborter: AbortController | null = null;
   let guideEl: HTMLElement | null = null; // 当前引导 chip 的 DOM(只保留最新一条,§23.5;随面板重建失效)
@@ -1078,6 +1141,8 @@ const guides = JSON.stringify({
     // C 方案(手机端):面板开则角落猫让位淡出,形象交给头部头像;关则淡回。
     // 用 class 而非 hidden——保持视频留在渲染树里持续解码,免得关面板时又要等首帧(07-17 空窗教训)。
     Z.anchor?.classList.toggle('zoe-yield', show && innerWidth < 768);
+    if (show) { initKbShim(); syncTight(); }
+    else { clearKb(); $('chat-panel')?.classList.remove('tight', 'kbd'); }
     if (show) {
       hideBubble(); // 问名气泡也收:访客转向对话框即本次作罢(askCount 已记)
       paint();
@@ -1312,7 +1377,7 @@ const guides = JSON.stringify({
     // 舞台在 transition:persist 下跨页存活,监听只绑一次
     Z.fab!.addEventListener('click', () => { markActivity(); toggle(); });
     Z.fab!.addEventListener('pointerenter', onStageEnter);
-    addEventListener('resize', place);
+    addEventListener('resize', () => { place(); syncTight(); kbShim?.(); }); // 转屏/改窗宽:三者都要重算
     addEventListener('click', markActivity, { capture: true, passive: true }); // 点导航/任意点击=活动
 
     // 气泡交互(persist 元素,只绑一次):普通气泡点击=开聊;问名表单可见/表单内点击一律不开(正在填名)
