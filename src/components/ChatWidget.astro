@@ -527,7 +527,13 @@ const guides = JSON.stringify({
   const initKbShim = () => {
     const vv = window.visualViewport;
     if (!vv || kbShim || new URLSearchParams(location.search).has('no-kb-shim')) return;
-    const sync = () => {
+    // 推迟到下一帧再读:同时支持 interactive-widget 与 visualViewport 的环境(安卓 Chrome、
+    // 鸿蒙 ArkWeb —— 也就是多数情况)下,键盘弹出时两个视口一起变,但事件顺序不保证。
+    // 若 visualViewport 的 resize 先到而 innerHeight 还是旧值,gap 会瞬间算成一个大数 →
+    // 面板被顶起 → 下一帧 window resize 到达再算回 0 → 闪一下。等一帧让两者落定即可。
+    let raf = 0;
+    const sync = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(run); };
+    const run = () => {
       try {
         if (innerWidth >= 768 || !panelOpen()) { clearKb(); return; }
         // 视觉视口底边在布局坐标里的位置;它与 innerHeight 的差=被键盘占掉且布局视口没让出的部分

@@ -277,7 +277,28 @@ chips 是「给你点的」，不是「给你打字时读的」，而访客点�
    - 全程 `try/catch`，异常即清空 `--kb`
    - **`?no-kb-shim` 可当场关掉**，排查时不必发版
 
-   *验证*：19 项自动检查全过，含「布局视口已让开时垫片不叠加」（Chromium）、「iOS 式键盘顶起面板且顶边不出屏」（注入假 `visualViewport`）、「80px 变化不误判」、「收键盘归位」、「关面板清空」、「kill switch 生效」。**真机仍未验证**——这是本项唯一的空白。
+   *时序防护*：在**同时支持两者**的环境（安卓 Chrome、鸿蒙 ArkWeb，也就是多数情况）下，键盘弹出时两个视口一起变，但事件顺序不保证。若 `visualViewport` 的 `resize` 先到而此刻 `innerHeight` 仍是旧值，`gap` 会瞬间算成一个大数 → 面板被顶起 → 下一帧 window resize 到达再算回 0 → 闪一下。故计算推迟到下一个动画帧，并用 `cancelAnimationFrame` 合并连发（实测 12 次连发只结算一次）。
+
+   *验证*：22 项自动检查全过，含「布局视口已让开时垫片不叠加」（Chromium）、「iOS 式键盘顶起面板且顶边不出屏」（注入假 `visualViewport`）、「80px 变化不误判」、「收键盘归位」、「关面板清空」、「kill switch 生效」、「单次事件无抖动」、「12 次连发被 rAF 合并」。**真机仍未验证**——这是本项唯一的空白。
+
+### 内核兼容性（2026-09-03 查证）
+
+| 环境 | 内核 | `interactive-widget` | `visualViewport` | 生效路径 |
+|---|---|---|---|---|
+| 鸿蒙 NEXT / HarmonyOS 5 | ArkWeb，Chromium 114（OpenHarmony 6.0 已到 132） | ✅（需 108+） | ✅ | 原生 meta |
+| 鸿蒙 4 及更早 | 华为浏览器，Chromium 系 | 视版本 | ✅ | 二者之一 |
+| **微信 · 安卓** | XWEB，老版 Chromium 78/86、新版 132 | ⚠️ 老版不支持 | ✅ | 老版走垫片 |
+| 微信 · iOS | WKWebView | ❌ | ✅ | 垫片 |
+| Safari / iOS | WebKit | ❌ | ✅ | 垫片 |
+| Chrome / 安卓 | Blink | ✅ | ✅ | 原生 meta |
+
+`visualViewport` 全球支持率 96.31%（Chrome 61+ / Safari 13+ / Samsung 8.2+ / UC 15.5+ / QQ 14.9+）。
+
+**自失效设计使得「某内核到底支不支持」不必事先知道**：支持则 `gap≈0` 垫片不动手，不支持则垫片顶起，两条路都对。两者皆无（Chromium <61 或 iOS <13）则回落到改动前的行为，不构成倒退。
+
+微信是这里最值得注意的一档——中文访客常从微信点入，而安卓微信的老 XWEB（Chromium 78/86）恰好不支持 `interactive-widget`，正落在垫片覆盖的区间。
+
+*注*：鸿蒙一栏是依据 ArkWeb 的 Chromium 版本推断，未实测；但由于自失效设计，推断错了也只是换成另一条正确路径。
 
 2. **`ball` / `stretch` 画幅溢出被裁**。逐帧 alpha 实测：`ball`（1067×600）不透明内容跨 380–1066，按 180px 渲染时半宽 160px，溢出 160 碰撞盒 80px；按锚点 `innerWidth-94` 计算，右缘落在 `innerWidth+66`，**被视口裁掉 66px，桌面端同样如此**。`stretch` 溢出 30px、裁掉 16px。手机端缩到 108px 后溢出降至 48/18px，右缘落在 `innerWidth+2`，基本不裁——**本次改动顺带缓解，但桌面端问题仍在**。
 
