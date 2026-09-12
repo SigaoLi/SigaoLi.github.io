@@ -1,5 +1,12 @@
 // 真模型探针:照片总数×4 + vibe coding 出处×1(07-17 ①②) + 时间线阶段归属×2(08-05)
 // /chat 限流 5/min/IP,故分两批、批间等一分钟——整跑约 2-3 分钟,属于真模型测试的合理代价。
+import { readFileSync } from 'node:fs';
+const photos = JSON.parse(readFileSync('src/data/photos.json', 'utf8'));
+const TOTAL = photos.reduce((n, c) => n + c.items.length, 0);
+const NATIONS = photos.length;
+// 反例：邻近数字（少 2 / 少 1 / 多 1），用来识别模型把总数说错
+const NEAR = new RegExp([TOTAL - 2, TOTAL - 1, TOTAL + 1].join('|'));
+
 const ask = async (lang, content) => {
   const r = await fetch('http://localhost:8787/chat', {
     method: 'POST',
@@ -21,10 +28,10 @@ const check = (label, reply, good, bad) => {
   ok ? pass++ : fail++;
   console.log(`${ok ? '✓' : '✗'} ${label}\n  ${reply.slice(0, 120).replace(/\n/g, ' ')}\n`);
 };
-check('zh 总张数=76', await ask('zh', '他一共拍了多少张照片?'), /76/, /66|77|75/);
-check('zh 国家数=6', await ask('zh', '他的照片覆盖几个国家?'), /6 ?个|六个|\b6\b/, /66/);
-check('en 总张数=76', await ask('en', 'How many photographs are in Through My Lens?'), /76/, /66|77|75/);
-check('zh 数量复合问', await ask('zh', '镜头之下总共多少张?分别是哪些国家?'), /76/, /66/);
+check(`zh 总张数=${TOTAL}`, await ask('zh', '他一共拍了多少张照片?'), new RegExp(`${TOTAL}`), NEAR);
+check(`zh 国家数=${NATIONS}`, await ask('zh', '他的照片覆盖几个国家?'), new RegExp(`${NATIONS} ?个|\\b${NATIONS}\\b`), null);
+check(`en 总张数=${TOTAL}`, await ask('en', 'How many photographs are in Through My Lens?'), new RegExp(`${TOTAL}`), NEAR);
+check(`zh 数量复合问`, await ask('zh', '镜头之下总共多少张?分别是哪些国家?'), new RegExp(`${TOTAL}`), NEAR);
 check('vibe coding 出处≠简历', await ask('zh', 'vibe coding 这件事他是在哪里说的?'), /页脚|网站/, /简历里(写|说|提)/);
 
 // ---- 第二批:时间线阶段归属(08-05 Sigao 报「本科期间的实习被说成硕士毕业后」) ----

@@ -149,6 +149,24 @@
         "lng": 117.8,
         "cityZh": "承德",
         "city": "Chengde"
+      },
+      {
+        "src": "IMG20260905155409.jpg",
+        "alt": "Painted eaves over the antique shops of Liulichang, Beijing",
+        "altZh": "北京琉璃厂，晴空下的彩绘飞檐与古玩店招",
+        "lat": 39.9,
+        "lng": 116.4,
+        "cityZh": "北京",
+        "city": "Beijing"
+      },
+      {
+        "src": "IMG20260909184359.jpg",
+        "alt": "Dusk on the Xiamen shore, the twin towers lighting up across the bay",
+        "altZh": "厦门海滨的暮色，海湾对岸双子塔次第亮起",
+        "lat": 24.4,
+        "lng": 118.1,
+        "cityZh": "厦门",
+        "city": "Xiamen"
       }
     ]
   },

@@ -10,7 +10,7 @@ Jekyll (academicpages) site.
 ## Highlights
 
 - **Generative canvas effects on a map motif** — an interactive particle field (home), contour terrain (work), a "river as timeline" with a flow field (CV), and a geo-network arc map (photography); all vanilla canvas/SVG, tuned to 60fps with reduced-motion and mobile fallbacks
-- **Dotted world map** — land sampled from Natural Earth, with 76 GPS-extracted photo footprints across 6 countries; click a marker to open that country's gallery
+- **Dotted world map** — land sampled from Natural Earth, with 78 GPS-extracted photo footprints across 6 countries; click a marker to open that country's gallery
 - **Zoe, the digital doorcat** — Sigao's cat (驺虞) lives in the corner of every page as a set of AI-generated, chroma-keyed VP9-alpha video clips pinned to shared anchor poses, driven by a state machine: she dozes off when ignored, reacts to page switches, listens while you type, "types back" while the assistant streams, and keeps a few easter eggs (production handbook in `docs/`)
 - **Built-in AI layer** — a floating chat assistant (fronted by Zoe) on every page — it suggests the single most relevant page as you ask, and greets a returning visitor by name (stored only in their own browser, opt-in) — plus a personal MCP server, both fed by a build-time knowledge pack generated from the same sources as the pages (see below)
 - **Machine-readable by design** — [`/llms.txt`](https://sigaoli.com/llms.txt), [`/llms-full.txt`](https://sigaoli.com/llms-full.txt), [`/resume.json`](https://sigaoli.com/resume.json) (JSON Resume), [`/knowledge.json`](https://sigaoli.com/knowledge.json), [`/.well-known/mcp.json`](https://sigaoli.com/.well-known/mcp.json), JSON-LD, and a robots.txt that explicitly welcomes AI crawlers
@@ -111,15 +111,29 @@ language at [`/privacy`](https://sigaoli.com/privacy).
 - **CV**: edit `src/data/cv.json` (+ `cv.zh.json`); the timeline, `/resume.json` and
   `/llms-full.txt` all render from it. Replace `public/files/pdf/CV__Sigao_Li.pdf` alongside.
 - **UI strings & hero copy**: hand-written bilingual dictionary in `src/lib/i18n.ts`.
-- **Photos**: drop JPGs into `src/assets/photos/<country>/`, add entries to
-  `src/data/photos.json` (run `node scripts/extract-gps.mjs` for coordinates). Photo stats
-  in the AI knowledge pack update automatically.
+- **Photos**: drop the full-resolution originals into `_inbox/` and commit. The pre-commit
+  hook files them by GPS, archives the originals to `_originals/` (never committed), derives
+  2560px serving masters, writes bilingual captions with a vision model, and registers them in
+  `src/data/photos.json`. Photos without GPS go in `_inbox/<country-id>/` instead. Counts,
+  the map and the AI knowledge pack all follow from `photos.json` automatically.
+  See `docs/photo-ingest-design.md`.
 - **AI assistant persona**: edit `src/data/knowledge/*.md`; the knowledge pack rebuilds on
   every deploy and the assistant follows within ~10 minutes (Worker-side cache TTL).
 - **Zoe's actions**: source clips live outside the repo; the pipeline
   (`scripts/zoe-board2.mjs` → `zoe-qc2.mjs` → `zoe-prod2.mjs`) keys, QCs, mirrors and
   encodes them into `public/zoe/`. New actions = one clip + one row in the `ZOE` table in
   `ChatWidget.astro`; specs and prompt cards in `docs/zoe-production-handbook.md`.
+
+## Local setup
+
+Photo ingest runs as a pre-commit hook. After cloning, point git at the tracked
+hooks directory once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Without this the hook simply never runs — photos dropped into `_inbox/` stay there.
 
 ## Deployment
 
