@@ -1,0 +1,5 @@
+# Shell hooks must keep LF endings. This repo is developed on Windows with
+# core.autocrlf=true, which would otherwise check them out as CRLF — and a
+# CRLF shebang makes Git Bash fail with "bad interpreter", silently disabling
+# the pre-commit hook on any fresh clone.
+.githooks/* text eol=lf
