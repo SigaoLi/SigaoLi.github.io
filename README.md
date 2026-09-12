@@ -111,9 +111,12 @@ language at [`/privacy`](https://sigaoli.com/privacy).
 - **CV**: edit `src/data/cv.json` (+ `cv.zh.json`); the timeline, `/resume.json` and
   `/llms-full.txt` all render from it. Replace `public/files/pdf/CV__Sigao_Li.pdf` alongside.
 - **UI strings & hero copy**: hand-written bilingual dictionary in `src/lib/i18n.ts`.
-- **Photos**: drop JPGs into `src/assets/photos/<country>/`, add entries to
-  `src/data/photos.json` (run `node scripts/extract-gps.mjs` for coordinates). Photo stats
-  in the AI knowledge pack update automatically.
+- **Photos**: drop the full-resolution originals into `_inbox/` and commit. The pre-commit
+  hook files them by GPS, archives the originals to `_originals/` (never committed), derives
+  2560px serving masters, writes bilingual captions with a vision model, and registers them in
+  `src/data/photos.json`. Photos without GPS go in `_inbox/<country-id>/` instead. Counts,
+  the map and the AI knowledge pack all follow from `photos.json` automatically.
+  See `docs/photo-ingest-design.md`.
 - **AI assistant persona**: edit `src/data/knowledge/*.md`; the knowledge pack rebuilds on
   every deploy and the assistant follows within ~10 minutes (Worker-side cache TTL).
 - **Zoe's actions**: source clips live outside the repo; the pipeline

@@ -1,3 +1,5 @@
+// 历史件（2026-06-11），不再运行。文案生成已由 scripts/ingest/caption.mjs 接管。
+// 保留是因为这里是最初 78 条人工文案的底稿，改文风时可作参照。
 // Writes hand-authored bilingual alt texts (Claude viewed every photo, 2026-06-11)
 // and splits the Nassau photo into a new Bahamas gallery (GPS: 25.1, -77.3).
 import { readFileSync, writeFileSync } from 'node:fs';
