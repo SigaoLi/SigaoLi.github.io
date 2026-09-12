@@ -29,9 +29,22 @@ test('美国国名映射到现有 id', () => {
   assert.equal(toCountryId('China'), 'china');
 });
 
-test('国家质心可用作新国家锚点', () => {
-  const c = countryCentroid('France');
-  assert.ok(c && c.lat > 40 && c.lat < 52, `法国质心纬度应在 40-52 之间，得到 ${c?.lat}`);
+test('国家锚点落在本土上，不被海外属地拽偏', () => {
+  // 整个 feature 的质心会落海：法国含圭亚那/留尼汪等，整体质心是 43.0N 6.7W
+  // （西班牙北面的大西洋）；美国被阿拉斯加和夏威夷拽到 44.8N 103.7W。
+  // 所以锚点必须取面积最大的那一块。
+  const fr = countryCentroid('France');
+  assert.deepEqual(fr, { lat: 46.6, lng: 2.5 }, `法国锚点应在本土，得到 ${JSON.stringify(fr)}`);
+
+  const us = countryCentroid('United States of America');
+  assert.deepEqual(us, { lat: 39.9, lng: -98.8 }, `美国锚点应在本土，得到 ${JSON.stringify(us)}`);
+
+  // 每个锚点都必须真的落在该国境内
+  for (const name of ['France', 'United States of America', 'Japan', 'China']) {
+    const c = countryCentroid(name);
+    assert.equal(lookupCountry(c.lng, c.lat)?.name, name, `${name} 的锚点没落在自己国土上`);
+  }
+
   assert.equal(countryCentroid('不存在的国'), null);
 });
 

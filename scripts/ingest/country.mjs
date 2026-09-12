@@ -7,7 +7,7 @@
 // 2. 78 张真实照片里有 16 张落在陆地多边形之外——海岸取景 + 坐标四舍五入
 //    到 1 位小数（约 11km）会把临海点推进海里。故无命中时向外扩圈找最近陆地。
 //    用的是陆地国界而非领海/EEZ：语义是「离哪国陆地最近」，对旅行照片更准。
-import { geoContains, geoCentroid } from 'd3-geo';
+import { geoContains, geoCentroid, geoArea } from 'd3-geo';
 import * as topojson from 'topojson-client';
 import { readFileSync } from 'node:fs';
 
@@ -32,11 +32,23 @@ export const toCountryId = (name) =>
 
 const at = (lng, lat) => features().find((f) => geoContains(f, [lng, lat]))?.properties.name ?? null;
 
-/** 国家多边形质心，用作新国家在画廊标题行显示的锚点坐标 */
+/**
+ * 国家锚点，用作新国家在画廊标题行显示的坐标。
+ *
+ * 取**面积最大的那一块**的质心，不是整个 feature 的。有海外属地的国家整体
+ * 质心会落到海里——实测法国（含圭亚那/留尼汪/马提尼克等）整体质心是
+ * 43.0°N 6.7°W，在西班牙北面的大西洋上；只取本土则是 46.6°N 2.5°E。
+ * 美国同理：整体 44.8/-103.7（被阿拉斯加和夏威夷拽偏）vs 本土 39.9/-98.8。
+ */
 export function countryCentroid(name) {
   const f = features().find((x) => x.properties.name === name);
   if (!f) return null;
-  const [lng, lat] = geoCentroid(f);
+  const g = f.geometry;
+  const polygons = g.type === 'MultiPolygon' ? g.coordinates : [g.coordinates];
+  const mainland = polygons
+    .map((coordinates) => ({ type: 'Polygon', coordinates }))
+    .sort((a, b) => geoArea(b) - geoArea(a))[0];
+  const [lng, lat] = geoCentroid(mainland);
   return { lat: Math.round(lat * 10) / 10, lng: Math.round(lng * 10) / 10 };
 }
 
