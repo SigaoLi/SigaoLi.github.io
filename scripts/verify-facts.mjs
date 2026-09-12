@@ -21,10 +21,10 @@ const check = (label, reply, good, bad) => {
   ok ? pass++ : fail++;
   console.log(`${ok ? '✓' : '✗'} ${label}\n  ${reply.slice(0, 120).replace(/\n/g, ' ')}\n`);
 };
-check('zh 总张数=76', await ask('zh', '他一共拍了多少张照片?'), /76/, /66|77|75/);
+check('zh 总张数=78', await ask('zh', '他一共拍了多少张照片?'), /78/, /76|77|79/);
 check('zh 国家数=6', await ask('zh', '他的照片覆盖几个国家?'), /6 ?个|六个|\b6\b/, /66/);
-check('en 总张数=76', await ask('en', 'How many photographs are in Through My Lens?'), /76/, /66|77|75/);
-check('zh 数量复合问', await ask('zh', '镜头之下总共多少张?分别是哪些国家?'), /76/, /66/);
+check('en 总张数=78', await ask('en', 'How many photographs are in Through My Lens?'), /78/, /76|77|79/);
+check('zh 数量复合问', await ask('zh', '镜头之下总共多少张?分别是哪些国家?'), /78/, /76/);
 check('vibe coding 出处≠简历', await ask('zh', 'vibe coding 这件事他是在哪里说的?'), /页脚|网站/, /简历里(写|说|提)/);
 
 // ---- 第二批:时间线阶段归属(08-05 Sigao 报「本科期间的实习被说成硕士毕业后」) ----

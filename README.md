@@ -10,7 +10,7 @@ Jekyll (academicpages) site.
 ## Highlights
 
 - **Generative canvas effects on a map motif** — an interactive particle field (home), contour terrain (work), a "river as timeline" with a flow field (CV), and a geo-network arc map (photography); all vanilla canvas/SVG, tuned to 60fps with reduced-motion and mobile fallbacks
-- **Dotted world map** — land sampled from Natural Earth, with 76 GPS-extracted photo footprints across 6 countries; click a marker to open that country's gallery
+- **Dotted world map** — land sampled from Natural Earth, with 78 GPS-extracted photo footprints across 6 countries; click a marker to open that country's gallery
 - **Zoe, the digital doorcat** — Sigao's cat (驺虞) lives in the corner of every page as a set of AI-generated, chroma-keyed VP9-alpha video clips pinned to shared anchor poses, driven by a state machine: she dozes off when ignored, reacts to page switches, listens while you type, "types back" while the assistant streams, and keeps a few easter eggs (production handbook in `docs/`)
 - **Built-in AI layer** — a floating chat assistant (fronted by Zoe) on every page — it suggests the single most relevant page as you ask, and greets a returning visitor by name (stored only in their own browser, opt-in) — plus a personal MCP server, both fed by a build-time knowledge pack generated from the same sources as the pages (see below)
 - **Machine-readable by design** — [`/llms.txt`](https://sigaoli.com/llms.txt), [`/llms-full.txt`](https://sigaoli.com/llms-full.txt), [`/resume.json`](https://sigaoli.com/resume.json) (JSON Resume), [`/knowledge.json`](https://sigaoli.com/knowledge.json), [`/.well-known/mcp.json`](https://sigaoli.com/.well-known/mcp.json), JSON-LD, and a robots.txt that explicitly welcomes AI crawlers

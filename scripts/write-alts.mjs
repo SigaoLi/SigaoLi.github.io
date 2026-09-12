@@ -20,6 +20,8 @@ const alts = {
   'china/IMG_20190827_054513.jpg': ['Hazy sunrise over the Bohai Sea at Beidaihe', '北戴河，渤海上的朦胧日出'],
   'china/IMG_20190828_102631.jpg': ['An arched bridge among willows at the Chengde Mountain Resort', '承德避暑山庄，柳岸拱桥'],
   'china/IMG_20190829_094500.jpg': ['Sledgehammer Rock standing over Chengde', '承德磬锤峰'],
+  'china/IMG20260905155409.jpg': ['Painted eaves over the antique shops of Liulichang, Beijing', '北京琉璃厂，晴空下的彩绘飞檐与古玩店招'],
+  'china/IMG20260909184359.jpg': ['Dusk on the Xiamen shore, the twin towers lighting up across the bay', '厦门海滨的暮色，海湾对岸双子塔次第亮起'],
   // ---- Japan ----
   'japan/IMG_20191225_072604.jpg': ['A tawny owl perched at a Tokyo owl café', '东京猫头鹰咖啡馆里栖息的灰林鸮'],
   'japan/IMG_20191227_122409.jpg': ['The long wooden hall of Sanjūsangen-dō, Kyoto', '京都三十三间堂的悠长木构大殿'],
