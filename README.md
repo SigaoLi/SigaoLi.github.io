@@ -121,6 +121,17 @@ language at [`/privacy`](https://sigaoli.com/privacy).
   encodes them into `public/zoe/`. New actions = one clip + one row in the `ZOE` table in
   `ChatWidget.astro`; specs and prompt cards in `docs/zoe-production-handbook.md`.
 
+## Local setup
+
+Photo ingest runs as a pre-commit hook. After cloning, point git at the tracked
+hooks directory once:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Without this the hook simply never runs — photos dropped into `_inbox/` stay there.
+
 ## Deployment
 
 Push to `master` → GitHub Actions (`.github/workflows/deploy.yml`) audits, builds and

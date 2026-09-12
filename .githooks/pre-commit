@@ -1,0 +1,4 @@
+#!/bin/sh
+# 照片入站：把 _inbox/ 里的原图分拣进仓库，产物并入本次提交。
+# 收件箱为空时 ingest.mjs 立即退出，日常提交不受影响。
+exec node scripts/ingest.mjs
