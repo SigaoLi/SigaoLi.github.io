@@ -10,7 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test scripts/ingest/",
+    "test": "node --test \"scripts/ingest/*.test.mjs\"",
     "ingest": "node scripts/ingest.mjs"
   },
   "dependencies": {
