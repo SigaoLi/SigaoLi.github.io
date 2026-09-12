@@ -37,6 +37,6 @@
   },
   "overrides": {
     "brace-expansion": "2.1.4",
-    "svgo": "4.0.2"
+    "svgo": "4.1.0"
   }
 }
