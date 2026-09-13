@@ -37,3 +37,6 @@ for (const file of htmlFiles) {
 const unique = [...new Set(broken)];
 console.log(`checked ${checked} internal refs across ${htmlFiles.length} html files`);
 console.log(unique.length ? `BROKEN (${unique.length}):\n${unique.join('\n')}` : 'no broken internal links');
+
+// CI 要靠退出码判定成败（GitHub 只在 job 失败时发邮件）。
+process.exitCode = unique.length ? 1 : 0;

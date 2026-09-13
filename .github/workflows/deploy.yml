@@ -1,6 +1,10 @@
 # Build & deploy to GitHub Pages (PRD §13).
 # - push to v2     → build only (verification, no deploy)
 # - push to master → build + deploy to Pages
+#
+# 发布路径上只剩构建与部署（2026-09-13 起）。两张安全网搬到了旁边，
+# 各自发邮件、都不挡路：依赖漏洞 → audit.yml（每周），浏览器验收 → verify.yml
+# （每次 push）。理由见那两个文件的抬头与 PRD §21。
 name: Deploy
 
 on:
@@ -18,18 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  audit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-      - name: npm audit (fail on high+)
-        run: npm audit --audit-level=high
-
   build:
-    needs: audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

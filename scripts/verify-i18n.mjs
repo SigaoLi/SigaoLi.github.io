@@ -74,3 +74,7 @@ await shot.close();
 
 await browser.close();
 console.log(errors.length ? `ERRORS:\n${errors.join('\n')}` : 'No page errors.');
+
+// CI 要靠退出码判定成败（GitHub 只在 job 失败时发邮件）。
+// 手动跑时行为不变：仍然打印同样的结果，只是多设一个退出码。
+process.exitCode = errors.length ? 1 : 0;

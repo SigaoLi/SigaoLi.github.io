@@ -59,3 +59,6 @@ await page.screenshot({ path: 'shots/nav-final-work.png' });
 await browser.close();
 console.log(errors.length ? `ERRORS:\n${errors.join('\n')}` : 'No console/page errors.');
 console.log(allOk ? 'ALL NAVIGATION CHECKS PASSED' : 'SOME CHECKS FAILED');
+
+// CI 要靠退出码判定成败（GitHub 只在 job 失败时发邮件）。
+process.exitCode = errors.length || !allOk ? 1 : 0;

@@ -1,0 +1,100 @@
+# 浏览器验收 —— 每次 push 跑，失败只发邮件，不阻断部署。
+#
+# 为什么需要它（2026-09-13，PRD §24.5）：
+# 构建成功 ≠ 页面能用。历史上真中过的那几类 bug——View Transitions 切页后
+# .reveal 元素卡在 opacity:0、灯箱点不开、切语言跳错路由——`astro build`
+# 全都不报错，只有真浏览器点一遍才看得出来。此前这些脚本只靠人手动跑。
+#
+# 为什么不做成闸门：
+# 这 10 个脚本里有 ~70 处固定 waitForTimeout，在本机够用、在 CI 的慢机器上
+# 可能不够，表现为「没坏却红了」。而一个经常误报的红灯会训练人无视红灯，
+# 那比没有灯更糟。所以与 audit 同理——出事要知道，但不该挡住发布。
+# 观察一段时间，若确实稳定，再考虑是否升级成闸门。
+#
+# 覆盖范围：check-links + 6 个浏览器脚本，全部在**生产构建**（astro preview）上
+# 实测稳定通过。覆盖照片页与灯箱、View Transitions 导航、i18n 路由与语言偏好、
+# 首页、作品页、CV 时间轴。
+#
+# 其余 6 个故意不收，各有原因（2026-09-13 逐个实测）：
+#   verify-chat / verify-pin / verify-zoe  需要 worker 起在 8787
+#   verify-facts                           真实调付费模型，受 5 次/分钟限流
+#   verify-zoe-blank                       只在 astro dev 下通过；打生产构建会失败
+#   verify-typeroute / verify-guide        dev 与 preview 下**都**失败（既有问题，
+#                                          与本次改造无关，见 PRD §21 待查项）
+# 强收它们只会得到一盏恒红的灯，而恒红的灯等于没有灯。
+name: Verify
+
+on:
+  push:
+    branches: [master, v2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # 只装 chromium。脚本全部用 chromium，装齐三家浏览器会白等两分钟。
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      # 纯 node、不需要浏览器，先跑——断链能在启预览前就报出来。
+      - name: Internal links
+        run: node scripts/check-links.mjs
+
+      # 轮询而不是固定 sleep：CI 机器起得慢时 sleep 会不够，起得快时又白等。
+      # 用 curl 轮询也避免了为此新增一个 wait-on 依赖。
+      - name: Start preview
+        run: |
+          npx astro preview --port 4321 > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:4321/ > /dev/null && echo "预览就绪（${i}s）" && exit 0
+            sleep 1
+          done
+          echo "::error::预览服务器 60 秒未就绪"
+          cat /tmp/preview.log
+          exit 1
+
+      # 逐个跑而不是 && 串联：串联会在第一个失败处停下，看不到后面几个的结果。
+      # 这里让它们全跑完，最后统一判定——一次 push 就能看全所有问题。
+      - name: Browser checks
+        run: |
+          failed=""
+          for s in verify-lens verify-nav verify-i18n verify-home verify-work verify-phase4; do
+            echo "::group::$s"
+            if node "scripts/$s.mjs"; then
+              echo "✓ $s"
+            else
+              echo "✗ $s"
+              failed="$failed $s"
+            fi
+            echo "::endgroup::"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::验收未通过:$failed"
+            exit 1
+          fi
+          echo "全部通过"
+
+      # 失败时把截图捞出来——CI 里看不到浏览器，截图是唯一的现场。
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-screenshots
+          path: shots/
+          retention-days: 7
+          if-no-files-found: ignore
