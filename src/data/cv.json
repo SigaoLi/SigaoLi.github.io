@@ -125,8 +125,9 @@
       "id": "ra-sustain",
       "title": "Research Assistant — Sustainable Development Research",
       "org": "University of Bristol",
+      "location": "Bristol, UK",
       "start": "2025-06",
-      "end": "present",
+      "end": "2025-08",
       "bullets": [
         "Built an LLM-based system to identify webpage structures, scrape CSR/ESG reports and extract metadata into a sustainability dataset"
       ],
@@ -136,8 +137,9 @@
       "id": "ra-ai-or",
       "title": "Research Assistant — AI & Operations Research",
       "org": "University of Bristol",
+      "location": "Bristol, UK",
       "start": "2025-05",
-      "end": "present",
+      "end": "2025-10",
       "bullets": [
         "Used Vision Language Models to extract environmental cues and build a dataset for fine-tuning LLMs on accident trajectory simulation"
       ],
@@ -147,8 +149,9 @@
       "id": "ra-transport",
       "title": "Research Assistant — Transportation Big Data",
       "org": "University of Bristol",
+      "location": "Bristol, UK",
       "start": "2024-12",
-      "end": "present",
+      "end": "2025-07",
       "bullets": [
         "Demand forecasting with Graph Transformer + Bayesian optimization (PyEPO) for trip dispatching decision support"
       ],
@@ -158,6 +161,7 @@
       "id": "ra-nlp",
       "title": "Research Assistant — Natural Language Processing",
       "org": "University of Bristol",
+      "location": "Bristol, UK",
       "start": "2024-07",
       "end": "2025-04",
       "bullets": [
@@ -169,6 +173,7 @@
       "id": "ra-cal",
       "title": "Research Assistant",
       "org": "Cognitive Aging Lab, Toronto Metropolitan University",
+      "location": "Toronto, Canada",
       "start": "2024-03",
       "end": "2024-09",
       "bullets": [
@@ -180,6 +185,7 @@
       "id": "ra-health",
       "title": "Research Assistant — Health Geography",
       "org": "Ryerson University",
+      "location": "Toronto, Canada",
       "start": "2022-09",
       "end": "2022-12",
       "bullets": [
@@ -191,6 +197,7 @@
       "id": "ra-gis",
       "title": "Research Assistant — GIS",
       "org": "Ryerson University",
+      "location": "Toronto, Canada",
       "start": "2022-07",
       "end": "2022-08",
       "bullets": [
@@ -201,11 +208,26 @@
   ],
   "volunteering": [
     {
+      "id": "gisphere-cochair",
+      "title": "Co-Chair",
+      "org": "GISphere",
+      "location": "Global",
+      "start": "2026-05",
+      "end": "present",
+      "bullets": [
+        "Cross-functional development of a custom LLM chatbot for information collection and technical support",
+        "Led a team of 4 designing an Azure-based ETL pipeline (Google Sheets → MySQL), reducing task time by 80%",
+        "Published 50+ blogs on GIS program applications with 50k+ reads"
+      ],
+      "url": "https://gisphere.info/"
+    },
+    {
       "id": "gisource",
       "title": "Director, GISource",
       "org": "GISphere",
+      "location": "Global",
       "start": "2024-04",
-      "end": "present",
+      "end": "2026-04",
       "bullets": [
         "Cross-functional development of a custom LLM chatbot for information collection and technical support",
         "Led a team of 4 designing an Azure-based ETL pipeline (Google Sheets → MySQL), reducing task time by 80%",
@@ -217,6 +239,7 @@
       "id": "gisphere-campus",
       "title": "Campus Partner",
       "org": "GISphere",
+      "location": "Global",
       "start": "2022-05",
       "end": "2024-03",
       "bullets": [
@@ -228,8 +251,9 @@
       "id": "cssa",
       "title": "Academic Assistant",
       "org": "Chinese Students and Scholars Association Bristol",
+      "location": "Bristol, UK",
       "start": "2024-07",
-      "end": "present",
+      "end": "2025-04",
       "bullets": [
         "Academic resource curation and WeChat articles on admission timelines"
       ],
@@ -239,6 +263,7 @@
       "id": "geoscene",
       "title": "Campus Ambassador",
       "org": "GeoScene Information Technology",
+      "location": "Beijing, China",
       "start": "2021-08",
       "end": "2022-08",
       "bullets": [
