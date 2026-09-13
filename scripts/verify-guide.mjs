@@ -19,7 +19,17 @@ const fail = (msg) => { throw new Error(`✗ ${msg}`); };
 const mkPage = async (ctx) => {
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-  page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
+  // Turnstile 会在面板打开时加载并做反自动化指纹采集,过程中往控制台抛
+  // `%c%d font-size:0;color:transparent NaN` 这类 devtools 检测残留(零字号+透明色,
+  // 本意是让输出在真人控制台里看不见)。实测:不开面板 0 条、开面板才有,来源 URL 就是
+  // challenges.cloudflare.com;同一轮里**我们自己代码的 error 是 0 条**,聊天功能全正常。
+  // 它拦自动化浏览器本就是它的职责(§22.7),故按**来源域名**滤掉——不按文案滤,
+  // 免得哪天我们自己抛出长得像的报错也被一起吞掉。
+  page.on('console', (m) => {
+    if (m.type() !== 'error') return;
+    if ((m.location().url ?? '').includes('challenges.cloudflare.com')) return;
+    errors.push(`console: ${m.text()}`);
+  });
   // 人机验证换凭证的端点在这里统一 stub:每个用例都要用,放 mkPage 才不会漏
   // (真去 Cloudflare 既慢又依赖外网,而 headless 本来就拿不到真 token)
   await page.route('**/session', (route) =>
@@ -53,7 +63,11 @@ const interestsOf = (page) =>
   await page.fill('#chat-input', '他在和今做了什么?');
   await page.press('#chat-input', 'Enter');
   const chip = page.locator('.chat-guide-chip');
-  await chip.waitFor({ timeout: 5000 });
+  // 12s 而非 5s:实测 chip 稳定在 5.9-6.9s 才可见(三次测量 5914/6584/6854ms),
+  // 原来的 5s 卡得比实际只紧一点点,于是这个脚本长期误报。chip 本身没问题——
+  // href/文案/跳转全对,只是 /classify 与流式回复要跑完才轮到它渲染。
+  // 线上 /classify 中位 0.9-1.1s、回答本就流式输出数秒,访客此时仍在读,感知不到。
+  await chip.waitFor({ timeout: 12000 });
   const href = await chip.getAttribute('href');
   const label = await chip.textContent();
   if (href !== '/zh/cv#cv-heywhale') fail(`chip href 应为 /zh/cv#cv-heywhale,实得 ${href}`);

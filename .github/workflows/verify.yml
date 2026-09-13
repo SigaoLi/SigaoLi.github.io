@@ -11,17 +11,19 @@
 # 那比没有灯更糟。所以与 audit 同理——出事要知道，但不该挡住发布。
 # 观察一段时间，若确实稳定，再考虑是否升级成闸门。
 #
-# 覆盖范围：check-links + 6 个浏览器脚本，全部在**生产构建**（astro preview）上
+# 覆盖范围：check-links + 8 个浏览器脚本，全部在**生产构建**（astro preview）上
 # 实测稳定通过。覆盖照片页与灯箱、View Transitions 导航、i18n 路由与语言偏好、
-# 首页、作品页、CV 时间轴。
+# 首页、作品页、CV 时间轴、404 双语主副对调、聊天面板深链 chip 与打字动作路由。
 #
 # 其余 6 个故意不收，各有原因（2026-09-13 逐个实测）：
 #   verify-chat / verify-pin / verify-zoe  需要 worker 起在 8787
 #   verify-facts                           真实调付费模型，受 5 次/分钟限流
 #   verify-zoe-blank                       只在 astro dev 下通过；打生产构建会失败
-#   verify-typeroute / verify-guide        dev 与 preview 下**都**失败（既有问题，
-#                                          与本次改造无关，见 PRD §21 待查项）
 # 强收它们只会得到一盏恒红的灯，而恒红的灯等于没有灯。
+#
+# verify-typeroute / verify-guide 一度也在排除之列，2026-09-14 查清后收编：
+# 两者都不是站点问题——guide 卡在 5s 超时而 chip 实际 5.9-6.9s 才可见（已放宽到 12s），
+# 两者又都把 Turnstile 的反自动化指纹采集残留算成了页面报错（已按来源域名过滤）。
 name: Verify
 
 on:
@@ -73,7 +75,8 @@ jobs:
       - name: Browser checks
         run: |
           failed=""
-          for s in verify-lens verify-nav verify-i18n verify-home verify-work verify-phase4; do
+          for s in verify-lens verify-nav verify-i18n verify-home verify-work \
+                   verify-phase4 verify-typeroute verify-guide; do
             echo "::group::$s"
             if node "scripts/$s.mjs"; then
               echo "✓ $s"

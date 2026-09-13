@@ -23,6 +23,9 @@ const mkPage = async (ctx) => {
   page.on('console', (m) => {
     if (m.type() !== 'error') return;
     if (/status of 404/.test(m.text())) return;
+    // Turnstile 的反自动化指纹采集(见 mkPage 同款注释):按**来源域名**滤,不按文案,
+    // 这样我们自己代码的报错一条都漏不掉。
+    if ((m.location().url ?? '').includes('challenges.cloudflare.com')) return;
     errors.push(`console: ${m.text()}`);
   });
   return page;
