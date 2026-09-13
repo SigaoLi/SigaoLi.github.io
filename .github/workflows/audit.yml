@@ -1,0 +1,35 @@
+# 依赖漏洞巡检 —— 每周一次，失败只发邮件，不阻断任何发布。
+#
+# 为什么从 deploy.yml 里搬出来（2026-09-13，PRD §21）：
+# npm audit 查的是**当天的**公告库，不是仓库里的代码。同一份代码昨天绿、今天红，
+# 只因为半夜有人给某个上游包提了漏洞报告。它原先是 build 的 needs，于是
+# 9-13 那次推送 12 秒挂在 audit、build 根本没启动，照片那批就此没上线——
+# 而失败与那批改动毫无关系。把「别人的事故」挡在自己的发布路径上不划算，
+# 故改为定时巡检：出事照样知道（GitHub 会就失败的 job 发邮件），但不挡发布。
+name: Weekly audit
+
+on:
+  schedule:
+    # 每周一 03:00 UTC（北京时间 11:00），错开工作日早高峰的 Actions 排队
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: npm audit (fail on high+)
+        run: npm audit --audit-level=high
+
+      # worker/ 是独立的 npm 项目，**故意不在这里扫**。2026-09-13 实测它有 7 个
+      # high，全在 wrangler（部署 CLI，devDep）与 MCP SDK 的传递依赖上——
+      # browserslist / fast-uri / @hono/node-server 这类构建期工具，不是真正跑在
+      # Worker 上的代码。加进来会让这封邮件从第一周起就是红的，而一封恒红的警报
+      # 等于没有警报。要收编它，得先把那批依赖清干净（见 PRD §21）。
