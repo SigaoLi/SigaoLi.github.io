@@ -54,20 +54,17 @@
   ],
   "experience": [
     {
-      "id": "ibm-uob",
-      "title": "Business Analytics Consultant",
-      "org": "IBM & University of Bristol",
-      "location": "Bristol, UK",
-      "start": "2025-01",
-      "end": "2025-04",
+      "id": "heywhale",
+      "title": "Consulting Project Manager",
+      "org": "Heywhale",
+      "location": "Shanghai, China",
+      "start": "2026-01",
+      "end": "2026-04",
       "bullets": [
         "Designed a web-based portal using NLP for sentiment analysis on annual reports, tweets and responses",
         "Performed MOST, SWOT and PESTLE analysis with visualised results"
       ],
-      "urls": [
-        "https://www.ibm.com/",
-        "https://www.bristol.ac.uk/"
-      ]
+      "url": "https://www.heywhale.com/"
     },
     {
       "id": "piinpoint",
