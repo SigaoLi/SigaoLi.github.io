@@ -48,3 +48,24 @@ test('两边都消失了算彻底删除', () => {
   const base = { en: hashOf('E'), zh: hashOf('Z') };
   assert.equal(pairState(base, null, null).kind, 'gone');
 });
+
+test('CRLF 与 LF 视为同一内容', () => {
+  // 本仓库 core.autocrlf=true：脚本写出 LF、git checkout 回来是 CRLF。
+  // 不归一化的话，同一份内容会因为经手者不同而算出两个哈希，基线随即失效。
+  assert.equal(hashOf('a\r\nb\r\n'), hashOf('a\nb\n'));
+});
+
+test('末尾换行的有无不算内容变化', () => {
+  assert.equal(hashOf('a\nb'), hashOf('a\nb\n'));
+  assert.equal(hashOf('a\nb\n'), hashOf('a\nb\n\n'));
+});
+
+test('真正的内容差异仍然区分得出来', () => {
+  assert.notEqual(hashOf('a\nb\n'), hashOf('a\nc\n'));
+  assert.notEqual(hashOf('a\nb\n'), hashOf('a\n b\n'), '行内空白仍是差异');
+});
+
+test('换行差异不会让文件对被误判成有改动', () => {
+  const base = { en: hashOf('E\nline\n'), zh: hashOf('Z\nline\n') };
+  assert.equal(pairState(base, 'E\r\nline\r\n', 'Z\r\nline\r\n').kind, 'unchanged');
+});

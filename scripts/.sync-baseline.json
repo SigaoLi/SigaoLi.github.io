@@ -1,50 +1,50 @@
 {
   "src/content/cases/csr-scraper.md": {
-    "en": "c3b7333527da8c8b",
-    "zh": "bfec32400bfa534f"
+    "en": "4874605ef222667f",
+    "zh": "109b3e2155023759"
   },
   "src/content/cases/email-agent.md": {
-    "en": "2fa467fedc8bf577",
-    "zh": "60a95be7fbd5ec38"
+    "en": "6083a5d34acc6d40",
+    "zh": "3253d72fb4755a82"
   },
   "src/content/cases/gisphere-llm.md": {
-    "en": "fe5cb7e849965bfc",
-    "zh": "b7f164a6f8b41e41"
+    "en": "d6f89083bc848cbc",
+    "zh": "6d8b5be01739085a"
   },
   "src/content/cases/gisphere-platform.md": {
-    "en": "5bd5e0e43d52081c",
-    "zh": "0d1409a4cde7d931"
+    "en": "776700f087efd23b",
+    "zh": "b84eedfe24644d07"
   },
   "src/content/cases/ibm-finance.md": {
-    "en": "5510e726b475939d",
-    "zh": "3eb1de6c19e3629c"
+    "en": "5d370a96d4c814d3",
+    "zh": "dc1c62dba228dff6"
   },
   "src/content/research/business-geography.md": {
-    "en": "abfc894bc51b75e7",
-    "zh": "18a7b72e2b92bcfb"
+    "en": "0c8a7d1923e9551e",
+    "zh": "e20a5f13a8ca6a02"
   },
   "src/content/research/crime-analysis.md": {
-    "en": "8c1bc215923add68",
-    "zh": "e1d2efb7a7a5ccf5"
+    "en": "b471080d86469edc",
+    "zh": "2f905e0cad73ee2f"
   },
   "src/content/research/environmental-monitoring.md": {
-    "en": "d64d5150632023d3",
-    "zh": "acb33bf918fd38c0"
+    "en": "71c4f1360661c285",
+    "zh": "2f1485da848aaa08"
   },
   "src/content/research/public-health.md": {
-    "en": "027625b41edd7a1a",
-    "zh": "efe0effd5247159a"
+    "en": "278ef5153ed9c41c",
+    "zh": "2c7a5bb3b509b625"
   },
   "src/content/research/quantitative-finance.md": {
-    "en": "7f0a61706225ddad",
-    "zh": "e634ace46d092a62"
+    "en": "bc8a82ccfa360e86",
+    "zh": "2a048783eb24fe4d"
   },
   "src/content/research/web-analytics.md": {
-    "en": "edc7778bd93df4f4",
-    "zh": "e759a247ffb5f2cb"
+    "en": "4aacf80ec3586218",
+    "zh": "21621f0621bae6c4"
   },
   "src/data/cv.json": {
-    "en": "380800fe48f27810",
-    "zh": "353a44cc51557b6a"
+    "en": "083b4e242b160d3c",
+    "zh": "f33dcc3d31b660c5"
   }
 }
