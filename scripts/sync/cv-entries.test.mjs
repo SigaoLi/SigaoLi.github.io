@@ -31,15 +31,20 @@ test('有 id 的各区中英逐条对齐', () => {
   assert.deepEqual(pick(en()), pick(zh()), '有 id 的区应逐条对齐');
 });
 
-test('certifications 中英不等长，正是管线要补的缺口', () => {
-  // 实测：中文 5 条、英文 2 条（多出 PMP / 驾驶证 / CPR·AED）。
-  // 「某条只在一边」是设计里明确要处理的情形——翻译补到对面，不是错误。
-  // 这条测试钉住现状，免得日后有人误以为两边本该等长而去改逻辑迁就。
-  const enKeys = Object.keys(toUnits(en())).filter((k) => k.startsWith('certifications:'));
-  const zhKeys = Object.keys(toUnits(zh())).filter((k) => k.startsWith('certifications:'));
-  assert.ok(zhKeys.length > enKeys.length, `中文侧证书应多于英文侧，实得 zh ${zhKeys.length} / en ${enKeys.length}`);
-  // 公共部分仍按下标对齐
-  for (let i = 0; i < enKeys.length; i++) assert.equal(enKeys[i], zhKeys[i]);
+test('一边多出的条目照样出单元——那正是管线要补的缺口', () => {
+  // 用固定样例而不是真实 cv.json：断言「两边差几条」会在数据处于待同步状态时
+  // 无辜变红，而那恰恰是管线正常工作的中间态。这里测的是函数行为。
+  // （2026-09-14 真实数据里就有过这样的缺口：中文证书 5 条、英文 2 条，
+  //  多出 PMP / 驾驶证 / CPR·AED；Sigao 定为删两条、补 PMP 进英文。）
+  const few = { certifications: [{ title: 'A' }, { title: 'B' }] };
+  const many = { certifications: [{ title: 'A' }, { title: 'B' }, { title: 'C' }] };
+  const fewKeys = Object.keys(toUnits(few));
+  const manyKeys = Object.keys(toUnits(many));
+  assert.deepEqual(fewKeys, ['certifications:0', 'certifications:1']);
+  assert.deepEqual(manyKeys, ['certifications:0', 'certifications:1', 'certifications:2']);
+  // 多出的那条会被识别为「只在一边」，交给编排器翻译补过去
+  const onlyInMany = manyKeys.filter((k) => !fewKeys.includes(k));
+  assert.deepEqual(onlyInMany, ['certifications:2']);
 });
 
 test('applyUnit 按 id 就地替换，不动别的条目', () => {
