@@ -88,6 +88,11 @@ jobs:
           done
           if [ -n "$failed" ]; then
             echo "::error::验收未通过:$failed"
+            # 预览服务器的日志——本地跑不出的失败，线索常在这里（端口占用、
+            # 资源 404、SSR 报错）。CI 里看不到浏览器，能捞的现场就这么多。
+            echo "::group::预览服务器日志"
+            cat /tmp/preview.log || echo "(无日志)"
+            echo "::endgroup::"
             exit 1
           fi
           echo "全部通过"
@@ -95,7 +100,9 @@ jobs:
       # 失败时把截图捞出来——CI 里看不到浏览器，截图是唯一的现场。
       - name: Upload screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        # v5+：v4 仍是 Node 20 运行时，GitHub 2025-09 起弃用并强制跑在 Node 24 上。
+        # 仓库其余 action 早已升代（checkout@v7 / setup-node@v6 / cache@v6），这条是漏的。
+        uses: actions/upload-artifact@v5
         with:
           name: verify-screenshots
           path: shots/
