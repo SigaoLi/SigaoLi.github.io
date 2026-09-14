@@ -59,3 +59,26 @@ test('剥掉代码围栏', async () => {
   );
   assert.equal(out, 'title: "X"');
 });
+
+test('传了 existing 就走修订：现有译文会进提示词', async () => {
+  // 修订模式的价值在于保住人工润色过的用词。这里只验「现有译文确实被送进去了」，
+  // 至于模型听不听话，靠真实跑测（见 docs/bilingual-sync-design.md）。
+  let sent = null;
+  const f = async (_url, opts) => { sent = JSON.parse(opts.body); return reply('title: "X"'); };
+  await translate(
+    { dir: 'zh2en', text: 'title: "某某"', existing: 'title: "air-gapped original"' },
+    { fetch: f, base: 'https://x/v1', key: 'k', backoffMs: () => 0 }
+  );
+  const user = sent.messages.find((m) => m.role === 'user').content;
+  assert.match(user, /air-gapped original/, '现有译文应出现在提示词里');
+  assert.match(user, /修订/, '应明确要求修订而非重译');
+});
+
+test('不传 existing 则是纯翻译，提示词里没有修订指令', async () => {
+  let sent = null;
+  const f = async (_url, opts) => { sent = JSON.parse(opts.body); return reply('title: "X"'); };
+  await translate({ dir: 'zh2en', text: 'title: "某某"' },
+    { fetch: f, base: 'https://x/v1', key: 'k', backoffMs: () => 0 });
+  const user = sent.messages.find((m) => m.role === 'user').content;
+  assert.ok(!user.includes('修订'), '新增文件是从零翻译，不该带修订指令');
+});

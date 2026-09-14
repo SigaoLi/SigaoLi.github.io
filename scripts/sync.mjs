@@ -122,7 +122,8 @@ for (const p of pending) {
       continue;
     }
 
-    const out = await translate({ dir, text: curr }, api);
+    // 带上对面现有译文 → 走「修订」而非「重译」，保住人工润色过的用词
+    const out = await translate({ dir, text: curr, existing: other }, api);
     const dst = changed === 'zh' ? p.en : p.zh;
     writeFileSync(dst, out.endsWith('\n') ? out : out + '\n');
     baseline[p.key] = { en: hashOf(read(p.en)), zh: hashOf(read(p.zh)) };
@@ -170,7 +171,8 @@ async function syncCv(p, changed, enRaw, zhRaw, api) {
       ? await isStale({ dir: changed, before: JSON.stringify(beforeUnit, null, 1), after: text, other: JSON.stringify(mirror, null, 1) }, api)
       : { stale: true, why: '取不到改动前的条目，保守重译' };
     if (!v.stale) continue;
-    next = applyUnit(next, key, JSON.parse(await translate({ dir, text }, api)));
+    // 同 md 分支：带上对面现有条目，走修订而非重译
+    next = applyUnit(next, key, JSON.parse(await translate({ dir, text, existing: JSON.stringify(mirror, null, 1) }, api)));
     changedCount++;
     console.log(`    ~ ${key}（${v.why}）`);
   }

@@ -64,7 +64,25 @@ const defaultBackoff = (n) => [1000, 4000, 9000][n] ?? 9000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * @param {{dir:'zh2en'|'en2zh', text:string}} job
+ * 传了 `existing`（对面现有的译文）时，改为「修订」而不是「重译」——
+ * 只动真正需要动的地方，其余沿用原有措辞。
+ *
+ * 为什么要这条：实测只改中文一个词组（数十家→上百家），整篇重译会顺手把
+ * 人工润色过的用词一起磨平——air-gapped→running fully offline、
+ * cookie walls→cookie banners、lookalike→similar。译文本身没错，但笔迹没了。
+ * 这与语义判定的初衷是同一件事：别让机器冲掉人写的东西。
+ */
+const REVISE_NOTE = `
+
+【重要】下面附上对面现有的译文。它多半经过人工润色，用词是刻意选的。
+请把这次当作**修订**而非重译：
+- 逐句比对，只改动那些因原文变化而**确实不再准确**的地方
+- 其余句子、词组、标点**原样保留**，即使你觉得有更好的说法
+- 尤其不要替换已有的精准用词（如 air-gapped、cookie walls、lookalike 这类）
+- 输出仍是完整文件，但应与现有译文尽可能接近`;
+
+/**
+ * @param {{dir:'zh2en'|'en2zh', text:string, existing?:string}} job
  * @param {{fetch:Function, base:string, key:string, backoffMs?:Function}} deps
  * @returns {Promise<string>}
  */
@@ -76,6 +94,9 @@ export async function translate(job, deps) {
   const instruction = zh2en
     ? '下面是一个双语网站的内容片段。请输出完整的英文版本，保留原有的 Markdown / YAML 结构。'
     : '下面是一个双语网站的内容片段。请输出完整的中文版本，保留原有的 Markdown / YAML 结构。';
+  const user = job.existing
+    ? `${instruction}${REVISE_NOTE}\n\n【改动后的原文】\n${job.text}\n\n【对面现有译文】\n${job.existing}`
+    : `${instruction}\n\n${job.text}`;
 
   let last;
   for (let i = 0; i < RETRIES; i++) {
@@ -86,7 +107,7 @@ export async function translate(job, deps) {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
         body: JSON.stringify({
           model,
-          messages: [{ role: 'system', content: system }, { role: 'user', content: `${instruction}\n\n${job.text}` }],
+          messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
           max_tokens: 8000,
           temperature: 0.2,
         }),
