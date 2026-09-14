@@ -1,4 +1,11 @@
 #!/bin/sh
-# 照片入站：把 _inbox/ 里的原图分拣进仓库，产物并入本次提交。
-# 收件箱为空时 ingest.mjs 立即退出，日常提交不受影响。
-exec node scripts/ingest.mjs
+# 提交前的两条自动链路。两者都在「没活干」时立即退出，日常提交零开销。
+#   ① 照片入站：_inbox/ 里的原图分拣进仓库
+#   ② 双语同步：改了中文或英文，另一边自动跟上
+# 任一失败都以非零码退出，commit 随之中止。
+#
+# 注意别改回 `exec node ...`：exec 会用新进程替换掉当前 shell，
+# 第二条链路永远轮不到运行。
+set -e
+node scripts/ingest.mjs
+node scripts/sync.mjs
