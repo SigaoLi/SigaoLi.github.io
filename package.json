@@ -10,8 +10,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "test": "node --test \"scripts/ingest/*.test.mjs\"",
-    "ingest": "node scripts/ingest.mjs"
+    "test": "node --test \"scripts/ingest/*.test.mjs\" \"scripts/sync/*.test.mjs\"",
+    "ingest": "node scripts/ingest.mjs",
+    "sync": "node scripts/sync.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

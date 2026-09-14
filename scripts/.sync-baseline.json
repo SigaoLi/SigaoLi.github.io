@@ -1,0 +1,50 @@
+{
+  "src/content/cases/csr-scraper.md": {
+    "en": "c3b7333527da8c8b",
+    "zh": "bfec32400bfa534f"
+  },
+  "src/content/cases/email-agent.md": {
+    "en": "2fa467fedc8bf577",
+    "zh": "60a95be7fbd5ec38"
+  },
+  "src/content/cases/gisphere-llm.md": {
+    "en": "fe5cb7e849965bfc",
+    "zh": "b7f164a6f8b41e41"
+  },
+  "src/content/cases/gisphere-platform.md": {
+    "en": "5bd5e0e43d52081c",
+    "zh": "0d1409a4cde7d931"
+  },
+  "src/content/cases/ibm-finance.md": {
+    "en": "5510e726b475939d",
+    "zh": "3eb1de6c19e3629c"
+  },
+  "src/content/research/business-geography.md": {
+    "en": "abfc894bc51b75e7",
+    "zh": "18a7b72e2b92bcfb"
+  },
+  "src/content/research/crime-analysis.md": {
+    "en": "8c1bc215923add68",
+    "zh": "e1d2efb7a7a5ccf5"
+  },
+  "src/content/research/environmental-monitoring.md": {
+    "en": "d64d5150632023d3",
+    "zh": "acb33bf918fd38c0"
+  },
+  "src/content/research/public-health.md": {
+    "en": "027625b41edd7a1a",
+    "zh": "efe0effd5247159a"
+  },
+  "src/content/research/quantitative-finance.md": {
+    "en": "7f0a61706225ddad",
+    "zh": "e634ace46d092a62"
+  },
+  "src/content/research/web-analytics.md": {
+    "en": "edc7778bd93df4f4",
+    "zh": "e759a247ffb5f2cb"
+  },
+  "src/data/cv.json": {
+    "en": "c237e3f1ff02d03c",
+    "zh": "fb9455985d81be82"
+  }
+}

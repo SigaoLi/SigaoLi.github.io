@@ -106,10 +106,17 @@ language at [`/privacy`](https://sigaoli.com/privacy).
 
 ## Editing content
 
-- **Case studies / research**: edit `src/content/cases/*.md` (en), then run the translate
-  script — or edit the `-zh` files directly (they're override-protected afterwards).
-- **CV**: edit `src/data/cv.json` (+ `cv.zh.json`); the timeline, `/resume.json` and
+- **Case studies / research**: edit either language and commit. The pre-commit hook works out
+  which side moved, asks a model whether the edit actually changed what the other side must
+  say, and only then revises it — passing the existing translation along so a changed fact
+  gets fixed without the rest of your wording being rewritten. Polish one language and the
+  other is left alone. Edit both in one commit and that counts as already handled by hand.
+  See `docs/bilingual-sync-design.md`.
+- **CV**: edit `src/data/cv.json` or `cv.zh.json` — the hook keeps the other in step entry by
+  entry, so changing one role doesn't touch the rest. The timeline, `/resume.json` and
   `/llms-full.txt` all render from it. Replace `public/files/pdf/CV__Sigao_Li.pdf` alongside.
+  (`skills` is deliberately left out of the sync: the two languages use different shapes there
+  and the renderer handles both.)
 - **UI strings & hero copy**: hand-written bilingual dictionary in `src/lib/i18n.ts`.
 - **Photos**: drop the full-resolution originals into `_inbox/` and commit. The pre-commit
   hook files them by GPS, archives the originals to `_originals/` (never committed), derives

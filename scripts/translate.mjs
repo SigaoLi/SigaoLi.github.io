@@ -1,8 +1,19 @@
-// Build-time translation pipeline (PRD §10.2). Runs LOCALLY only — the key
+// ⚠️ 历史件（2026-09-14 退役），不要运行。职责已由 scripts/sync.mjs 接管——
+// 它是双向的（改中文或英文都行、方向自动推断），用语义判定决定要不要重译，
+// 且带上现有译文走「修订」而非重译，不会冲掉人工润色。
+//
+// 为什么退役而不是删掉：这套 W1「信达雅分层」提示词是 2026-06 两轮对比实验
+// 的成果（见 scripts/prompt-bench*-result.md），sync/translate.mjs 沿用了同一段
+// 文本，这里留作出处。另外它的 override 保护最终让 12 个文件全部停摆——
+// 那段历史值得留个实物。
+//
+// 原说明：Build-time translation pipeline (PRD §10.2). Runs LOCALLY only — the key
 // lives in .env and never enters git or CI. Translated output is committed
 // and human-reviewed; manually edited targets are never overwritten.
-//
-// Usage: node scripts/translate.mjs [--force]
+if (!process.env.ALLOW_LEGACY_TRANSLATE) {
+  console.error('scripts/translate.mjs 已退役，请用 npm run sync（scripts/sync.mjs）。');
+  process.exit(1);
+}
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
