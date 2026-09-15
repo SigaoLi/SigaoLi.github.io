@@ -1,0 +1,75 @@
+# 在 Linux 上重新生成 package-lock.json，然后提交回仓库。手动触发，不自动跑。
+#
+# 为什么需要它（PRD §21，2026-09-15）：
+# 这个 lock 平时在 Windows 上维护，而 **npm 只把当前平台解析得到的可选依赖
+# 写进 lock**。CI 是 Linux，需要 sharp 的 @emnapi/core 与 @emnapi/runtime，
+# Windows 上装不到、也就没被记录 —— 于是 `npm ci` 在 CI 上以 EUSAGE 秒退。
+# Deploy 因为走 `npm install` 一直无感，只有 Verify 用 `npm ci` 才暴露。
+#
+# 跑完这个之后，Verify 就能换回 `npm ci`（拿回可复现性），且换回前
+# 本工作流自己会先验一遍 npm ci 真的能过。
+#
+# 什么时候再跑：任何一次在 Windows 上改动依赖（npm install / 升级 / 改
+# overrides）之后。否则 lock 又会退回只记 Windows 的状态。
+name: Relock on Linux
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  relock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      # 删掉重生成，而不是增量更新 —— 增量会保留 Windows 那次留下的形状。
+      - name: Regenerate the lock on Linux
+        run: |
+          rm -f package-lock.json
+          npm install --no-audit --no-fund
+          echo "--- 新 lock 里的 @emnapi 条目（Windows 上生成时缺的就是这些）---"
+          grep -n '"node_modules/@emnapi' package-lock.json || echo "(仍无顶层 @emnapi，见下方 npm ci 自检结果)"
+
+      # 关键自检：确认新 lock 真的能过 npm ci。
+      # ⚠️ 不要用 `npm ci --dry-run` 代替 —— 实测它对出错的 lock 也报通过，
+      # 拿它当验证手段会得出错误结论（2026-09-15 栽过）。
+      - name: Prove npm ci now works
+        run: |
+          rm -rf node_modules
+          npm ci --no-audit --no-fund
+          echo "npm ci 通过 ✓"
+
+      - name: Build with the new lock
+        run: npm run build
+
+      - name: Commit if the lock changed
+        run: |
+          if git diff --quiet package-lock.json; then
+            echo "lock 没有变化，无需提交"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          # heredoc 而不是 -m "多行…"：块标量里顶到行首的续行会被 YAML
+          # 当成新的映射键，整个文件就解析不了了。
+          git commit -F - <<'MSG'
+          Regenerate the lock where the CI actually runs
+
+          Generated on Linux, so the optional dependencies that only exist
+          there - sharp's @emnapi/core and @emnapi/runtime - are written down.
+          A lock made on Windows omits them and npm ci refuses to install.
+
+          Verified in place: npm ci and a full build both pass on this lock.
+
+          Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+          MSG
+          git push
