@@ -47,15 +47,21 @@ jobs:
           node-version: 22
           cache: npm
 
-      # 用 npm install 而不是 npm ci —— 不是图省事，是 ci 在这里跑不起来：
-      # package-lock.json 在 Windows 上维护，而 npm 只把**当前平台**解析得到的
-      # 可选依赖写进 lock。CI 是 Linux，需要 sharp 的 @emnapi/core 与
-      # @emnapi/runtime（1.11.3），Windows 上根本装不到、也就没进 lock，
-      # 于是 npm ci 在 20 秒内以 EUSAGE 退出：「lock 与 package.json 不同步」。
-      # 试过 `npm install --package-lock-only --os=linux --cpu=x64` 重建，补不出这两个。
-      # 要真修得在 Linux 上生成 lock；在那之前 install 是诚实的选择——
-      # 部署那条链路（withastro/action）本来也是 install，两边就此一致。
-      - run: npm install --no-audit --no-fund
+      # 换回 npm ci（2026-09-15）：lock 已由 relock.yml 在 Linux 上重生成，
+      # 补齐了 sharp 在 Linux 侧需要的 @emnapi/core 与 @emnapi/runtime（1.11.3）。
+      # 在 Windows 上生成的 lock 缺这两个，npm ci 会在 20 秒内 EUSAGE 秒退。
+      #
+      # ⚠️ 如果这一步又开始报「lock 与 package.json 不同步」，别改成 npm install
+      # 了事——那是 lock 又退回只记 Windows 了，去 Actions 手动跑一次
+      # 「Relock on Linux」即可。npm ci 值得留着：它保证 CI 装的就是 lock 里写的。
+      # npm ci 失败几乎只有一个原因：lock 又变回只记 Windows 了。
+      # 与其让人对着 EUSAGE 那一大段去猜，不如当场说清楚该做什么。
+      - name: Install
+        run: |
+          if ! npm ci --no-audit --no-fund; then
+            echo "::error title=lock 需要在 Linux 上重生成::npm ci 装不了，通常是因为 package-lock.json 最近在 Windows 上被改过（npm install / 升级依赖 / 改 overrides 都会）。npm 只把当前平台解析得到的可选依赖写进 lock，Linux 侧缺的那些就丢了。修法：去 Actions 手动跑一次「Relock on Linux」，它会重生成并提交回来。"
+            exit 1
+          fi
 
       # 只装 chromium。脚本全部用 chromium，装齐三家浏览器会白等两分钟。
       - name: Install Chromium
