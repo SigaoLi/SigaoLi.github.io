@@ -31,3 +31,6 @@ _originals/
 # 照片收件箱 —— 待处理的原图暂存在这里，由 pre-commit 钩子分拣后清空。
 # 绝不进 git：里面是全分辨率原图，带未脱敏的精确 GPS。
 _inbox/
+
+# Playwright trace（验收脚本失败时留下的现场录像，CI 上传为 artifact）
+shots/traces/

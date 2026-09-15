@@ -138,3 +138,15 @@ jobs:
           path: shots/
           retention-days: 7
           if-no-files-found: ignore
+
+      # Trace 是失败时唯一能真正回放现场的东西：每步的 DOM 快照、网络、控制台、
+      # 截图。下载后拖进 https://trace.playwright.dev 即可逐帧看。
+      # 脚本通过时会自己删掉，所以这里有东西就意味着确实有脚本失败了。
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: verify-traces
+          path: shots/traces/
+          retention-days: 14
+          if-no-files-found: ignore

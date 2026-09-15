@@ -9,8 +9,12 @@
 //   ⑥ 灯箱缩略图点击:+10 photography
 // /classify 与 /chat 全部 stub——不耗模型调用,不受限流影响。前置:astro dev(4321)。
 import { chromium } from 'playwright';
+import { traceOnFailure } from './lib/trace.mjs';
 
 const browser = await chromium.launch();
+// 这个脚本会间歇性失败（2026-09-15），而失败时只有一行「✗」可看。
+// 录下来，失败才留；通过就自动删。回放：https://trace.playwright.dev
+traceOnFailure(browser, 'verify-guide');
 const errors = [];
 let n = 0;
 const ok = (msg) => console.log(`✓ ${++n} ${msg}`);

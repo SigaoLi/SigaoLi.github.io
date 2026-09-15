@@ -1,9 +1,11 @@
 // Phase 5 verification: zh routes, language toggle, auto-detection, hreflang.
 import { chromium } from 'playwright';
+import { traceOnFailure } from './lib/trace.mjs';
 
 const base = 'http://localhost:4321';
 const errors = [];
 const browser = await chromium.launch();
+traceOnFailure(browser, 'verify-i18n');
 
 async function check(name, ok) { console.log(`${ok ? 'PASS' : 'FAIL'} ${name}`); return ok; }
 

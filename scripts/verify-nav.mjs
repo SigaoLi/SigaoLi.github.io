@@ -1,10 +1,12 @@
 // Regression test for View Transitions navigation: real link clicks,
 // asserting .reveal elements end visible (opacity ~1) at every step.
 import { chromium } from 'playwright';
+import { traceOnFailure } from './lib/trace.mjs';
 
 const base = 'http://localhost:4321';
 const errors = [];
 const browser = await chromium.launch();
+traceOnFailure(browser, 'verify-nav');
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.on('console', (m) => m.type() === 'error' && errors.push(`[console] ${m.text()}`));
 page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}`));

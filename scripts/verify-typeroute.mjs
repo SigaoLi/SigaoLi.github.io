@@ -8,9 +8,11 @@
 // /classify 与 /chat 全部 stub——不耗模型调用,不受限流影响。前置:astro dev(4321)。
 // 注:playZ 要等 canplay 才 showEl,故断言片段前须等它真正上屏(只等 state=type 会读到上一段)。
 import { chromium } from 'playwright';
+import { traceOnFailure } from './lib/trace.mjs';
 
 const BASE = 'http://localhost:4321';
 const browser = await chromium.launch();
+traceOnFailure(browser, 'verify-typeroute');
 const errors = [];
 let n = 0;
 const ok = (m) => console.log(`✓ ${++n} ${m}`);

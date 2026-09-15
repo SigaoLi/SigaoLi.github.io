@@ -1,9 +1,11 @@
 // Phase 1 verification: screenshots + console error collection for the Home page.
 import { chromium } from 'playwright';
+import { traceOnFailure } from './lib/trace.mjs';
 
 const base = 'http://localhost:4321';
 const errors = [];
 const browser = await chromium.launch();
+traceOnFailure(browser, 'verify-home');
 
 async function newPage(opts = {}) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, ...opts });
