@@ -8,24 +8,13 @@
     "check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250705.0",
+    "@cloudflare/workers-types": "^5.20260911.1",
     "typescript": "^5.5.0",
-    "wrangler": "^4.24.0"
+    "wrangler": "^4.131.2"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "agents": "^0.17.3",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "agents": "^0.23.0",
     "zod": "^4.4.3"
-  },
-  "overrides": {
-    "browserslist": "4.28.9",
-    "baseline-browser-mapping": "2.11.23",
-    "fast-uri": "4.1.5",
-    "ip-address": "10.7.1",
-    "sharp": "0.35.4",
-    "undici": "7.29.0",
-    "hono": "4.13.8",
-    "@hono/node-server": "2.1.1",
-    "qs": "6.16.0"
   }
 }
