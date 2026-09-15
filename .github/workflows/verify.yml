@@ -37,6 +37,9 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # 兜底闸。GitHub 默认放任 job 跑 6 小时——真卡住的话既白烧额度，
+    # 又要等半天才看得到红灯。整套本地约 5 分钟，20 分钟绰绰有余。
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -72,17 +75,29 @@ jobs:
 
       # 逐个跑而不是 && 串联：串联会在第一个失败处停下，看不到后面几个的结果。
       # 这里让它们全跑完，最后统一判定——一次 push 就能看全所有问题。
+      # 每个脚本单独限时 4 分钟。本地实测最重的 verify-guide 单跑 53-61 秒，
+      # CI 机器慢些也远够；但它会**间歇性卡住**（本地在连跑长序列时复现过两次，
+      # 单跑六次又全过）。没有超时的话，一个卡住的脚本会挂到整个 job 被杀，
+      # 日志里只剩一片空白——正是最难查的那种失败。
+      # 超时按失败记，并单独标出来，免得和真正的断言失败混为一谈。
       - name: Browser checks
         run: |
           failed=""
           for s in verify-lens verify-nav verify-i18n verify-home verify-work \
                    verify-phase4 verify-typeroute verify-guide; do
             echo "::group::$s"
-            if node "scripts/$s.mjs"; then
-              echo "✓ $s"
+            start=$(date +%s)
+            if timeout 240 node "scripts/$s.mjs"; then
+              echo "✓ $s（$(($(date +%s)-start))s）"
             else
-              echo "✗ $s"
-              failed="$failed $s"
+              code=$?
+              if [ "$code" = "124" ]; then
+                echo "✗ $s 超时（240s 未结束）"
+                failed="$failed $s(超时)"
+              else
+                echo "✗ $s（退出码 $code）"
+                failed="$failed $s"
+              fi
             fi
             echo "::endgroup::"
           done
