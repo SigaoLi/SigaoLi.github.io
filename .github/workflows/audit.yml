@@ -28,8 +28,13 @@ jobs:
       - name: npm audit (fail on high+)
         run: npm audit --audit-level=high
 
-      # worker/ 是独立的 npm 项目，**故意不在这里扫**。2026-09-13 实测它有 7 个
-      # high，全在 wrangler（部署 CLI，devDep）与 MCP SDK 的传递依赖上——
-      # browserslist / fast-uri / @hono/node-server 这类构建期工具，不是真正跑在
-      # Worker 上的代码。加进来会让这封邮件从第一周起就是红的，而一封恒红的警报
-      # 等于没有警报。要收编它，得先把那批依赖清干净（见 PRD §21）。
+      # worker/ 是独立的 npm 项目，原先不在 audit 范围内。2026-09-13 发现它有 7 个
+      # high，当时**故意不收**——收进来这封邮件从第一周起就是红的，而恒红的警报
+      # 等于没有警报。2026-09-15 用 overrides 清零后才收编。
+      #
+      # ⚠️ 别指望 `npm audit fix` 能修它：那会把 wrangler 升到要 workers-types v5
+      # 的版本，而 agents 底下的 partyserver 钉在 v4，两者要的是不同大版本。
+      # 现在靠 worker/package.json 的 overrides 钉住有洞的包、不动 wrangler。
+      - name: npm audit — worker/
+        working-directory: worker
+        run: npm audit --audit-level=high
