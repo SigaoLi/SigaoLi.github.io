@@ -67,11 +67,13 @@ const interestsOf = (page) =>
   await page.fill('#chat-input', '他在和今做了什么?');
   await page.press('#chat-input', 'Enter');
   const chip = page.locator('.chat-guide-chip');
-  // 12s 而非 5s:实测 chip 稳定在 5.9-6.9s 才可见(三次测量 5914/6584/6854ms),
-  // 原来的 5s 卡得比实际只紧一点点,于是这个脚本长期误报。chip 本身没问题——
-  // href/文案/跳转全对,只是 /classify 与流式回复要跑完才轮到它渲染。
-  // 线上 /classify 中位 0.9-1.1s、回答本就流式输出数秒,访客此时仍在读,感知不到。
-  await chip.waitFor({ timeout: 12000 });
+  // 等 chip 一律 18s。实测八次可见耗时 5915/6909/7075/7255/7498/8029/8591/8701ms
+  // ——**最慢 8.7s**,而此前三处分别只给 12s/15s/10s,10s 那处余量仅 1.3s,
+  // 于是脚本间歇性误报(2026-09-15 复现在第 241 行)。chip 本身没问题:
+  // href/文案/跳转全对,只是 /classify 与流式回复跑完才轮到它渲染。
+  // ⚠️ 上一轮只放宽了当时踩到的那一处、没去看还有没有同类——同一个毛病
+  // (修一处不找同类)在本项目已出现三次,见 PRD §26.3。
+  await chip.waitFor({ timeout: 18000 });
   const href = await chip.getAttribute('href');
   const label = await chip.textContent();
   if (href !== '/zh/cv#cv-heywhale') fail(`chip href 应为 /zh/cv#cv-heywhale,实得 ${href}`);
@@ -168,7 +170,7 @@ const interestsOf = (page) =>
   await page.fill('#chat-input', '他在和今做了什么?');
   await page.press('#chat-input', 'Enter');
   const chip = page.locator('.chat-guide-chip');
-  await chip.waitFor({ timeout: 15000 });
+  await chip.waitFor({ timeout: 18000 }); // 同上:按实测最慢 8.7s 的两倍留余量
   const href = await chip.getAttribute('href');
   if (!(await page.locator('.chat-msg.bot.pending').count())) fail('前置不成立:首 token 已到,测不到目标窗口');
 
@@ -238,7 +240,7 @@ const interestsOf = (page) =>
   await page.click('#chat-fab');
   await page.fill('#chat-input', '他在爱奇艺做了什么?');
   await page.press('#chat-input', 'Enter');
-  await page.locator('.chat-guide-chip').waitFor({ timeout: 10000 });
+  await page.locator('.chat-guide-chip').waitFor({ timeout: 18000 }); // 同上;原 10s 余量仅 1.3s,正是本轮复现的失败点
   const zhLabel = (await page.locator('.chat-guide-chip').textContent()).trim();
   if (!zhLabel.includes('上海爱奇艺文化传媒有限公司')) fail(`中文页 chip 名称不对: ${zhLabel}`);
 

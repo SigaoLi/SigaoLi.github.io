@@ -24,6 +24,7 @@ export function traceOnFailure(browser, name) {
   mkdirSync(DIR, { recursive: true });
   let n = 0;
   const pending = new Set();
+  const written = [];   // 本次自己写出的 trace，退出时只清这些
 
   const origNewContext = browser.newContext.bind(browser);
   browser.newContext = async (...args) => {
@@ -36,7 +37,7 @@ export function traceOnFailure(browser, name) {
     const origClose = ctx.close.bind(ctx);
     ctx.close = async (...a) => {
       // 必须先停录再关 context，否则这段录像就没了
-      if (pending.delete(ctx)) await ctx.tracing.stop({ path: file }).catch(() => {});
+      if (pending.delete(ctx)) { written.push(file); await ctx.tracing.stop({ path: file }).catch(() => {}); }
       return origClose(...a);
     };
     return ctx;
@@ -45,7 +46,9 @@ export function traceOnFailure(browser, name) {
   const flush = async () => {
     for (const ctx of [...pending]) {
       pending.delete(ctx);
-      await ctx.tracing.stop({ path: join(DIR, `${name}-${++n}.zip`) }).catch(() => {});
+      const f = join(DIR, `${name}-${++n}.zip`);
+      written.push(f);
+      await ctx.tracing.stop({ path: f }).catch(() => {});
     }
   };
 
@@ -68,9 +71,13 @@ export function traceOnFailure(browser, name) {
   process.on('uncaughtException', bail);
 
   // 通过就不留 —— 否则每次跑完都堆一批几 MB 的 zip。
+  // ⚠️ 只删**本次自己写的那几个文件**，不要删整个目录：连跑时后一次成功
+  // 会把前一次失败留下的证据一起抹掉（2026-09-16 就这么弄丢过一份现场，
+  // 当时正等着用它查 verify-guide）。
   process.on('exit', (code) => {
-    if (code === 0 && existsSync(DIR)) {
-      try { rmSync(DIR, { recursive: true, force: true }); } catch { /* 删不掉就算了，不值得为此报错 */ }
+    if (code !== 0) return;
+    for (const f of written) {
+      try { if (existsSync(f)) rmSync(f, { force: true }); } catch { /* 删不掉就算了，不值得为此报错 */ }
     }
   });
 }
