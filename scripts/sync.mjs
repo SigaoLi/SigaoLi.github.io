@@ -40,8 +40,17 @@ const api = { fetch, base: env.TRANSLATE_API_BASE, key: env.TRANSLATE_API_KEY };
 
 const saveBaseline = () => writeFileSync(BASELINE, JSON.stringify(baseline, null, 2) + '\n');
 const stage = (...f) => execFileSync('git', ['add', ...f.filter(Boolean)], { stdio: 'inherit' });
+// 取上次提交时的那一版，用作语义判定的「改动前」。
+// 取不到是正常的（新文件、刚 rebase），退化为保守重译即可——但**要出声**：
+// 路径分隔符写错也会走到这里（`git show` 只认正斜杠，反斜杠会被吃掉），
+// 那种情况下每次都在重译却没人知道为什么。静默退化是最难发现的那类毛病。
 const headVersion = (path) => {
-  try { return execFileSync('git', ['show', `HEAD:${path}`], { encoding: 'utf8' }); } catch { return null; }
+  try {
+    return execFileSync('git', ['show', `HEAD:${path}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    console.log(`    （取不到 ${path} 的 HEAD 版本，本次按保守重译处理）`);
+    return null;
+  }
 };
 
 let translated = 0, skipped = 0, rebased = 0;
@@ -157,12 +166,22 @@ async function syncCv(p, changed, enRaw, zhRaw, api) {
   const srcUnits = toUnits(src), dstUnits = toUnits(dstCv);
   let next = dstCv, changedCount = 0;
 
+  // 每译完一条就落盘，不攒到最后。照片管线在这个形态上栽过一次（见
+  // docs/photo-ingest-design.md §6），这里是同一个坑的另一个实例：
+  // 改 5 条、第 5 条翻译失败的话，前 4 条已经花钱译好的结果会一起丢，
+  // 重跑还得从头再译一遍。落盘便宜，重译不便宜。
+  const flush = () => {
+    writeFileSync(dstPath, JSON.stringify(next, null, 2) + '\n');
+    baseline[p.key] = { en: hashOf(read(p.en)), zh: hashOf(read(p.zh)) };
+    saveBaseline(); stage(dstPath, BASELINE);
+  };
+
   for (const [key, unit] of Object.entries(srcUnits)) {
     const mirror = dstUnits[key];
     const text = JSON.stringify(unit, null, 1);
     if (!mirror) {                                   // 对面没有 → 直接翻译补上
       next = applyUnit(next, key, JSON.parse(await translate({ dir, text }, api)));
-      changedCount++;
+      changedCount++; flush();
       console.log(`    + ${key}`);
       continue;
     }
@@ -173,19 +192,16 @@ async function syncCv(p, changed, enRaw, zhRaw, api) {
     if (!v.stale) continue;
     // 同 md 分支：带上对面现有条目，走修订而非重译
     next = applyUnit(next, key, JSON.parse(await translate({ dir, text, existing: JSON.stringify(mirror, null, 1) }, api)));
-    changedCount++;
+    changedCount++; flush();
     console.log(`    ~ ${key}（${v.why}）`);
   }
   for (const key of Object.keys(dstUnits)) {         // 源侧删了 → 对面同步删
-    if (!srcUnits[key]) { next = removeUnit(next, key); changedCount++; console.log(`    - ${key}`); }
+    if (!srcUnits[key]) { next = removeUnit(next, key); changedCount++; flush(); console.log(`    - ${key}`); }
   }
 
   if (changedCount === 0) {
     console.log('    条目级判定：无需改动，基线保持不动');
     return { translated: 0, skipped: 1 };
   }
-  writeFileSync(dstPath, JSON.stringify(next, null, 2) + '\n');
-  baseline[p.key] = { en: hashOf(read(p.en)), zh: hashOf(read(p.zh)) };
-  saveBaseline(); stage(dstPath, BASELINE);
   return { translated: 1, skipped: 0 };
 }
