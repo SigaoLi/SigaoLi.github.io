@@ -32,5 +32,7 @@ _originals/
 # 绝不进 git：里面是全分辨率原图，带未脱敏的精确 GPS。
 _inbox/
 
-# Playwright trace（验收脚本失败时留下的现场录像，CI 上传为 artifact）
-shots/traces/
+# 开发期截图与验收留痕（含失败时的 Playwright trace）—— 只在本地看，
+# 不入库也不发布。历史上追踪过 48 张共 10.9MB，2026-09-15 起停止追踪；
+# 旧对象仍留在 git 历史里，清掉要改写全部提交，不值得。
+shots/
