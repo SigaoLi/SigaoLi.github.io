@@ -47,7 +47,15 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      # 用 npm install 而不是 npm ci —— 不是图省事，是 ci 在这里跑不起来：
+      # package-lock.json 在 Windows 上维护，而 npm 只把**当前平台**解析得到的
+      # 可选依赖写进 lock。CI 是 Linux，需要 sharp 的 @emnapi/core 与
+      # @emnapi/runtime（1.11.3），Windows 上根本装不到、也就没进 lock，
+      # 于是 npm ci 在 20 秒内以 EUSAGE 退出：「lock 与 package.json 不同步」。
+      # 试过 `npm install --package-lock-only --os=linux --cpu=x64` 重建，补不出这两个。
+      # 要真修得在 Linux 上生成 lock；在那之前 install 是诚实的选择——
+      # 部署那条链路（withastro/action）本来也是 install，两边就此一致。
+      - run: npm install --no-audit --no-fund
 
       # 只装 chromium。脚本全部用 chromium，装齐三家浏览器会白等两分钟。
       - name: Install Chromium
@@ -115,8 +123,9 @@ jobs:
       # 失败时把截图捞出来——CI 里看不到浏览器，截图是唯一的现场。
       - name: Upload screenshots on failure
         if: failure()
-        # v5+：v4 仍是 Node 20 运行时，GitHub 2025-09 起弃用并强制跑在 Node 24 上。
-        # 仓库其余 action 早已升代（checkout@v7 / setup-node@v6 / cache@v6），这条是漏的。
+        # ⚠️ v5 **仍然**是 Node 20 运行时——实测升上来之后那条弃用警告照旧。
+        # 即上游暂时没有 Node 24 版可用，警告只能等官方发新代次，不是配错了。
+        # GitHub 目前只是强制它跑在 Node 24 上，功能正常，不影响这条流水线。
         uses: actions/upload-artifact@v5
         with:
           name: verify-screenshots
