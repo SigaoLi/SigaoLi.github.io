@@ -52,3 +52,47 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  # 香港服务器部署（PRD §27）。与上面的 Pages 部署并行、互不依赖：
+  # 这一步失败不影响 Pages，Pages 保留为备用线路。
+  # 复用 build 产出的 github-pages 制品（里面是 artifact.tar），不重复构建。
+  deploy-hk:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: github-pages
+          path: pages-artifact
+
+      - name: Unpack site
+        run: |
+          mkdir dist
+          tar -xf pages-artifact/artifact.tar -C dist
+          test -f dist/index.html
+
+      - name: Install SSH key
+        env:
+          HK_DEPLOY_KEY: ${{ secrets.HK_DEPLOY_KEY }}
+          HK_HOST: ${{ secrets.HK_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$HK_DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # 不用 StrictHostKeyChecking=no：先取主机指纹，与写死的服务器指纹比对，
+          # 对不上就中止（防中间人）。服务器重装系统后指纹会变，需同步改这里。
+          ssh-keyscan -t ed25519 "$HK_HOST" > ~/.ssh/known_hosts
+          fp=$(ssh-keygen -lf ~/.ssh/known_hosts | awk '{print $2}')
+          if [ "$fp" != "SHA256:pJJeMfwPXgkfKwGDk6BEnSZRkfWpr9q2yd1Hu8I35G8" ]; then
+            echo "::error::服务器主机指纹不符：$fp"
+            exit 1
+          fi
+
+      - name: Rsync to Hong Kong server
+        env:
+          HK_HOST: ${{ secrets.HK_HOST }}
+        run: |
+          rsync -az --delete --chmod=D755,F644 \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
+            dist/ "deploy@${HK_HOST}:/var/www/sigaoli/"
