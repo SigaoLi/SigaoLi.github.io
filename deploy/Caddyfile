@@ -1,0 +1,38 @@
+# 香港服务器的 Caddy 配置（PRD §27）。
+# 不随 Actions 部署：改完后手动放到服务器 /etc/caddy/Caddyfile 再 reload。
+#
+# 这里**不需要**写 CSP 和旧 URL 重定向：
+#   - CSP 是每个页面 <head> 里的 meta 标签（src/layouts/Base.astro），随页面走；
+#   - 旧 Jekyll 路径的重定向是 Astro 构建出的静态 meta-refresh 页（dist/about/index.html 等）。
+# 所以这里只管：多域名、www 跳转、缓存头、404 页、少量响应头。
+
+sigaoli.com, hk.sigaoli.com {
+	root * /var/www/sigaoli
+	encode zstd gzip
+	file_server
+
+	# 带内容哈希的构建产物：永久缓存。其余（HTML、json、txt）每次向服务器验证。
+	@assets path /_astro/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	@rest not path /_astro/*
+	header @rest Cache-Control "public, max-age=0, must-revalidate"
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# meta 版 CSP 设不了 frame-ancestors，这里补上，防被别的站嵌入
+		Content-Security-Policy "frame-ancestors 'self'"
+		-Server
+	}
+
+	# 找不到的路径：返回 404 状态码 + 站内 404 页（GoatCounter 的 `404-` 统计依赖真 404 状态）
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+}
+
+www.sigaoli.com {
+	redir https://sigaoli.com{uri} permanent
+}
