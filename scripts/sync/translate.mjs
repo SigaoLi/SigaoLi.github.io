@@ -1,12 +1,13 @@
 // 双向翻译。两个方向用两个模型，因为它们要求的能力不同：
-//   zh→en  claude-opus-4-5  —— 实测风格最贴近现有英文原文（cookie banners /
+//   zh→en  claude-opus-5-5  —— 2026-10-11 原 4-5 渠道停用，沿用同系列
+//          原 4-5 实测风格最贴近现有英文原文（cookie banners /
 //          naive crawlers / validates），用词最克制
 //   en→zh  deepseek-v4-pro  —— 保持不动。那套「信达雅」提示词是 2026-06 两轮
 //          对比实验选出来的（scripts/prompt-bench*-result.md），没理由推翻
 //
 // 不设人工复核（设计 §11）的前提是：可机械验的部分必须真的机械验。
 // checkPreserved 把关不可译字段，不通过即当翻译失败、走重试。
-export const MODEL_ZH2EN = 'claude-opus-4-5';
+export const MODEL_ZH2EN = 'claude-opus-5-5';
 export const MODEL_EN2ZH = 'deepseek-v4-pro';
 const RETRIES = 3;
 

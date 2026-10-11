@@ -167,6 +167,87 @@
         "lng": 118.1,
         "cityZh": "厦门",
         "city": "Xiamen"
+      },
+      {
+        "src": "IMG20261006111328.jpg",
+        "alt": "Rust-red mountains across a poplar-lined valley under heavy cloud, with an eroded sandstone cliff rising on the right",
+        "altZh": "阴云低垂，风蚀砂岩崖壁俯瞰白杨掩映的河谷，对岸红褐色山峦连绵",
+        "lat": 41.8,
+        "lng": 82.5,
+        "cityZh": "拜城",
+        "city": "Baicheng"
+      },
+      {
+        "src": "IMG20261006165035.jpg",
+        "alt": "Towering red sandstone walls carved into vertical ribs close in on a sandy canyon floor, where a few small figures walk under an overcast sky",
+        "altZh": "红色砂岩峭壁层层风化，夹出一道峡谷，谷底沙地上游人渺小，头顶天色阴白",
+        "lat": 41.6,
+        "lng": 80.7,
+        "cityZh": "阿克苏",
+        "city": "Aksu"
+      },
+      {
+        "src": "IMG20261008115648.jpg",
+        "alt": "Low cloud swallowing the peaks of a barren grey mountain valley, where a highway bridge crosses a thin stream beside a roadside power line",
+        "altZh": "灰褐荒山夹出一道河谷，云雾吞没远处山顶，公路桥横跨细流，路边电杆电线伸向深处",
+        "lat": 38.8,
+        "lng": 75.1,
+        "cityZh": "阿克陶",
+        "city": "Akto"
+      },
+      {
+        "src": "IMG20261008122853.jpg",
+        "alt": "Turquoise Baisha Lake beneath pale sand-dune mountains, with a wooden boardwalk and saddled animals among tourists on the gravel shore",
+        "altZh": "白沙湖湖水碧蓝，对岸白沙山绵延，近岸碎石滩上木栈道蜿蜒，游人与备着鞍垫的牲畜聚在水边",
+        "lat": 38.7,
+        "lng": 75,
+        "cityZh": "阿克陶",
+        "city": "Akto"
+      },
+      {
+        "src": "IMG20261008191228.jpg",
+        "alt": "A calm grey-blue lake ringed by pale, barren mountains streaked with cloud shadow, under billowing white clouds and patches of blue sky, with a dark rocky shore in the foreground",
+        "altZh": "浅黄荒山环抱一湾静水，山坡上云影斑驳，头顶白云翻涌、露出几块蓝天，近处是深色碎石湖岸",
+        "lat": 37.8,
+        "lng": 75.4,
+        "cityZh": "塔什库尔干",
+        "city": "Tashkurgan"
+      },
+      {
+        "src": "IMG20261009090935.jpg",
+        "alt": "Low sun warming a range of snow-capped peaks and bare foothills to a pinkish glow under a pale blue sky with a few drifting clouds, above a flat plain with a road and a row of trees",
+        "altZh": "斜光把雪峰与光秃山麓染成粉橘色，淡蓝天空中横着几缕云，山脚平地上一排树木，左侧公路边立着路牌",
+        "lat": 37.9,
+        "lng": 75.2,
+        "cityZh": "塔什库尔干",
+        "city": "Tashkurgan"
+      },
+      {
+        "src": "IMG20261009093556.jpg",
+        "alt": "An old man with a walking stick strolls down a narrow paved road beneath a row of golden autumn willows, with sheep and goats grazing on a dry field to the left, a dog in the grass to the right, and hazy mountains under a clear blue sky",
+        "altZh": "老人拄杖走在窄窄的柏油路上，路旁一排柳树金黄成荫，左边干草地上羊群低头吃草，右边草丛里站着一只狗，远山淡蓝，天空无云",
+        "lat": 38,
+        "lng": 75.1,
+        "cityZh": "塔什库尔干",
+        "city": "Tashkurgan"
+      },
+      {
+        "src": "IMG20261009104110.jpg",
+        "alt": "A wide golden grassland with a wire fence stretches toward dark brown hills, beyond which a snow-capped range rises half-veiled in white cloud under a deep blue sky, with a road edge at the lower left",
+        "altZh": "枯黄草场一望无际，铁丝围栏沿地面排开，前方褐色山丘起伏，背后雪山被一层白云半掩，天空湛蓝，左下角露出一段路边",
+        "lat": 38.3,
+        "lng": 74.9,
+        "cityZh": "喀什",
+        "city": "Kashgar"
+      },
+      {
+        "src": "IMG20261009113742.jpg",
+        "alt": "Karakul Lake rippling blue beneath a long snow-covered range and brown foothills, with a few rocks in the shallows, a dark gravel shore and a rust-brown cylindrical object at the left, under a deep blue sky crossed by a streak of sun flare",
+        "altZh": "喀拉库勒湖水波轻漾，对岸雪山连绵，山脚是褐色丘陵，浅水里散着几块石头，近岸深色碎石滩左侧搁着一件锈褐色圆筒状物，湛蓝天空中斜划过一道光晕",
+        "lat": 38.4,
+        "lng": 75.1,
+        "cityZh": "阿克陶",
+        "city": "Akto"
       }
     ]
   },

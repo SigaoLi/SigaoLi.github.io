@@ -4,8 +4,8 @@ import { checkPreserved, translate, MODEL_ZH2EN, MODEL_EN2ZH } from './translate
 
 const reply = (c) => ({ ok: true, json: async () => ({ choices: [{ message: { content: c } }] }) });
 
-test('两个方向用实测选定的模型', () => {
-  assert.equal(MODEL_ZH2EN, 'claude-opus-4-5');
+test('两个方向使用当前配置的模型', () => {
+  assert.equal(MODEL_ZH2EN, 'claude-opus-5-5');
   assert.equal(MODEL_EN2ZH, 'deepseek-v4-pro'); // 信达雅提示词是两轮实验选出来的，不推翻
 });
 

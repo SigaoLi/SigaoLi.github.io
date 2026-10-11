@@ -3,11 +3,13 @@
 // 这是整条链路省钱又省心的关键——翻译是贵的那一步，只在真需要时才跑；
 // 纯润色的提交只花判定钱，而且**不会冲掉人工润色过的对面译文**。
 //
-// 选型（docs/bilingual-sync-design.md §3）：23 个真实改动样本、两次独立复跑，
+// 当前判定模型：2026-10-11 按 Sigao 要求升级至 gpt-6.1-sol。
+// 历史选型（docs/bilingual-sync-design.md §3）：23 个真实改动样本、两次独立复跑，
 // gpt-5.6-sol 23/23 且零假阴性，1.8s 最快。原任 deepseek-v4-pro 只有 21/23、
 // 两个假阴性且最慢（6.8s）。假阴性 = 判成「只是润色」而其实改了事实 →
 // 对面悄悄过时，是这里唯一真正危险的失败方向。
-export const GATE_MODEL = 'gpt-5.6-sol';
+// gpt-6.1-sol 仅支持默认 temperature=1，请求中不传 temperature。
+export const GATE_MODEL = 'gpt-6.1-sol';
 const RETRIES = 3;
 
 const PROMPT = ({ dir, before, after, other }) => {
@@ -60,7 +62,7 @@ export async function isStale(change, deps) {
       const r = await doFetch(`${base}/chat/completions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-        body: JSON.stringify({ model: GATE_MODEL, messages: [{ role: 'user', content: PROMPT(change) }], max_tokens: 3000, temperature: 0 }),
+        body: JSON.stringify({ model: GATE_MODEL, messages: [{ role: 'user', content: PROMPT(change) }], max_tokens: 3000 }),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status} ${await r.text()}`);
       const d = await r.json();

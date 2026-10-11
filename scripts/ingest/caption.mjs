@@ -1,11 +1,11 @@
-// 用 claude-opus-4-5 看图写中英文案。文案会同时用于：网格 alt、hover 城市名、
+// 用 claude-opus-5-5 看图写中英文案（2026-10-11：原 4-5 渠道已停用）。文案会同时用于：网格 alt、hover 城市名、
 // 灯箱描述、以及 Zoe 的知识包语料（src/lib/knowledge/photos.ts 从 photos.json 汇总）。
 //
-// 模型选型见 docs/photo-ingest-design.md §2：实测 opus 两张样本全对，是唯一
+// 原 4-5 的模型选型见 docs/photo-ingest-design.md §2：实测 opus 两张样本全对，是唯一
 // 认出厦门双子塔的；对照组 gpt-5.6-terra 把它看成摩天轮且自评置信度 0.96
 // ——所以不采信模型自评的 confidence，也不设自动放行闸门。
 
-export const MODEL = 'claude-opus-4-5';
+export const MODEL = 'claude-opus-5-5';
 const RETRIES = 3;
 
 const SYSTEM = `你在为一个个人摄影作品集写图片描述。每张图产出一句英文 alt 和一句中文 alt。

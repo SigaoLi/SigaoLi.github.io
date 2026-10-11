@@ -4,8 +4,8 @@ import { parseVerdict, isStale, GATE_MODEL } from './gate.mjs';
 
 const reply = (c) => ({ ok: true, json: async () => ({ choices: [{ message: { content: c } }] }) });
 
-test('用的是实测选定的判定模型', () => {
-  assert.equal(GATE_MODEL, 'gpt-5.6-sol');
+test('用的是当前配置的判定模型', () => {
+  assert.equal(GATE_MODEL, 'gpt-6.1-sol');
 });
 
 test('解析干净的 JSON', () => {
