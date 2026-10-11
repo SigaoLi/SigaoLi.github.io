@@ -1,16 +1,16 @@
 // One-off: archive full-res photo originals to _originals/ (gitignored) and
-// replace src/assets/photos with downscaled serving masters (max edge 2560px).
+// replace src/assets/photos with downscaled serving masters (max edge 4096px).
 // Idempotent: reads from the pristine _originals copy, so re-running re-derives
 // the same masters and never compounds JPEG loss. See PRD §20.13.
 import sharp from 'sharp';
+import { deriveServingMaster, MASTER_MAX_EDGE } from './ingest/intake.mjs';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
 const SRC = path.join(ROOT, 'src/assets/photos');
 const ORIG = path.join(ROOT, '_originals/photos');
-const MAX_EDGE = 2560;
-const QUALITY = 82;
+const MAX_EDGE = MASTER_MAX_EDGE;
 
 async function walk(dir) {
   const out = [];
@@ -40,7 +40,7 @@ if (!archiveExists) {
   console.log('_originals/photos already exists — using it as the source of truth.');
 }
 
-// Stage 2: derive 2560px serving masters from the archive into src/assets/photos.
+// Stage 2: derive 4096px serving masters from the archive into src/assets/photos.
 const originals = await walk(ORIG);
 let before = 0,
   after = 0,
@@ -52,13 +52,8 @@ for (const f of originals) {
   before += (await fs.stat(f)).size;
   await fs.mkdir(path.dirname(dest), { recursive: true });
   const longest = Math.max(meta.width ?? 0, meta.height ?? 0);
-  const pipeline = sharp(f).rotate(); // bake EXIF orientation before stripping
-  if (longest > MAX_EDGE) {
-    pipeline.resize({ width: meta.width >= meta.height ? MAX_EDGE : null, height: meta.height > meta.width ? MAX_EDGE : null });
-  } else {
-    skipped++;
-  }
-  const buf = await pipeline.jpeg({ quality: QUALITY, mozjpeg: true }).toBuffer();
+  if (longest <= MAX_EDGE) skipped++;
+  const buf = await deriveServingMaster(f);
   await fs.writeFile(dest, buf);
   after += buf.length;
 }

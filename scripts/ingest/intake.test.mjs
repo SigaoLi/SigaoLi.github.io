@@ -10,13 +10,13 @@ import { listInbox, archiveAndDerive } from './intake.mjs';
 const tmp = () => mkdtempSync(join(tmpdir(), 'ingest-'));
 
 /**
- * 造一张 4096x1856 的测试图，**带 EXIF**。
+ * 造一张 5000x1856 的测试图，**带 EXIF**。
  * 必须带——否则"母版不得残留元数据"那条断言就是空转的：
  * 源图本来就没有元数据的话，输出没有也证明不了剥除生效。
  */
 async function fakePhoto(path) {
   const buf = await sharp({
-    create: { width: 4096, height: 1856, channels: 3, background: { r: 120, g: 140, b: 160 } },
+    create: { width: 5000, height: 1856, channels: 3, background: { r: 120, g: 140, b: 160 } },
   })
     .withMetadata({ exif: { IFD0: { Copyright: 'ingest-test-fixture' } } })
     .jpeg()
@@ -44,7 +44,7 @@ test('listInbox 对不存在的目录返回空数组', () => {
   assert.deepEqual(listInbox(join(tmpdir(), 'definitely-not-here-' + Date.now())), []);
 });
 
-test('派生的母版长边 2560、元数据被剥光，原图归档保持不变', async () => {
+test('派生的母版长边 4096、元数据被剥光，原图归档保持不变', async () => {
   const root = tmp();
   const src = join(root, 'IMG20260905155409.jpg');
   await fakePhoto(src);
@@ -67,7 +67,7 @@ test('派生的母版长边 2560、元数据被剥光，原图归档保持不变
   const master = join(servingDir, 'china', 'IMG20260905155409.jpg');
   assert.ok(existsSync(master));
   const meta = await sharp(master).metadata();
-  assert.equal(Math.max(meta.width, meta.height), 2560);
+  assert.equal(Math.max(meta.width, meta.height), 4096);
   assert.ok(!(await exifr.parse(master, true).catch(() => null))?.Copyright, '母版不得残留 EXIF');
   assert.equal(await exifr.gps(master).catch(() => undefined), undefined, '母版不得残留 GPS');
   assert.equal(r.servingPath, master);
@@ -83,4 +83,16 @@ test('母版已存在则抛错，不静默覆盖', async () => {
 
   await archiveAndDerive(args);
   await assert.rejects(() => archiveAndDerive(args), /已存在/);
+});
+
+test('小尺寸原图不放大，EXIF 方向先烘焙进像素', async () => {
+  const root = tmp();
+  const src = join(root, 'small.jpg');
+  await sharp({ create: { width: 1000, height: 1600, channels: 3, background: '#8899aa' } })
+    .withMetadata({ orientation: 6 }).jpeg().toFile(src);
+  const result = await archiveAndDerive({ file: src, countryId: 'china', archiveRoot: join(root, 'archive'), servingRoot: join(root, 'serving') });
+  const meta = await sharp(result.servingPath).metadata();
+  assert.equal(meta.width, 1600);
+  assert.equal(meta.height, 1000);
+  assert.equal(meta.orientation, undefined);
 });

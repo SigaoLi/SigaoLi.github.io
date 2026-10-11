@@ -38,11 +38,18 @@ const countries = await Promise.all(
       c.items.map(async (item: any, i: number) => {
         const meta = imageModules[`../../assets/photos/${c.id}/${item.src}`]?.default;
         if (!meta) throw new Error(`Missing photo asset: ${c.id}/${item.src}`);
-        const full = await getImage({ src: meta, width: 2048, format: 'webp', quality: 80 });
+        // Generate only sizes supported by this photo; browsers load one chosen variant.
+        const widths = [...new Set([640, 1080, 1600, 2048, 2560, 3200, 4096]
+          .filter((width) => width < meta.width).concat(meta.width))];
+        const fullVariants = await Promise.all(widths.map(async (width) => {
+          const image = await getImage({ src: meta, width, format: 'webp', quality: 88 });
+          return { width, src: image.src };
+        }));
+        const full = fullVariants.find((image) => image.width >= Math.min(1600, meta.width))!;
         const lqip = await lqipFor(c.id, item.src);
         const alt = (lang === 'zh' ? item.altZh : item.alt) || `${c.name} — travel photograph ${i + 1}`;
         const city = (lang === 'zh' ? item.cityZh : item.city) as string | undefined;
-        return { meta, fullUrl: full.src, lqip, alt, city, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
+        return { meta, fullUrl: full.src, fullVariants, lqip, alt, city, lat: item.lat as number | undefined, lng: item.lng as number | undefined };
       })
     );
     return { ...c, displayName: lang === 'zh' ? c.nameZh : c.name, photos: items };
@@ -95,6 +102,9 @@ const headline = lang === 'zh'
               style={`border-color: var(--line); background-image: url('${p.lqip}'); background-size: cover;`}
               data-lightbox
               data-full={p.fullUrl}
+              data-full-variants={JSON.stringify(p.fullVariants)}
+              data-image-width={p.meta.width}
+              data-image-height={p.meta.height}
               data-alt={p.alt}
               data-label={c.displayName}
               data-city={p.city}

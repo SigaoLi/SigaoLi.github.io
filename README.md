@@ -14,7 +14,7 @@ Jekyll (academicpages) site.
 - **Zoe, the digital doorcat** — Sigao's cat (驺虞) lives in the corner of every page as a set of AI-generated, chroma-keyed VP9-alpha video clips pinned to shared anchor poses, driven by a state machine: she dozes off when ignored, reacts to page switches, listens while you type, "types back" while the assistant streams, and keeps a few easter eggs (production handbook in `docs/`)
 - **Built-in AI layer** — a floating chat assistant (fronted by Zoe) on every page — it suggests the single most relevant page as you ask, and greets a returning visitor by name (stored only in their own browser, opt-in) — plus a personal MCP server, both fed by a build-time knowledge pack generated from the same sources as the pages (see below)
 - **Machine-readable by design** — [`/llms.txt`](https://sigaoli.com/llms.txt), [`/llms-full.txt`](https://sigaoli.com/llms-full.txt), [`/resume.json`](https://sigaoli.com/resume.json) (JSON Resume), [`/knowledge.json`](https://sigaoli.com/knowledge.json), [`/.well-known/mcp.json`](https://sigaoli.com/.well-known/mcp.json), JSON-LD, and a robots.txt that explicitly welcomes AI crawlers
-- **Photographs file themselves** — drop the full-resolution originals into `_inbox/` and commit. A pre-commit hook works out the country from the coordinates against Natural Earth polygons, archives the originals outside git, derives 2560px masters with the EXIF stripped, asks a vision model for the bilingual caption, and registers everything in `photos.json` — the map, the counts and the assistant's knowledge all follow from there
+- **Photographs file themselves** — drop the full-resolution originals into `_inbox/` and commit. A pre-commit hook works out the country from the coordinates against Natural Earth polygons, archives the originals outside git, derives masters with a maximum edge of 4096px and the EXIF stripped, asks a vision model for the bilingual caption, and registers everything in `photos.json` — the map, the counts and the assistant's knowledge all follow from there
 - **Either language pulls the other along** — edit the Chinese or the English and commit. The hook works out which side moved and asks a model whether the edit actually changed what the other side must say. Polishing one language leaves the other alone; a changed fact is revised rather than rewritten, so hand-picked wording survives. Editing both in one commit counts as already handled by hand
 - Lighthouse (mobile): 96–100 across all categories; zero cookies, no paid services, and a plain-language privacy notice at [`/privacy`](https://sigaoli.com/privacy)
 
@@ -123,7 +123,7 @@ language at [`/privacy`](https://sigaoli.com/privacy).
 - **UI strings & hero copy**: hand-written bilingual dictionary in `src/lib/i18n.ts`.
 - **Photos**: drop the full-resolution originals into `_inbox/` and commit. The pre-commit
   hook files them by GPS, archives the originals to `_originals/` (never committed), derives
-  2560px serving masters, writes bilingual captions with a vision model, and registers them in
+  serving masters with a maximum edge of 4096px, writes bilingual captions with a vision model, and registers them in
   `src/data/photos.json`. Photos without GPS go in `_inbox/<country-id>/` instead. Counts,
   the map and the AI knowledge pack all follow from `photos.json` automatically.
   See `docs/photo-ingest-design.md`.

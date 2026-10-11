@@ -60,6 +60,7 @@
 
 <script>
   import { pageScript, prefersReducedMotion } from '../lib/motion';
+  import { lightboxDisplaySize, selectLightboxVariant } from '../lib/lightbox-image.mjs';
 
   pageScript(() => {
     const lb = document.getElementById('lightbox');
@@ -80,20 +81,35 @@
     let loadToken = 0;
     let closeTimer = 0;
 
+    type Variant = { width: number; src: string };
+    const variantsFor = (el: HTMLElement): Variant[] => JSON.parse(el.dataset.fullVariants || '[]');
+    const photoSize = (el: HTMLElement) => lightboxDisplaySize(
+      Number(el.dataset.imageWidth), Number(el.dataset.imageHeight),
+      window.innerWidth, window.innerHeight,
+      document.querySelector('#lb-figure figcaption')!.getBoundingClientRect().height,
+    );
+    const chosenVariant = (el: HTMLElement) => selectLightboxVariant(
+      variantsFor(el), photoSize(el).width, window.devicePixelRatio,
+    ) as Variant;
+    const loadPhoto = (el: HTMLElement, preview: boolean) => {
+      const size = photoSize(el);
+      imgEl.style.width = size.width + 'px';
+      imgEl.style.height = size.height + 'px';
+      const full = chosenVariant(el).src;
+      const token = ++loadToken;
+      // Keep a cached preview while fetching just the variant this screen needs.
+      if (preview) imgEl.src = el.querySelector('img')?.currentSrc || full;
+      if (imgEl.getAttribute('src') === full) return;
+      const loader = new Image();
+      loader.onload = () => {
+        if (token === loadToken && !lb.classList.contains('hidden')) imgEl.src = full;
+      };
+      loader.src = full;
+    };
+
     const show = (i: number) => {
       idx = (i + items.length) % items.length;
       const el = items[idx];
-      const full = el.dataset.full!;
-      const token = ++loadToken;
-      // Show the already-cached thumbnail immediately, swap in the 2048px
-      // image once it has loaded (token guards against fast navigation).
-      const thumb = el.querySelector('img')?.currentSrc;
-      imgEl.src = thumb || full;
-      if (thumb && thumb !== full) {
-        const loader = new Image();
-        loader.onload = () => { if (token === loadToken) imgEl.src = full; };
-        loader.src = full;
-      }
       imgEl.alt = el.dataset.alt ?? '';
       descEl.textContent = el.dataset.alt ?? '';
       // place (city · country) + coordinates, joined by a dot-motif separator
@@ -105,10 +121,11 @@
       if (place) add(place);
       if (coords) { if (place) sep(); add(coords); }
       counterEl.textContent = `${idx + 1} / ${items.length}`;
-      // Preload neighbours
+      loadPhoto(el, true);
+      // Preload screen-appropriate neighbours, rather than their largest variants.
       for (const n of [idx + 1, idx - 1]) {
         const p = new Image();
-        p.src = items[(n + items.length) % items.length].dataset.full!;
+        p.src = chosenVariant(items[(n + items.length) % items.length]).src;
       }
     };
 
@@ -124,6 +141,7 @@
     };
 
     const close = () => {
+      ++loadToken; // A late image load must not replace a closed or reopened photo.
       lb.classList.remove('lb-open');
       document.body.style.overflow = '';
       const finish = () => { lb.classList.add('hidden'); lb.classList.remove('flex'); imgEl.src = ''; };
@@ -147,6 +165,9 @@
       }) as EventListener);
     });
 
+    on(window, 'resize', (() => {
+      if (idx >= 0 && !lb.classList.contains('hidden')) loadPhoto(items[idx], false);
+    }) as EventListener);
     on(btnClose, 'click', close as EventListener);
     on(btnPrev, 'click', (() => show(idx - 1)) as EventListener);
     on(btnNext, 'click', (() => show(idx + 1)) as EventListener);
@@ -169,6 +190,7 @@
     }) as EventListener);
 
     return () => {
+      ++loadToken;
       handlers.forEach(([el, ev, fn]) => el.removeEventListener(ev, fn));
       document.body.style.overflow = '';
     };

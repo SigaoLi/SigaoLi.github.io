@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
+import excludeUnusedPhotoMasters from './scripts/build/prune-photo-masters.mjs';
 
 export default defineConfig({
   site: 'https://sigaoli.com',
@@ -40,6 +41,7 @@ export default defineConfig({
     '/terms': '/',
   },
   integrations: [
+    excludeUnusedPhotoMasters(),
     sitemap({
       i18n: {
         defaultLocale: 'en',

@@ -2,14 +2,21 @@
 //
 // 两级结构沿用 compress-photos.mjs 当初定下的约定：
 //   _originals/photos/<国家>/  全分辨率原图，gitignore，只在本机
-//   src/assets/photos/<国家>/  2560px 母版，EXIF 剥光，进 git
+//   src/assets/photos/<国家>/  最多 4096px / q90 母版，EXIF 剥光，进 git
 import { readdirSync, existsSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import sharp from 'sharp';
 import exifr from 'exifr';
 
-const MAX_EDGE = 2560;
-const QUALITY = 82;
+export const MASTER_MAX_EDGE = 4096;
+export const MASTER_QUALITY = 90;
+
+/** 从原图生成母版；先烘焙方向，再等比缩小，不放大、不保留 EXIF。 */
+export async function deriveServingMaster(file) {
+  return sharp(file).rotate()
+    .resize({ width: MASTER_MAX_EDGE, height: MASTER_MAX_EDGE, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: MASTER_QUALITY, mozjpeg: true }).toBuffer();
+}
 const IS_JPEG = /\.jpe?g$/i;
 
 /**
@@ -58,15 +65,7 @@ export async function archiveAndDerive({ file, countryId, archiveRoot, servingRo
   mkdirSync(join(archiveRoot, countryId), { recursive: true });
   copyFileSync(file, archivePath);
 
-  const meta = await sharp(file).metadata();
-  const pipeline = sharp(file).rotate(); // 先把 EXIF 方向烘焙进像素，再剥元数据
-  if (Math.max(meta.width ?? 0, meta.height ?? 0) > MAX_EDGE) {
-    pipeline.resize({
-      width: meta.width >= meta.height ? MAX_EDGE : null,
-      height: meta.height > meta.width ? MAX_EDGE : null,
-    });
-  }
-  const buf = await pipeline.jpeg({ quality: QUALITY, mozjpeg: true }).toBuffer();
+  const buf = await deriveServingMaster(file);
 
   mkdirSync(join(servingRoot, countryId), { recursive: true });
   writeFileSync(servingPath, buf);

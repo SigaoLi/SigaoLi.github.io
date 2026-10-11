@@ -81,20 +81,17 @@ for (const item of pending) {
   let caption, entry, newCountry;
   try {
     const existing = data.find((c) => c.id === country.id);
-    const samples = (existing?.items ?? data.flatMap((c) => c.items))
-      .slice(-5)
-      .map((i) => ({ alt: i.alt, altZh: i.altZh }))
-      .filter((s) => s.alt && s.altZh);
+    // 文风示例固定在 caption.mjs，不随本批生成结果变化。
 
     caption = await writeCaption(
       {
         imageB64: await previewB64(item.path),
-        lat: lat == null ? null : Math.round(lat * 10) / 10,
-        lng: lng == null ? null : Math.round(lng * 10) / 10,
+        // 模型识别地点需要约百米级线索；公开数据仍在登记时降至 1 位小数。
+        lat: lat == null ? null : Math.round(lat * 1000) / 1000,
+        lng: lng == null ? null : Math.round(lng * 1000) / 1000,
         shotAt: shotAt
           ? new Date(shotAt).toISOString().slice(0, 10)
           : new Date(shotTime(item.name, null) ?? Date.now()).toISOString().slice(0, 10),
-        samples,
       },
       api
     );
